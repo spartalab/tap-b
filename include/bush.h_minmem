@@ -1,0 +1,119 @@
+#ifndef BUSH_H
+#define BUSH_H
+
+#include <limits.h>
+#include <math.h>
+#include "tap.h"
+#include "networks.h"
+#include "datastructures.h"
+#include "utils.h"
+
+#define NEW_LINK -1
+
+/* Extra processing for merge nodes */
+typedef struct merge_type {
+   int      numApproaches;
+   int      *approach; /* IDs of incoming links [numApproaches] */
+   double   *approachFlow; /* Incoming flow (flows in OBA) [numApproaches] */
+   int      LPlink; /* Pointer to shortest path link... indexed by APPROACH not LINK ID */
+   int      SPlink;
+   int      divergenceNode;
+} merge_type;
+
+typedef struct bushes_type {
+   double   *LPcost; /* Longest used path label... COMMON across bushes [node] */
+   double   *SPcost; /* Shortest path label... COMMON across bushes [node] */
+   double   *flow; /* Bush link flows... COMMON across bushes [link] */
+   double   *nodeFlow; /* Bush node flows... COMMON across bushes [node] */
+   int      *bushOrder; /* Inverse topological order for each bush [nodeOrder] */
+   int      **pred; /* Bush predecessor... if a single link, is the link ID.  If a merge, the NEGATIVE of the merge ID  [origin][node] */
+   int      *lastMerge; /* Last merge node for each bush [origin] */
+   int      *numMerges; /* Number of merge nodes for each bush [origin] */
+   merge_type ***merges; /* Merge data structures for each bush [origin][merge]*/
+} bushes_type;
+
+typedef struct algorithmBParameters_type{
+   gap_type gapFunction;
+   double   convergenceGap;
+   double   maxTime;
+   long     maxIterations;
+   int      innerIterations;
+   int      shiftReps;
+   bool     rescanAfterShift;
+   double   thresholdGap;
+   double   minCostDifference;
+   double   minLinkFlowShift;
+   double   minLinkFlow;
+   double   minDerivative;
+   double   newtonStep;
+   int      numNewtonShifts;
+   queueDiscipline SPQueueDiscipline;
+   void     (*createInitialBush)(int, network_type *, bushes_type *, struct algorithmBParameters_type *);
+   void     (*topologicalOrder)(int, network_type *, bushes_type *, struct algorithmBParameters_type *);
+   void     (*linkShiftB)(int, double, network_type *);
+} algorithmBParameters_type;
+
+
+/* Master routine and parameters */
+void AlgorithmB(network_type *network, algorithmBParameters_type *parameters);
+algorithmBParameters_type initializeAlgorithmBParameters();
+
+/* Main Algorithm B helper functions */
+void initializeBushesB(network_type *network, bushes_type *bushes, struct algorithmBParameters_type *parameters);
+void updateBushB(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void updateFlowsB(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+
+/* Basic bush manipulations */
+bushes_type *createBushes(network_type *network);
+void deleteBushes(network_type *network, bushes_type *bushes);
+void initialBushShortestPath(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void initialBushBFS(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void genericTopologicalOrder(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void mergeFirstTopologicalOrder(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void scanBushes(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters, bool longestUsed);
+void reconstructMerges(int origin, network_type *network, bushes_type *bushes);
+void findDivergenceNodes(int origin, network_type *network, bushes_type *bushes);
+bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void updateFlowPass(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void calculateBushFlows(int origin, network_type *network, bushes_type *bushes);
+void pushBackFlowSimple(int j, int origin, network_type *network, bushes_type *bushes);
+void pushBackFlowMerge(merge_type *merge, network_type *network, bushes_type *bushes);
+void rectifyMerge(int j, merge_type *merge, bushes_type *bushes);
+void newtonFlowShift(int j, merge_type *merge, int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+
+/* Utility functions */
+bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes);
+bool isMergeNode(int origin, int i, bushes_type *bushes);
+int pred2merge(int ij);
+int merge2pred(int m);
+void exactCostUpdate(int ij, double shift, network_type *network);
+void linearCostUpdate(int ij, double shift, network_type *network);
+void noCostUpdate(int ij, double shift, network_type *network);
+void checkFlows(network_type *network, bushes_type *bushes);
+
+/**** Merges and merge-doubly linked lists ****/
+
+merge_type *createMerge(int numApproaches);
+void deleteMerge(merge_type *merge);
+void displayMerge(int minVerbosity, merge_type *merge, network_type *network);
+
+typedef struct mergeDLLelt_s {
+	int node;
+	merge_type *merge;
+	struct mergeDLLelt_s *next;
+	struct mergeDLLelt_s *prev;
+} mergeDLLelt;
+
+typedef struct {
+	mergeDLLelt *head;
+	mergeDLLelt *tail;
+	long size;
+} mergeDLL;
+
+mergeDLL *createMergeDLL();
+mergeDLLelt *insertMergeDLL(mergeDLL *list, merge_type *merge, int i, mergeDLLelt *after);
+void deleteMergeDLL(mergeDLL *list);
+void deleteMergeDLLelt(mergeDLL *list, mergeDLLelt *elt);
+void displayMergeDLL(int minVerbosity, mergeDLL *list);
+
+#endif
