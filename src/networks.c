@@ -40,48 +40,48 @@ void BellmanFord(long origin, double *label, long *backnode, network_type
       datastructures.c for more details. */ queue_type SEL =
     createQueue(network->numNodes, network->numNodes);
 
-	/* Initialize */
-	for (j = 0; j < network->numNodes; j++) {
-		label[j] = INFINITY;
-		backnode[j] = NO_PATH_EXISTS;
-	}
-	label[origin] = 0;
-	enQueue(&SEL, origin);
+    /* Initialize */
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backnode[j] = NO_PATH_EXISTS;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
 
    /* Iterate */
-	while (SEL.readptr != SEL.writeptr) {  
+    while (SEL.readptr != SEL.writeptr) {  
     /* See comment above about read and write pointers */
-		curnode = deQueue(&SEL);
-		for (i = network->nodes[curnode].forwardStar.head; i != NULL;
+        curnode = deQueue(&SEL);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL;
                 i = i->next) {
-			tempLabel = label[curnode] + i->arc->cost;
-			j = i->arc->head;
-			if (tempLabel < label[j]) { /* Found a better path to node j */
-				label[j] = tempLabel;
-				backnode[j] = curnode;
-				if (j >= network->firstThroughNode) { 
+            tempLabel = label[curnode] + i->arc->cost;
+            j = i->arc->head;
+            if (tempLabel < label[j]) { /* Found a better path to node j */
+                label[j] = tempLabel;
+                backnode[j] = curnode;
+                if (j >= network->firstThroughNode) { 
                 /* Ensure we do not use centroids/centroid connectors as
                  * "shortcuts" */
-					switch (q) {
-						case FIFO: 	enQueue(&SEL, j);	break;
-						case DEQUE:
-							switch (SEL.history[j]) {
-								case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
-								case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
-							}
-							break;
-						case LIFO:  frontQueue(&SEL, j); break;
-						default: fatalError("bellmanFord: Unsupported queue "
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:  frontQueue(&SEL, j); break;
+                        default: fatalError("bellmanFord: Unsupported queue "
                                             "structure");
-						break;
-					}
-				}
-			}
-		}
-	}
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-	/* Clean up */
-	deleteQueue(&SEL);
+    /* Clean up */
+    deleteQueue(&SEL);
 }
 
 /*
@@ -95,42 +95,42 @@ void arcBellmanFord(long origin, double *label, arc_type **backarc,
     *i; double tempLabel; queue_type SEL = createQueue(network->numNodes,
             network->numNodes);
 
-	for (j = 0; j < network->numNodes; j++) {
-		label[j] = INFINITY;
-		backarc[j] = NULL;
-	}
-	label[origin] = 0;
-	enQueue(&SEL, origin);
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backarc[j] = NULL;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
 
-	while (SEL.readptr != SEL.writeptr) {
-		curnode = deQueue(&SEL);
-		for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
+    while (SEL.readptr != SEL.writeptr) {
+        curnode = deQueue(&SEL);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
                 i = i->next) {
-			tempLabel = label[curnode] + i->arc->cost;
-			j = i->arc->head;
-			if (tempLabel < label[j]) {
-				label[j] = tempLabel;
-				backarc[j] = i->arc;
-				if (j >= network->firstThroughNode) {
-					switch (q) {
-						case FIFO: 	enQueue(&SEL, j);	break;
-						case DEQUE:
-							switch (SEL.history[j]) {
-								case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
-								case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
-							}
-							break;
-						case LIFO:
-						default: fatalError("arcBellmanFord: Unsupported "
+            tempLabel = label[curnode] + i->arc->cost;
+            j = i->arc->head;
+            if (tempLabel < label[j]) {
+                label[j] = tempLabel;
+                backarc[j] = i->arc;
+                if (j >= network->firstThroughNode) {
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:
+                        default: fatalError("arcBellmanFord: Unsupported "
                                             "queue structure");
-						break;
-					}
-				}
-			}
-		}
-	}
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-	deleteQueue(&SEL);
+    deleteQueue(&SEL);
 
 }
 
@@ -149,42 +149,42 @@ void arcIndexBellmanFord(long origin, double *label, int *backarc, network_type
     tempLabel; queue_type SEL = createQueue(network->numNodes,
             network->numNodes);
 
-	for (j = 0; j < network->numNodes; j++) {
-		label[j] = INFINITY;
-		backarc[j] = NO_PATH_EXISTS;
-	}
-	label[origin] = 0;
-	enQueue(&SEL, origin);
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backarc[j] = NO_PATH_EXISTS;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
 
-	while (SEL.readptr != SEL.writeptr) {
-		curnode = deQueue(&SEL);
-		for (ij = network->nodes[curnode].forwardStar.head; ij != NULL; 
+    while (SEL.readptr != SEL.writeptr) {
+        curnode = deQueue(&SEL);
+        for (ij = network->nodes[curnode].forwardStar.head; ij != NULL; 
                 ij = ij->next) {
-			tempLabel = label[curnode] + ij->arc->cost;
-			j = ij->arc->head;
-			if (tempLabel < label[j]) {
-				label[j] = tempLabel;
-				backarc[j] = ptr2arc(network, ij->arc);
-				if (j >= network->firstThroughNode) {
-					switch (q) {
-						case FIFO: 	enQueue(&SEL, j);	break;
-						case DEQUE:
-							switch (SEL.history[j]) {
-								case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
-								case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
-							}
-							break;
-						case LIFO:
-						default: fatalError("arcBellmanFord: Unsupported "
+            tempLabel = label[curnode] + ij->arc->cost;
+            j = ij->arc->head;
+            if (tempLabel < label[j]) {
+                label[j] = tempLabel;
+                backarc[j] = ptr2arc(network, ij->arc);
+                if (j >= network->firstThroughNode) {
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:
+                        default: fatalError("arcBellmanFord: Unsupported "
                                             "queue structure");
-						break;
-					}
-				}
-			}
-		}
-	}
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-	deleteQueue(&SEL);
+    deleteQueue(&SEL);
 
 }
 
@@ -200,48 +200,48 @@ This is a one-to-all shortest path algorithm, starting at 'origin'.  *label and
 void heapDijkstra(long origin, double *label, long *backnode, network_type
         *network) {
 
-	long j;
-	arcListElt *i;
-	long curnode;
+    long j;
+    arcListElt *i;
+    long curnode;
 
    /* Initialize heap */
-	double tempLabel;
-	heap_type *dijkstraHeap = createHeap(network->numNodes, network->numNodes);
+    double tempLabel;
+    heap_type *dijkstraHeap = createHeap(network->numNodes, network->numNodes);
 
    /* Initialize Dijkstra's */
-	for (j = 0; j < network->numNodes; j++) {
-		dijkstraHeap->valueFn[j] = INFINITY; 
+    for (j = 0; j < network->numNodes; j++) {
+        dijkstraHeap->valueFn[j] = INFINITY; 
         /* valueFn in the heap stores the cost labels */
-		backnode[j] = NO_PATH_EXISTS;
-	}
+        backnode[j] = NO_PATH_EXISTS;
+    }
 
    /* Now iterate until the heap is empty */
-	insertHeap(dijkstraHeap, origin, 0);
-	while (dijkstraHeap->last > 0) {
-		curnode = findMinHeap(dijkstraHeap);
-		deleteMinHeap(dijkstraHeap);
-		for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
+    insertHeap(dijkstraHeap, origin, 0);
+    while (dijkstraHeap->last > 0) {
+        curnode = findMinHeap(dijkstraHeap);
+        deleteMinHeap(dijkstraHeap);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
                 i = i->next) {
-			j = i->arc->head;
-			tempLabel = dijkstraHeap->valueFn[curnode] + i->arc->cost;
-			if (tempLabel < dijkstraHeap->valueFn[j]) {
-				backnode[j] = curnode;
-				if (j < network->firstThroughNode) {
-					dijkstraHeap->valueFn[j] = tempLabel;
-					continue;
-				}
-				if (dijkstraHeap->valueFn[j] == INFINITY)
-					insertHeap(dijkstraHeap, j, tempLabel);
-				else
-					decreaseKey(dijkstraHeap, j, tempLabel);
-			}
-		}
-	}
+            j = i->arc->head;
+            tempLabel = dijkstraHeap->valueFn[curnode] + i->arc->cost;
+            if (tempLabel < dijkstraHeap->valueFn[j]) {
+                backnode[j] = curnode;
+                if (j < network->firstThroughNode) {
+                    dijkstraHeap->valueFn[j] = tempLabel;
+                    continue;
+                }
+                if (dijkstraHeap->valueFn[j] == INFINITY)
+                    insertHeap(dijkstraHeap, j, tempLabel);
+                else
+                    decreaseKey(dijkstraHeap, j, tempLabel);
+            }
+        }
+    }
 
    /* Now copy labels to return, and clean up memory */
-	memcpy(label, dijkstraHeap->valueFn, sizeof(double) * 
+    memcpy(label, dijkstraHeap->valueFn, sizeof(double) * 
             (network->numNodes));
-	deleteHeap(dijkstraHeap);
+    deleteHeap(dijkstraHeap);
 }
 
 
@@ -253,21 +253,21 @@ than at each call to linkCost).
 */
 void finalizeNetwork(network_type *network) { long i;
 
-	for (i = 0; i < network->numNodes; i++) {
-		initializeArcList(&(network->nodes[i].forwardStar));
-		initializeArcList(&(network->nodes[i].reverseStar));
-	}
-	for (i = 0; i < network->numArcs; i++) {
-		insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
+    for (i = 0; i < network->numNodes; i++) {
+        initializeArcList(&(network->nodes[i].forwardStar));
+        initializeArcList(&(network->nodes[i].reverseStar));
+    }
+    for (i = 0; i < network->numArcs; i++) {
+        insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);
-		insertArcList(&(network->nodes[network->arcs[i].head].reverseStar),
+        insertArcList(&(network->nodes[network->arcs[i].head].reverseStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].head].reverseStar.tail);
       network->arcs[i].fixedCost = 
           network->arcs[i].length * network->distanceFactor + 
           network->arcs[i].toll * network->tollFactor;
-	}
+    }
 }
 
 /*
@@ -285,61 +285,61 @@ void search(long origin, long* order, long *backnode, network_type *network,
         queueDiscipline q, direction_type d) { long i, j = NO_PATH_EXISTS,
     next; arcListElt *curarc;
 
-	/* Initialize; any node for which backnode[i] remains at NO_PATH_EXISTS is 
+    /* Initialize; any node for which backnode[i] remains at NO_PATH_EXISTS is 
      * not connected from/to origin */
-	for(i = 0; i < network->numNodes; i++) {
-		backnode[i] = NO_PATH_EXISTS;
-	}
-	backnode[origin] = 0;
-	next = 1;
-	order[origin] = next;
+    for(i = 0; i < network->numNodes; i++) {
+        backnode[i] = NO_PATH_EXISTS;
+    }
+    backnode[origin] = 0;
+    next = 1;
+    order[origin] = next;
 
    /* List of visited nodes is maintained as a queue with discipline q */
-	queue_type LIST = createQueue(network->numNodes, network->numNodes);
-	enQueue(&LIST, origin);
+    queue_type LIST = createQueue(network->numNodes, network->numNodes);
+    enQueue(&LIST, origin);
 
-	/* This code uses a circular queue implementation; queue is empty iff 
+    /* This code uses a circular queue implementation; queue is empty iff 
      * readptr and writeptr are identical */
-	while (LIST.readptr != LIST.writeptr) {
-		i = deQueue(&LIST);
-		/* Identify the proper list (forward or reverse) ... */
-		switch (d) {
-			case FORWARD: curarc = network->nodes[i].forwardStar.head; break;
-			case REVERSE: curarc = network->nodes[i].reverseStar.head; break;
-			default: fatalError("Unknown direction in search."); break;
-		}
-		/* ...and now iterate through all its elements */
-		while (curarc != NULL) {
-			switch (d) {
-				case FORWARD: j = curarc->arc->head; break;
-				case REVERSE: j = curarc->arc->tail; break;
-			}
-			if (backnode[j] == NO_PATH_EXISTS) { /* Is admissible; arc 
+    while (LIST.readptr != LIST.writeptr) {
+        i = deQueue(&LIST);
+        /* Identify the proper list (forward or reverse) ... */
+        switch (d) {
+            case FORWARD: curarc = network->nodes[i].forwardStar.head; break;
+            case REVERSE: curarc = network->nodes[i].reverseStar.head; break;
+            default: fatalError("Unknown direction in search."); break;
+        }
+        /* ...and now iterate through all its elements */
+        while (curarc != NULL) {
+            switch (d) {
+                case FORWARD: j = curarc->arc->head; break;
+                case REVERSE: j = curarc->arc->tail; break;
+            }
+            if (backnode[j] == NO_PATH_EXISTS) { /* Is admissible; arc 
                                                     discovers a new node */
-				backnode[j] = i;
-				displayMessage(FULL_DEBUG, "Next node found is %d-%d\n", j / 4, j % 4);
-				order[j] = ++next;
-				if (j >= network->firstThroughNode) {
-					switch (q) {
-					    case FIFO: enQueue(&LIST, j); break;
-					    case LIFO: frontQueue(&LIST, j); break;
-						case DEQUE:
-							switch (LIST.history[j]) {
-								case NEVER_IN_QUEUE: enQueue(&LIST, j); break;
-								case WAS_IN_QUEUE: frontQueue(&LIST, j); break;
-							}
-					default: 
+                backnode[j] = i;
+                displayMessage(FULL_DEBUG, "Next node found is %d-%d\n", j / 4, j % 4);
+                order[j] = ++next;
+                if (j >= network->firstThroughNode) {
+                    switch (q) {
+                        case FIFO: enQueue(&LIST, j); break;
+                        case LIFO: frontQueue(&LIST, j); break;
+                        case DEQUE:
+                            switch (LIST.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&LIST, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&LIST, j); break;
+                            }
+                    default: 
                             fatalError("Unsupported queue type in search."); 
                             break;
-					}
-				}
-			}
-			curarc = curarc->next;
-		}
-	}
-	deleteQueue(&LIST);
-	if (verbosity >= FULL_DEBUG) waitForKey();
-	return;
+                    }
+                }
+            }
+            curarc = curarc->next;
+        }
+    }
+    deleteQueue(&LIST);
+    if (verbosity >= FULL_DEBUG) waitForKey();
+    return;
 }
 
 /*
@@ -353,34 +353,34 @@ Argument *network is a pointer to the network struct, arguments *sequence and
 void topologicalOrder(network_type *network, long* sequence, long* order) {
     long i, j, cur, next; arcListElt *ij;
 
-	declareVector(long, indegree, network->numNodes);
-	for (i = 0; i < network->numNodes; i++) {
-	   indegree[i] = 0;
-	   order[i] = NO_PATH_EXISTS;
-	}
-	for (i = 0; i < network->numArcs; i++) indegree[network->arcs[i].head]++;
-	queue_type LIST = createQueue(network->numNodes, network->numNodes);
-	next = 0; cur = 0;
-	for (i = 0; i < network->numNodes; i++) 
+    declareVector(long, indegree, network->numNodes);
+    for (i = 0; i < network->numNodes; i++) {
+       indegree[i] = 0;
+       order[i] = NO_PATH_EXISTS;
+    }
+    for (i = 0; i < network->numArcs; i++) indegree[network->arcs[i].head]++;
+    queue_type LIST = createQueue(network->numNodes, network->numNodes);
+    next = 0; cur = 0;
+    for (i = 0; i < network->numNodes; i++) 
         if (indegree[i] == 0) 
             enQueue(&LIST, i);
-	while (LIST.curelts > 0) {
-		i = deQueue(&LIST);
-		order[i] = ++next; sequence[cur++] = i;
-		for (ij = network->nodes[i].forwardStar.head; ij != NULL; 
+    while (LIST.curelts > 0) {
+        i = deQueue(&LIST);
+        order[i] = ++next; sequence[cur++] = i;
+        for (ij = network->nodes[i].forwardStar.head; ij != NULL; 
                 ij = ij->next) {
-			j = ij->arc->head;
-			indegree[j]--;
-			if (indegree[j] == 0) enQueue(&LIST, j);
-		}
-	}
-	if (next < network->numNodes) { 
+            j = ij->arc->head;
+            indegree[j]--;
+            if (indegree[j] == 0) enQueue(&LIST, j);
+        }
+    }
+    if (next < network->numNodes) { 
         displayNetwork(FULL_NOTIFICATIONS, network); 
         fatalError("Graph given to topologicalOrder contains a cycle"); 
     }
 
-	deleteVector(indegree);
-	deleteQueue(&LIST);
+    deleteVector(indegree);
+    deleteQueue(&LIST);
 }
 
 /*
@@ -402,28 +402,28 @@ the origin)
 */
 #define MAX_QUICKSORT_LEVELS 1000
 void quicksortDestinations(long *nodes, double *costs, int elements) {
-	long piv;
-	int beg[MAX_QUICKSORT_LEVELS], end[MAX_QUICKSORT_LEVELS], i, L, R ;
-	for (i = 0; i < elements; i++) nodes[i] = i;
-	i = 0;
-	beg[0]=1; end[0]=elements+1;
-	while (i>=0) {
-		L=beg[i]; R=end[i]-1;
-		if (L<R) {
-			piv=nodes[L]; if (i==MAX_QUICKSORT_LEVELS-1) {
+    long piv;
+    int beg[MAX_QUICKSORT_LEVELS], end[MAX_QUICKSORT_LEVELS], i, L, R ;
+    for (i = 0; i < elements; i++) nodes[i] = i;
+    i = 0;
+    beg[0]=1; end[0]=elements+1;
+    while (i>=0) {
+        L=beg[i]; R=end[i]-1;
+        if (L<R) {
+            piv=nodes[L]; if (i==MAX_QUICKSORT_LEVELS-1) {
                 fatalError("quicksortdestinations: TOO MANY LEVELS"); 
             }
-			while (L<R) {
-				while (costs[nodes[R]] >= costs[piv] && L<R) R--;
-				if (L<R) nodes[L++]=nodes[R];
-				while (costs[nodes[L]] <= costs[piv] && L<R) L++;
-				if (L<R) nodes[R--]=nodes[L];
-			}
-			nodes[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-		} else {
-			i--;
-		}
-	}
+            while (L<R) {
+                while (costs[nodes[R]] >= costs[piv] && L<R) R--;
+                if (L<R) nodes[L++]=nodes[R];
+                while (costs[nodes[L]] <= costs[piv] && L<R) L++;
+                if (L<R) nodes[R--]=nodes[L];
+            }
+            nodes[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
+        } else {
+            i--;
+        }
+    }
 }
 
 /*
@@ -443,18 +443,18 @@ used to control whether anything needs to be printed.
 */
 
 void displayNetwork(int minVerbosity, network_type *network) {
-	long i;
-	displayMessage(minVerbosity, "Network has %d nodes and %d arcs\n", 
+    long i;
+    displayMessage(minVerbosity, "Network has %d nodes and %d arcs\n", 
             network->numNodes, network->numArcs);
-	displayMessage(minVerbosity, "Arc data: ID, tail, head, flow, cost, der "
+    displayMessage(minVerbosity, "Arc data: ID, tail, head, flow, cost, der "
                                  "(skipping artificial arcs)\n");
-	for (i = 0; i < network->numArcs; i++) {
-	   if (network->arcs[i].capacity == ARTIFICIAL) continue; 
-	   displayMessage(minVerbosity, "%ld (%ld,%ld) %f %f %f\n", i, 
+    for (i = 0; i < network->numArcs; i++) {
+       if (network->arcs[i].capacity == ARTIFICIAL) continue; 
+       displayMessage(minVerbosity, "%ld (%ld,%ld) %f %f %f\n", i, 
                network->arcs[i].tail + 1, network->arcs[i].head + 1, 
                network->arcs[i].flow, network->arcs[i].cost, 
                network->arcs[i].der);
-	}
+    }
 }
 
 /*
@@ -478,81 +478,81 @@ The functions below implement doubly-linked lists of arcs.
 You probably don't need to poke around here too much.
 */
 arcList *createArcList() {
-	declareScalar(arcList, newdll);
-	initializeArcList(newdll);
-	return newdll;
+    declareScalar(arcList, newdll);
+    initializeArcList(newdll);
+    return newdll;
 }
 
 void initializeArcList(arcList *list) {
-	list->head = NULL;
-	list->tail = NULL;
-	list->size = 0;
+    list->head = NULL;
+    list->tail = NULL;
+    list->size = 0;
 }
 
 arcListElt *insertArcList(arcList *list, arc_type *value, arcListElt *after) {
 
-	declareScalar(arcListElt, newNode);
+    declareScalar(arcListElt, newNode);
 
-	newNode->arc = value;
-	if (after != NULL) {
-		newNode->prev = after;
-		newNode->next = after->next;
-		if (list->tail != after) 
+    newNode->arc = value;
+    if (after != NULL) {
+        newNode->prev = after;
+        newNode->next = after->next;
+        if (list->tail != after) 
             newNode->next->prev = newNode; 
         else 
             list->tail = newNode;
-		after->next = newNode;
-	} else {
-		newNode->prev = NULL;
-		newNode->next = list->head;
-		if (list->tail != after) 
+        after->next = newNode;
+    } else {
+        newNode->prev = NULL;
+        newNode->next = list->head;
+        if (list->tail != after) 
             newNode->next->prev = newNode; 
         else 
             list->tail = newNode;
-		list->head = newNode;
-	}
-	list->size++;
-	return newNode;
+        list->head = newNode;
+    }
+    list->size++;
+    return newNode;
 }
 
 void clearArcList(arcList *list) {
-	while (list->head != NULL)
-		deleteArcListElt(list, list->tail);
+    while (list->head != NULL)
+        deleteArcListElt(list, list->tail);
 }
 
 void deleteArcList(arcList *list) {
-	clearArcList(list);
-	deleteScalar(list);
+    clearArcList(list);
+    deleteScalar(list);
 }
 
 void deleteArcListElt(arcList *list, arcListElt *elt) {
-	if (list->tail != elt) {
-		if (list->head != elt) 
+    if (list->tail != elt) {
+        if (list->head != elt) 
             elt->prev->next = elt->next; 
         else 
             list->head = elt->next;
-		elt->next->prev = elt->prev;
-	} else {
-		list->tail = elt->prev;
-		if (list->head != elt) 
+        elt->next->prev = elt->prev;
+    } else {
+        list->tail = elt->prev;
+        if (list->head != elt) 
             elt->prev->next = elt->next; 
         else 
             list->head = elt->next;
-	}
-	list->size--;
-	deleteScalar(elt);
+    }
+    list->size--;
+    deleteScalar(elt);
 }
 
 void displayArcList(arcList *list) {
-	arcListElt *curnode = list->head;
-	printf("Start of the list: %p\n", (void *)list->head);
-	while (curnode != NULL) {
-		printf("%p (%ld,%ld) %p %p\n", (void *)curnode, curnode->arc->tail, 
+    arcListElt *curnode = list->head;
+    printf("Start of the list: %p\n", (void *)list->head);
+    while (curnode != NULL) {
+        printf("%p (%ld,%ld) %p %p\n", (void *)curnode, curnode->arc->tail, 
                 curnode->arc->head, (void *)curnode->prev, 
                 (void *)curnode->next);
-		curnode = (*curnode).next;
-	}
-	printf("End of the list: %p\n", (void *)list->tail);
+        curnode = (*curnode).next;
+    }
+    printf("End of the list: %p\n", (void *)list->tail);
 }
 
 /*
@@ -561,43 +561,43 @@ lists.  You probably don't need to poke around here either.
 */
 
 path_type *createPath() {
-	declareScalar(path_type, path);
-	path->arcs = createArcList();
-	path->cost = 0;
-	path->der = 0;
-	return path;
+    declareScalar(path_type, path);
+    path->arcs = createArcList();
+    path->cost = 0;
+    path->der = 0;
+    return path;
 }
 
 void deletePath(path_type *path) {
-	deleteArcList(path->arcs);
-	deleteScalar(path);
+    deleteArcList(path->arcs);
+    deleteScalar(path);
 }
 
 void displayPath(path_type *path) {
-	printf("Path cost and derivative %f %f\n", path->cost, path->der);
-	displayArcList(path->arcs);
+    printf("Path cost and derivative %f %f\n", path->cost, path->der);
+    displayArcList(path->arcs);
 }
 
 void displayPathCompact(int minVerbosity, path_type *path) {
-	arcListElt *curArc = path->arcs->head;
-	displayMessage(minVerbosity, "[");
-	if (curArc != NULL) displayMessage(minVerbosity, "%ld", curArc->arc->tail);
-	while (curArc != NULL) {
-		displayMessage(minVerbosity, ",%ld", curArc->arc->head);
-		curArc = curArc->next;
-	}
-	displayMessage(minVerbosity, "]");
+    arcListElt *curArc = path->arcs->head;
+    displayMessage(minVerbosity, "[");
+    if (curArc != NULL) displayMessage(minVerbosity, "%ld", curArc->arc->tail);
+    while (curArc != NULL) {
+        displayMessage(minVerbosity, ",%ld", curArc->arc->head);
+        curArc = curArc->next;
+    }
+    displayMessage(minVerbosity, "]");
 }
 
 bool comparePaths(path_type *path1, path_type *path2) {
-	arcListElt *arc1 = path1->arcs->head, *arc2 = path2->arcs->head;
-	for (arc1 = path1->arcs->head, arc2 = path2->arcs->head;
+    arcListElt *arc1 = path1->arcs->head, *arc2 = path2->arcs->head;
+    for (arc1 = path1->arcs->head, arc2 = path2->arcs->head;
             !(arc1 == NULL && arc2 == NULL);
             arc1 = arc1->next, arc2 = arc2->next) {
-		if (arc1 == NULL || arc2 == NULL) return FALSE; // Unequal path lengths
-		if (arc1->arc != arc2->arc) return FALSE; // Non-matching arcs
-	}
-	return TRUE;
+        if (arc1 == NULL || arc2 == NULL) return FALSE; // Unequal path lengths
+        if (arc1->arc != arc2->arc) return FALSE; // Non-matching arcs
+    }
+    return TRUE;
 }
 
 /*
@@ -605,91 +605,91 @@ pathSets are collections of paths.
 */
 
 pathSet *createPathSet() {
-	declareScalar(pathSet, newdll);
-	initializePathSet(newdll);
-	return newdll;
+    declareScalar(pathSet, newdll);
+    initializePathSet(newdll);
+    return newdll;
 }
 
 void initializePathSet(pathSet *list) {
-	list->head = NULL;
-	list->tail = NULL;
-	list->numPaths = 0;
+    list->head = NULL;
+    list->tail = NULL;
+    list->numPaths = 0;
 }
 
 bool pathsEqual(arcList *path1, arcList *path2) {
-	arcListElt *curarc1, *curarc2;
-	curarc1 = path1->head;
-	curarc2 = path2->head;
-	while (curarc1 != NULL && curarc2 != NULL) {
-		if (curarc1->arc->head != curarc2->arc->head) return FALSE;
-		if (curarc1->arc->tail != curarc2->arc->tail) return FALSE;
-		curarc1 = curarc1->next;
-		curarc2 = curarc2->next;
-	}
-	return TRUE;
+    arcListElt *curarc1, *curarc2;
+    curarc1 = path1->head;
+    curarc2 = path2->head;
+    while (curarc1 != NULL && curarc2 != NULL) {
+        if (curarc1->arc->head != curarc2->arc->head) return FALSE;
+        if (curarc1->arc->tail != curarc2->arc->tail) return FALSE;
+        curarc1 = curarc1->next;
+        curarc2 = curarc2->next;
+    }
+    return TRUE;
 }
 
 pathSetElt *insertPathSet(pathSet *list, path_type *value, pathSetElt *after) {
-	declareScalar(pathSetElt, newNode);
-	newNode->path = value;
-	if (after != NULL) {
-		newNode->prev = after;
-		newNode->next = after->next;
-		if (list->tail != after) 
+    declareScalar(pathSetElt, newNode);
+    newNode->path = value;
+    if (after != NULL) {
+        newNode->prev = after;
+        newNode->next = after->next;
+        if (list->tail != after) 
             newNode->next->prev = newNode; 
         else 
             list->tail = newNode;
-		after->next = newNode;
-	} else {
-		newNode->prev = NULL;
-		newNode->next = list->head;
-		if (list->tail != after) 
+        after->next = newNode;
+    } else {
+        newNode->prev = NULL;
+        newNode->next = list->head;
+        if (list->tail != after) 
             newNode->next->prev = newNode; 
         else 
             list->tail = newNode;
-		list->head = newNode;
-	}
-	list->numPaths++;
-	return newNode;
+        list->head = newNode;
+    }
+    list->numPaths++;
+    return newNode;
 }
 
 void clearPathSet(pathSet *list) {
-	while (list->head != NULL)
-		deletePathSetElt(list, list->tail);
+    while (list->head != NULL)
+        deletePathSetElt(list, list->tail);
 }
 
 void deletePathSet(pathSet *list) {
-	clearPathSet(list);
-	deleteScalar(list);
+    clearPathSet(list);
+    deleteScalar(list);
 }
 
 
 void deletePathSetElt(pathSet *list, pathSetElt *elt) {
    fatalError("deletePathSetElt not fully implemented yet.");
-/*	clearArcList(elt->arcs);
-	deleteScalar(elt->arcs);
-	if (list->tail != elt) {
-		if (list->head != elt) elt->prev->next = elt->next; 
+/*    clearArcList(elt->arcs);
+    deleteScalar(elt->arcs);
+    if (list->tail != elt) {
+        if (list->head != elt) elt->prev->next = elt->next; 
         else list->head = elt->next;
-		elt->next->prev = elt->prev;
-	} else {
-		list->tail = elt->prev;
-		if (list->head != elt) elt->prev->next = elt->next; 
+        elt->next->prev = elt->prev;
+    } else {
+        list->tail = elt->prev;
+        if (list->head != elt) elt->prev->next = elt->next; 
         else list->head = elt->next;
-	} */
-	deleteScalar(elt);
-	list->numPaths--; 
+    } */
+    deleteScalar(elt);
+    list->numPaths--; 
 }
 
 
 void displayPathSet(pathSet *list) {
-	printf("BEGINNING PATH SET DISPLAY\n");
-	pathSetElt *curnode = list->head;
-	while (curnode != NULL) {
-		displayPath(curnode->path);
-		curnode = curnode->next;
-	}
-	printf("END OF PATH SET DISPLAY\n");
-	waitForKey();
+    printf("BEGINNING PATH SET DISPLAY\n");
+    pathSetElt *curnode = list->head;
+    while (curnode != NULL) {
+        displayPath(curnode->path);
+        curnode = curnode->next;
+    }
+    printf("END OF PATH SET DISPLAY\n");
+    waitForKey();
 }
 

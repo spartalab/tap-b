@@ -16,7 +16,7 @@ arcNumber converts a pointer to an arc to the index number for that arc; to do
 this, the network struct needs to be passed along with the arc pointer.
 */
 long arcNumber(network_type *network, arc_type *arc) {
-	return arc - network->arcs;
+    return arc - network->arcs;
 }
 
 /*
@@ -24,12 +24,12 @@ BeckmannFunction calculates the Beckmann function for a network given its
 current flows.
 */
 double BeckmannFunction(network_type *network) {
-	double Beckmann = 0;
-	long i;
-	for (i = 0; i < network->numArcs; i++) {
-		Beckmann += network->arcs[i].calculateInt(&network->arcs[i]);
-	}
-	return Beckmann;
+    double Beckmann = 0;
+    long i;
+    for (i = 0; i < network->numArcs; i++) {
+        Beckmann += network->arcs[i].calculateInt(&network->arcs[i]);
+    }
+    return Beckmann;
 }
 
 /*
@@ -40,17 +40,17 @@ gap which appears sometimes in the literature.  AEC is average excess cost.
 AEC_OB and MEC are other gap functions which I have not yet implemented.
 */
 double calculateGap(network_type *network, gap_type gapFunction) {
-	updateAllCosts(network);
-	switch (gapFunction) {
-		case RELATIVE_GAP_1: return relativeGap1(network); break;
-		case RELATIVE_GAP_2: return relativeGap2(network); break;
-		case AEC: return averageExcessCost(network); break;
-		case AEC_OB: fatalError("Gap type AEC_OB not yet implemented."); break;
-		case MEC: fatalError("Gap type MEC not yet implemented."); break;
-		case PASS: return INFINITY; break;
-		default: fatalError("Unknown gap type %d\n", gapFunction);
-	}
-	return IS_MISSING; /* This should never be reached; provided to eliminate
+    updateAllCosts(network);
+    switch (gapFunction) {
+        case RELATIVE_GAP_1: return relativeGap1(network); break;
+        case RELATIVE_GAP_2: return relativeGap2(network); break;
+        case AEC: return averageExcessCost(network); break;
+        case AEC_OB: fatalError("Gap type AEC_OB not yet implemented."); break;
+        case MEC: fatalError("Gap type MEC not yet implemented."); break;
+        case PASS: return INFINITY; break;
+        default: fatalError("Unknown gap type %d\n", gapFunction);
+    }
+    return IS_MISSING; /* This should never be reached; provided to eliminate
                           compiler warnings */
 }
 
@@ -79,14 +79,14 @@ have been implemented thus far:
 double linkCost(arc_type *arc, cost_type costFunction) {
    if (arc->capacity <= 0)
        return INFINITY; /* Protect against division by zero */
-	switch (costFunction) {
-	case BPR:
+    switch (costFunction) {
+    case BPR:
       if (arc->flow <= 0) 
           return arc->freeFlowTime + arc->fixedCost; 
           // Protect against negative flow values and 0^0 errors
-		return arc->fixedCost + arc->freeFlowTime * 
+        return arc->fixedCost + arc->freeFlowTime * 
             (1 + arc->alpha * pow(arc->flow / arc->capacity, arc->beta));
-	case BPR_DER:
+    case BPR_DER:
       if (arc->flow <= 0) { /* Protect against negative flow values and 0^0 
                                errors */
          if (arc->beta != 1)
@@ -94,18 +94,18 @@ double linkCost(arc_type *arc, cost_type costFunction) {
          else
             return arc->freeFlowTime * arc->alpha / arc->capacity;
       }
-		return arc->freeFlowTime * arc->alpha * arc->beta / arc->capacity
-			* pow(arc->flow / arc->capacity, arc->beta - 1);
-	case BPR_INT:
+        return arc->freeFlowTime * arc->alpha * arc->beta / arc->capacity
+            * pow(arc->flow / arc->capacity, arc->beta - 1);
+    case BPR_INT:
       if (arc->flow <= 0) return 0; /* Protect against negative flow values and
                                        0^0 errors */
       return arc->flow * (arc->fixedCost + arc->freeFlowTime * 
               (1 + arc->alpha / (arc->beta + 1) * 
                pow(arc->flow / arc->capacity, arc->beta)));
-	default:
-		fatalError("Unknown cost function.");
-		return IS_MISSING;
-	}
+    default:
+        fatalError("Unknown cost function.");
+        return IS_MISSING;
+    }
 }
 
 /*
@@ -132,8 +132,8 @@ double generalBPRder(struct arc_type *arc) {
       else
          return arc->freeFlowTime * arc->alpha / arc->capacity;
    }
-	return arc->freeFlowTime * arc->alpha * arc->beta / arc->capacity
-   	       * pow(arc->flow / arc->capacity, arc->beta - 1);
+    return arc->freeFlowTime * arc->alpha * arc->beta / arc->capacity
+              * pow(arc->flow / arc->capacity, arc->beta - 1);
 }
 
 /* 
@@ -196,31 +196,31 @@ network struct -- this allows SPTT to be calculated without changing any values
 in the network, at the expense of a little more run time.
 */
 double SPTT(network_type *network) {
-	long i, j;
-	double sptt = 0;
-	declareVector(double, SPcosts, network->numNodes);
-	declareVector(long, backnode, network->numNodes);
-	declareVector(double, oldCosts, network->numArcs);
-	for (i = 0; i < network->numArcs; i++) { 
+    long i, j;
+    double sptt = 0;
+    declareVector(double, SPcosts, network->numNodes);
+    declareVector(long, backnode, network->numNodes);
+    declareVector(double, oldCosts, network->numArcs);
+    for (i = 0; i < network->numArcs; i++) { 
     // Save old costs (we will be using new ones based on costFunction)
       oldCosts[i] = network->arcs[i].cost;
       network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
    }
-	for (i = 0; i < network->numZones; i++) {
-		BellmanFord(i, SPcosts, backnode, network, DEQUE);
-		for (j = 0; j < network->numZones; j++) {
+    for (i = 0; i < network->numZones; i++) {
+        BellmanFord(i, SPcosts, backnode, network, DEQUE);
+        for (j = 0; j < network->numZones; j++) {
          if (SPcosts[j] > 9e9 && network->OD[i][j].demand > 0)
              displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", i, j, 
                      SPcosts[j], network->OD[i][j].demand);
-			sptt += network->OD[i][j].demand * SPcosts[j];
-		}
-	}
-	for (i = 0; i < network->numArcs; i++) // Restore old costs
+            sptt += network->OD[i][j].demand * SPcosts[j];
+        }
+    }
+    for (i = 0; i < network->numArcs; i++) // Restore old costs
       network->arcs[i].cost = oldCosts[i];
-	deleteVector(SPcosts);
-	deleteVector(backnode);
-	deleteVector(oldCosts);
-	return sptt;
+    deleteVector(SPcosts);
+    deleteVector(backnode);
+    deleteVector(oldCosts);
+    return sptt;
 }
 
 /*
@@ -228,14 +228,14 @@ TSTT calculates the total system travel time on the network, that is, the dot
 product of link flow and travel time.
 */
 double TSTT(network_type *network) {
-	double sum = 0;
-	long i;
-	for (i = 0; i < network->numArcs; i++)
-		sum += network->arcs[i].flow * 
+    double sum = 0;
+    long i;
+    for (i = 0; i < network->numArcs; i++)
+        sum += network->arcs[i].flow * 
             network->arcs[i].calculateCost(&network->arcs[i]);
    if (isnan(sum)) displayNetwork(DEBUG, network); /* Oops.  Indicates some 
                    kind of numerical error (likely division by zero or 0^0) */
-	return sum;
+    return sum;
 }
 
 /*
@@ -243,8 +243,8 @@ updateAllCosts recalculates and updates all link costs in the network,
 according to costFunction
 */
 void updateAllCosts(network_type *network) {
-	long i;
-	for (i = 0; i < network->numArcs; i++)
+    long i;
+    for (i = 0; i < network->numArcs; i++)
       network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
 }
 
@@ -253,8 +253,8 @@ updateAllCostDers recalculates and updates all link derivatives in the network,
 according to derFunction
 */
 void updateAllCostDers(network_type *network) {
-	long i;
-	for (i = 0; i < network->numArcs; i++)
+    long i;
+    for (i = 0; i < network->numArcs; i++)
       network->arcs[i].der = network->arcs[i].calculateDer(&network->arcs[i]);
 }
 
@@ -267,22 +267,22 @@ averageExcessCost calculates the difference between TSTT and SPTT, normalized
 by total demand in the network.
 */
 double averageExcessCost(network_type *network) {
-	double sptt = SPTT(network), tstt = TSTT(network);
-	if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
+    double sptt = SPTT(network), tstt = TSTT(network);
+    if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
-	return ((tstt - sptt) / network->totalODFlow);
+    return ((tstt - sptt) / network->totalODFlow);
 }
 
 /*
 relativeGap1 calculates the ratio between (TSTT - SPTT) and SPTT.
 */
 double relativeGap1(network_type *network) {
-	double sptt = SPTT(network), tstt = TSTT(network);
-	displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
+    double sptt = SPTT(network), tstt = TSTT(network);
+    displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
                           "path TSTT: %f\n", tstt, sptt);
-	if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
+    if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
                                               "denom are %f %f\n", tstt, sptt);
-	return (tstt / sptt - 1);
+    return (tstt / sptt - 1);
 }
 
 /*
@@ -297,16 +297,16 @@ flow solution x* gives this formula.)  Since any lower bound will do, this
 function stores the best lower bound seen thus far.
 */
 double relativeGap2(network_type *network) {
-	double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT(network), tstt = TSTT(network);
 
     // Warning: This is a hack and will give incorrect values if relativeGap2
     // is used with a non-BPR function.  TODO: Fix later
-	network->beckmann = BeckmannFunction(network); 
-	network->beckmannLB = min(network->beckmannLB, network->beckmann + sptt - 
+    network->beckmann = BeckmannFunction(network); 
+    network->beckmannLB = min(network->beckmannLB, network->beckmann + sptt - 
                                                    tstt);
-	displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
+    displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
             "path TSTT: %f\n", tstt, sptt);
-	return (network->beckmann / network->beckmannLB - 1);
+    return (network->beckmann / network->beckmannLB - 1);
 }
 
 
@@ -322,88 +322,88 @@ various other parameters) on these links are set equal to the symbolic constant
 ARTIFICIAL, which should be set high enough that the links will not be used.
 */
 void makeStronglyConnectedNetwork(network_type *network) {
-	long i, j;
-	declareVector(long, order, network->numNodes);
-	declareVector(long, backnode, network->numNodes);
-	declareVector(long, forwardnode, network->numNodes);
+    long i, j;
+    declareVector(long, order, network->numNodes);
+    declareVector(long, backnode, network->numNodes);
+    declareVector(long, forwardnode, network->numNodes);
 
    /* Run forward and reverse searches to see what links must be created */
-	search(network->numNodes - 1, order, backnode, network, FIFO, FORWARD);
-	search(network->numNodes - 1, order, forwardnode, network, FIFO, REVERSE);
+    search(network->numNodes - 1, order, backnode, network, FIFO, FORWARD);
+    search(network->numNodes - 1, order, forwardnode, network, FIFO, REVERSE);
 
-	long newArcs = 0;
-	for (i = 0; i < network->numNodes; i++) {
-		if (backnode[i] == NO_PATH_EXISTS) newArcs++;
-		if (forwardnode[i] == NO_PATH_EXISTS) newArcs++;
-	}
-	if (newArcs == 0) { /* Nothing to do, network is already strongly 
+    long newArcs = 0;
+    for (i = 0; i < network->numNodes; i++) {
+        if (backnode[i] == NO_PATH_EXISTS) newArcs++;
+        if (forwardnode[i] == NO_PATH_EXISTS) newArcs++;
+    }
+    if (newArcs == 0) { /* Nothing to do, network is already strongly 
                            connected, so clean up/return */
-		deleteVector(order);
-		deleteVector(backnode);
-		deleteVector(forwardnode);
-		return;
-	}
+        deleteVector(order);
+        deleteVector(backnode);
+        deleteVector(forwardnode);
+        return;
+    }
 
    /* Create new arc vector, with all the old ones plus the new artificial 
     * links */
-	displayMessage(FULL_NOTIFICATIONS, "Warning: Creating %d artifical arcs "
+    displayMessage(FULL_NOTIFICATIONS, "Warning: Creating %d artifical arcs "
             "to ensure strong connectivity.\n", newArcs);
-	declareVector(arc_type, newArcVector, network->numArcs + newArcs);
-	for (i = 0; i < network->numArcs; i++) {
-		newArcVector[i] = network->arcs[i];
-	}
-	for (j = 0; j < network->numNodes; j++) {
-		if (backnode[j] == NO_PATH_EXISTS) {
-			displayMessage(DEBUG, "Creating (%d,%d)\n", network->numNodes, 
+    declareVector(arc_type, newArcVector, network->numArcs + newArcs);
+    for (i = 0; i < network->numArcs; i++) {
+        newArcVector[i] = network->arcs[i];
+    }
+    for (j = 0; j < network->numNodes; j++) {
+        if (backnode[j] == NO_PATH_EXISTS) {
+            displayMessage(DEBUG, "Creating (%d,%d)\n", network->numNodes, 
                            j + 1);
-			newArcVector[i].tail = network->numNodes - 1;
-			newArcVector[i].head = j;
-			newArcVector[i].alpha = 0;
-			newArcVector[i].beta = 1;
-			newArcVector[i].flow = 0;
-			newArcVector[i].capacity = ARTIFICIAL;
-			newArcVector[i].length = ARTIFICIAL;
-			newArcVector[i].toll = ARTIFICIAL;
-			newArcVector[i].freeFlowTime = ARTIFICIAL;
-		   newArcVector[i].calculateCost = &linearBPRcost;
-		   newArcVector[i].calculateDer = &linearBPRder;		   
-		   newArcVector[i].calculateInt = &linearBPRint;		
-		   newArcVector[i].cost = newArcVector[i].freeFlowTime; 
-			i++;
-		}
-		if (forwardnode[j] == NO_PATH_EXISTS) {
-			displayMessage(DEBUG, "Creating (%d,%d)\n", j + 1,
+            newArcVector[i].tail = network->numNodes - 1;
+            newArcVector[i].head = j;
+            newArcVector[i].alpha = 0;
+            newArcVector[i].beta = 1;
+            newArcVector[i].flow = 0;
+            newArcVector[i].capacity = ARTIFICIAL;
+            newArcVector[i].length = ARTIFICIAL;
+            newArcVector[i].toll = ARTIFICIAL;
+            newArcVector[i].freeFlowTime = ARTIFICIAL;
+           newArcVector[i].calculateCost = &linearBPRcost;
+           newArcVector[i].calculateDer = &linearBPRder;           
+           newArcVector[i].calculateInt = &linearBPRint;        
+           newArcVector[i].cost = newArcVector[i].freeFlowTime; 
+            i++;
+        }
+        if (forwardnode[j] == NO_PATH_EXISTS) {
+            displayMessage(DEBUG, "Creating (%d,%d)\n", j + 1,
                            network->numNodes);
-			newArcVector[i].tail = j;
-			newArcVector[i].head = network->numNodes - 1;
-			newArcVector[i].alpha = 0;
-			newArcVector[i].beta = 1;
-			newArcVector[i].flow = 0;
-			newArcVector[i].capacity = ARTIFICIAL;
-			newArcVector[i].length = ARTIFICIAL;
-			newArcVector[i].toll = ARTIFICIAL;
-			newArcVector[i].freeFlowTime = ARTIFICIAL;
-		   newArcVector[i].calculateCost = &linearBPRcost;
-		   newArcVector[i].calculateDer = &linearBPRder;		   
-		   newArcVector[i].calculateInt = &linearBPRint;		 
-		   newArcVector[i].cost = newArcVector[i].freeFlowTime;		   
-			i++;
-		}
-	}
-	network->numArcs += newArcs;
-	deleteVector(network->arcs);
-	network->arcs = newArcVector;
+            newArcVector[i].tail = j;
+            newArcVector[i].head = network->numNodes - 1;
+            newArcVector[i].alpha = 0;
+            newArcVector[i].beta = 1;
+            newArcVector[i].flow = 0;
+            newArcVector[i].capacity = ARTIFICIAL;
+            newArcVector[i].length = ARTIFICIAL;
+            newArcVector[i].toll = ARTIFICIAL;
+            newArcVector[i].freeFlowTime = ARTIFICIAL;
+           newArcVector[i].calculateCost = &linearBPRcost;
+           newArcVector[i].calculateDer = &linearBPRder;           
+           newArcVector[i].calculateInt = &linearBPRint;         
+           newArcVector[i].cost = newArcVector[i].freeFlowTime;           
+            i++;
+        }
+    }
+    network->numArcs += newArcs;
+    deleteVector(network->arcs);
+    network->arcs = newArcVector;
 
    /* Regenerate forward/reverse star lists */
-	for (j = 0; j < network->numNodes; j++) {
-		clearArcList(&(network->nodes[j].forwardStar));
-		clearArcList(&(network->nodes[j].reverseStar));
-	}
-	finalizeNetwork(network);
+    for (j = 0; j < network->numNodes; j++) {
+        clearArcList(&(network->nodes[j].forwardStar));
+        clearArcList(&(network->nodes[j].reverseStar));
+    }
+    finalizeNetwork(network);
 
    /* Clean up and return */
-	deleteVector(order);
-	deleteVector(backnode);
-	deleteVector(forwardnode);
+    deleteVector(order);
+    deleteVector(backnode);
+    deleteVector(forwardnode);
 }
 

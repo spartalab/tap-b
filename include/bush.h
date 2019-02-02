@@ -276,16 +276,16 @@ void deleteMerge(merge_type *merge);
 void displayMerge(int minVerbosity, merge_type *merge, network_type *network);
 
 typedef struct mergeDLLelt_s {
-	int node;
-	merge_type *merge;
-	struct mergeDLLelt_s *next;
-	struct mergeDLLelt_s *prev;
+    int node;
+    merge_type *merge;
+    struct mergeDLLelt_s *next;
+    struct mergeDLLelt_s *prev;
 } mergeDLLelt;
 
 typedef struct {
-	mergeDLLelt *head;
-	mergeDLLelt *tail;
-	long size;
+    mergeDLLelt *head;
+    mergeDLLelt *tail;
+    long size;
 } mergeDLL;
 
 mergeDLL *createMergeDLL();

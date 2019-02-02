@@ -19,14 +19,14 @@
 /***** Singly linked lists *****/
 
 typedef struct linkedListElt_s {
-	int value;
-	struct linkedListElt_s *next;
+    int value;
+    struct linkedListElt_s *next;
 } linkedListElt;
 
 typedef struct {
-	linkedListElt *head;
-	linkedListElt *tail;
-	long size;
+    linkedListElt *head;
+    linkedListElt *tail;
+    long size;
 } linkedList;
 
 linkedList *createLinkedList();
@@ -39,15 +39,15 @@ void displayLinkedList(int minVerbosity, linkedList *list);
 /**** Doubly linked lists ****/
 
 typedef struct doublyLinkedListElt_s {
-	double value;
-	struct doublyLinkedListElt_s *next;
-	struct doublyLinkedListElt_s *prev;
+    double value;
+    struct doublyLinkedListElt_s *next;
+    struct doublyLinkedListElt_s *prev;
 } doublyLinkedListElt;
 
 typedef struct {
-	doublyLinkedListElt *head;
-	doublyLinkedListElt *tail;
-	long size;
+    doublyLinkedListElt *head;
+    doublyLinkedListElt *tail;
+    long size;
 } doublyLinkedList;
 
 doublyLinkedList *createDoublyLinkedList();
@@ -67,24 +67,24 @@ void displayDoublyLinkedList(int minVerbosity, doublyLinkedList *list);
 /**** Standard queue with memory ****/
 
 enum {
-	IN_QUEUE,
-	WAS_IN_QUEUE,
-	NEVER_IN_QUEUE
+    IN_QUEUE,
+    WAS_IN_QUEUE,
+    NEVER_IN_QUEUE
 };
 
 typedef enum {
-	DEQUE,
-	FIFO,
-	LIFO
+    DEQUE,
+    FIFO,
+    LIFO
 } queueDiscipline;
 
 typedef struct {
-	long* node;
-	char* history;
-	long readptr;
-	long writeptr;
-	long size;
-	long curelts;
+    long* node;
+    char* history;
+    long readptr;
+    long writeptr;
+    long size;
+    long curelts;
 } queue_type;
 
 queue_type createQueue(long size, long eltsize);
@@ -101,12 +101,12 @@ void displayQueue(int minVerbosity, queue_type *queue);
 #define NOT_IN_HEAP -1
 
 typedef struct {
-	int* node;
-	int last;
-	double* valueFn;
-	int* nodeNDX;
-	int maxsize;
-	int maxelts;
+    int* node;
+    int last;
+    double* valueFn;
+    int* nodeNDX;
+    int maxsize;
+    int maxelts;
 } heap_type;
 
 heap_type *createHeap(int heapsize, int eltsize);
@@ -153,10 +153,10 @@ void kill3DArray(void ***array, long u1, long u2);
 #define declareMatrix(y,M,u1,u2)     y **M = newMatrix(u1,u2,y)
 #define declare3DArray(y,A,u1,u2,u3) y ***A = new3DArray(u1,u2,u3,y)
 
-#define deleteScalar(y)		    killScalar(y)
-#define deleteVector(y)			killVector(y)
-#define deleteMatrix(y,u1)		killMatrix((void **)y,u1)
-#define delete3DArray(y,u1,u2)	kill3DArray((void ***)y,u1,u2)
+#define deleteScalar(y)            killScalar(y)
+#define deleteVector(y)            killVector(y)
+#define deleteMatrix(y,u1)        killMatrix((void **)y,u1)
+#define delete3DArray(y,u1,u2)    kill3DArray((void ***)y,u1,u2)
 
 #ifdef MEMCHECK
 long memcheck_numScalars, memcheck_numVectors, memcheck_numMatrices;

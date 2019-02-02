@@ -4,7 +4,7 @@
 waitForKey pauses while the user presses a key.
 */
 void waitForKey() {
-	getchar();
+    getchar();
 }
 
 /*
@@ -26,8 +26,8 @@ to be selectively excluded from timing, e.g. when generating logs or debug
 data).  You need to separately set startTime once you want to begin recording.
 */
 double updateElapsedTime(clock_t startTime, double *elapsedTime) {
-	*elapsedTime += ((double) (clock() - startTime)) / CLOCKS_PER_SEC;
-	return *elapsedTime;
+    *elapsedTime += ((double) (clock() - startTime)) / CLOCKS_PER_SEC;
+    return *elapsedTime;
 }
 
 /*********************
@@ -49,20 +49,20 @@ if DEBUG_MODE is enabled (by defining the appropriate preprocessor macro) these
 messages will be written to the debug log (typically debug.txt)
 */
 void displayMessage(int minVerbosity, const char *format, ...) {
-	va_list message;
-	if (verbosity < minVerbosity) return;
-	if (minVerbosity < DEBUG) {
-		va_start(message, format);
-		vprintf(format, message);
-		va_end(message);
-		fflush(stdout);
-	}
-	#ifdef DEBUG_MODE
-		va_start(message, format);
-		vfprintf(debugFile, format, message);
-		va_end(message);
-		fflush(debugFile);
-	#endif
+    va_list message;
+    if (verbosity < minVerbosity) return;
+    if (minVerbosity < DEBUG) {
+        va_start(message, format);
+        vprintf(format, message);
+        va_end(message);
+        fflush(stdout);
+    }
+    #ifdef DEBUG_MODE
+        va_start(message, format);
+        vfprintf(debugFile, format, message);
+        va_end(message);
+        fflush(debugFile);
+    #endif
 }
 
 /*
@@ -70,26 +70,26 @@ fatalError is a special version of displayMessage which further terminates the
 program with the EXIT_FAILURE return code.
 */
 void fatalError(const char *format, ...) {
-	va_list message;
-	va_start(message, format);
-	printf("Fatal error: ");
-	vprintf(format, message);
-	va_end(message);
-	printf("\n");
-	fflush(stdout);
-	#ifdef DEBUG_MODE
-		va_start(message, format);
-		fprintf(debugFile, "Fatal error: ");
-		vfprintf(debugFile, format, message);
-		va_end(message);
-		fprintf(debugFile, "\n");
-		fflush(debugFile);
-	#endif
-	if (PAUSE_ON_ERROR == TRUE) waitForKey();
-	#ifdef DEBUG_MODE
-		fclose(debugFile);
-	#endif
-	exit(EXIT_FAILURE);
+    va_list message;
+    va_start(message, format);
+    printf("Fatal error: ");
+    vprintf(format, message);
+    va_end(message);
+    printf("\n");
+    fflush(stdout);
+    #ifdef DEBUG_MODE
+        va_start(message, format);
+        fprintf(debugFile, "Fatal error: ");
+        vfprintf(debugFile, format, message);
+        va_end(message);
+        fprintf(debugFile, "\n");
+        fflush(debugFile);
+    #endif
+    if (PAUSE_ON_ERROR == TRUE) waitForKey();
+    #ifdef DEBUG_MODE
+        fclose(debugFile);
+    #endif
+    exit(EXIT_FAILURE);
 }
 
 /*
@@ -100,20 +100,20 @@ is identical to displayMessage except that the text "Warning: " is printed
 first.
 */
 void warning(int minVerbosity, const char *format, ...) {
-	va_list message;
-	if (verbosity < minVerbosity) return;
-	va_start(message, format);
-	printf("Warning: ");
-	vprintf(format, message);
-	va_end(message);
-	fflush(stdout);
-	#ifdef DEBUG_MODE
-		va_start(message, format);
-		fprintf(debugFile, "Warning: ");
-		vfprintf(debugFile, format, message);
-		va_end(message);
-		fflush(debugFile);
-	#endif
-	if (PAUSE_ON_WARNING == TRUE) waitForKey();
+    va_list message;
+    if (verbosity < minVerbosity) return;
+    va_start(message, format);
+    printf("Warning: ");
+    vprintf(format, message);
+    va_end(message);
+    fflush(stdout);
+    #ifdef DEBUG_MODE
+        va_start(message, format);
+        fprintf(debugFile, "Warning: ");
+        vfprintf(debugFile, format, message);
+        va_end(message);
+        fflush(debugFile);
+    #endif
+    if (PAUSE_ON_WARNING == TRUE) waitForKey();
 }
 

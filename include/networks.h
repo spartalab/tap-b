@@ -54,7 +54,7 @@ typedef struct arc_type {
     double  speedLimit;
     double  length;
     double  fixedCost; /* Reflects toll and distance */
-    int	    linkType;
+    int        linkType;
     double  (*calculateCost)(struct arc_type *arc);
     double  (*calculateDer)(struct arc_type *der);
     double  (*calculateInt)(struct arc_type *der);

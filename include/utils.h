@@ -35,32 +35,32 @@ Dividing a quantity by these values will convert it from standard units
 #define FEET       1.0
 #define INCHES     0.083333333
 
-#define min(x,y)	( ((x)<(y)) ? (x) : (y) )
-#define max(x,y)	( ((x)>(y)) ? (x) : (y) )
+#define min(x,y)    ( ((x)<(y)) ? (x) : (y) )
+#define max(x,y)    ( ((x)>(y)) ? (x) : (y) )
 #define swap(a,b) SWAP(&a, &b, sizeof(a))
 #define round2int(x)  (int)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
 #define round2long(x)  (long)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
 
 #ifndef __cplusplus
 typedef enum {
-	FALSE,
-	TRUE
+    FALSE,
+    TRUE
 } bool;
 #endif
 
 #ifdef DEBUG_MODE
-	char debugFileName[STRING_SIZE];
-	FILE *debugFile;
+    char debugFileName[STRING_SIZE];
+    FILE *debugFile;
 #endif
 
 
 enum { /* Verbosity levels for status messages */
-	NOTHING,
-	LOW_NOTIFICATIONS,
-	MEDIUM_NOTIFICATIONS,
-	FULL_NOTIFICATIONS,
-	DEBUG,
-	FULL_DEBUG
+    NOTHING,
+    LOW_NOTIFICATIONS,
+    MEDIUM_NOTIFICATIONS,
+    FULL_NOTIFICATIONS,
+    DEBUG,
+    FULL_DEBUG
 };
 
 
