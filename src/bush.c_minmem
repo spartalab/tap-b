@@ -19,13 +19,13 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 	do {
 	   iteration++;
 
-      /* Update bushes */
+      /* Update bushes */ //Parallelize by doing all updates and then all flows
 		for (origin = 0; origin < network->numZones; origin++) {
 			updateBushB(origin, network, bushes, parameters);
    		updateFlowsB(origin, network, bushes, parameters);			
 		}
 
-      /* Shift flows */
+      /* Shift flows */ //Parallelize
 		for (i = 0; i < parameters->innerIterations; i++) {
 			for (origin = 0; origin < network->numZones; origin++) {
 				updateFlowsB(origin, network, bushes, parameters);

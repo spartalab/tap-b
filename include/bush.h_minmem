@@ -64,7 +64,7 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes, algorit
 void updateFlowsB(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
 
 /* Basic bush manipulations */
-bushes_type *createBushes(network_type *network);
+bushes_type *createBushes(network_type *network); //parallelize
 void deleteBushes(network_type *network, bushes_type *bushes);
 void initialBushShortestPath(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
 void initialBushBFS(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);

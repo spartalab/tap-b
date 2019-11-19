@@ -41,8 +41,8 @@ void finalizeNetwork(network_type *network);
 double linkCost(arc_type *arc, cost_type costFunction);
 double SPTT(network_type *network);
 double TSTT(network_type *network);
-void updateAllCosts(network_type *network);
-void updateAllCostDers(network_type *network);
+void updateAllCosts(network_type *network); //Parallelize
+void updateAllCostDers(network_type *network); //Parallelize
 
 double generalBPRcost(struct arc_type *arc);
 double generalBPRder(struct arc_type *arc);
