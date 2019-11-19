@@ -1,65 +1,94 @@
-/*
- * bush.c -- Contains all of the components of Algorithm B, including bush
- * creation, updating, and flow shifting.
- *
- * See comments on bush.h for descriptions of the data structures used for
- * bushes.
- */
-
 #include "bush.h"
+#include <pthread.h> /*used in other parts of the assignment */
+#define NUM_THREADS 2
 
-/*
- * AlgorithmB -- master function controlling overall flow of the algorithm.
- * Arguments are pointers to a network, and to a struct of algorithm
- * parameters. 
- */
-void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
+//Struct for thread arguments
+struct thread_args {
+    int id;
+    int start;
+    int num_points;
+    bushes_type *bushes;
+    network_type *network;
+    algorithmBParameters_type *parameters;
+};
 
-    /* Strong connectivity check */
-    makeStronglyConnectedNetwork(network);
-
-    /* Allocate memory for bushes */
-    int origin, i, iteration = 0;
-    bushes_type *bushes = createBushes(network);
-
-    double elapsedTime = 0, gap = INFINITY;
-
-    /* Initialize */
-    clock_t stopTime = clock(); /* used for timing */
-    initializeBushesB(network, bushes, parameters);
-
-    /* Iterate */
-    do {
-        iteration++;
-
-        /* Update bushes */
-        for (origin = 0; origin < network->numZones; origin++) {
-            updateBushB(origin, network, bushes, parameters);
-            updateFlowsB(origin, network, bushes, parameters);
-        }
-
-        /* Shift flows */
-        for (i = 0; i < parameters->innerIterations; i++) {
-            for (origin = 0; origin < network->numZones; origin++) {
-                updateFlowsB(origin, network, bushes, parameters);
-            }
-        }
-
-        /* Check gap and report progress. (Pause timer to find gap.)  */
-        elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
-        gap = calculateGap(network, parameters->gapFunction);
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f,"
-                       "Beckmann %.13g, time %.3f s.\n", iteration, gap,
-                       BeckmannFunction(network), elapsedTime);
-        stopTime = clock();
-    } while (elapsedTime < parameters->maxTime
-             && iteration < parameters->maxIterations
-             && gap > parameters->convergenceGap);
-
-   /* Clean up */
-    deleteBushes(network, bushes);
-
+void updateBushes(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int start = args->start;
+    int num = args->num_points;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    for (; start < start + num && start < network->numZones; start++) {
+        updateBushB(start, network, bushes, parameters);
+//        updateFlowsB(origin, network, bushes, parameters);
+    }
 }
+
+    void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
+
+        /* Strong connectivity check */
+        makeStronglyConnectedNetwork(network);
+
+        /* Allocate memory for bushes */
+        int origin, i, iteration = 0;
+        bushes_type *bushes = createBushes(network);
+
+        double elapsedTime = 0, gap = INFINITY;
+
+        /* Initialize */
+        clock_t stopTime = clock(); /* used for timing */
+        initializeBushesB(network, bushes, parameters);
+
+        /* Iterate */
+        do {
+            iteration++;
+
+            pthread_t handles[NUM_THREADS];
+            struct thread_args args[NUM_THREADS];
+            int pointsPerThread = network->numZones/NUM_THREADS;
+
+            for (int j = 0; j < NUM_THREADS; ++j) {
+                args[j].id = j;
+                args[j].start = pointsPerThread * j;
+                args[j].num_points =  pointsPerThread;
+                args[j].network = network;
+                args[j].parameters = parameters;
+                args[j].bushes = bushes;
+            }
+
+            for (int j = 0; j < NUM_THREADS; ++j) {
+                pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
+            }
+
+            for(int i = 0; i < NUM_THREADS; i++) {
+                pthread_join(handles[i], NULL);
+            }
+
+            /* Update bushes */ //Parallelize by doing all updates and then all flows
+		for (origin = 0; origin < network->numZones; origin++) {
+//			updateBushB(origin, network, bushes, parameters);
+   		updateFlowsB(origin, network, bushes, parameters);
+		}
+
+            /* Shift flows */ //Parallelize
+            for (i = 0; i < parameters->innerIterations; i++) {
+                for (origin = 0; origin < network->numZones; origin++) {
+                    updateFlowsB(origin, network, bushes, parameters);
+                }
+            }
+
+            /* Check gap and report progress */
+            elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC; /* Exclude gap calculations from run time */
+            gap = calculateGap(network, parameters->gapFunction);
+            displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
+            stopTime = clock();
+        } while (elapsedTime < parameters->maxTime && iteration < parameters->maxIterations && gap > parameters->convergenceGap);
+
+        /* Clean up */
+        deleteBushes(network, bushes);
+
+    }
 
 /*
  * initializeAlgorithmBParameters -- sets default values for algorithm

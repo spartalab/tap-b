@@ -1,0 +1,13 @@
+Nodes, arcs, zones, thrunode: 4 5 4 0
+Distance factor, toll factor: 0.000000 1.000000
+Warning: Toll 0 negative in network file net/Braess_net.txt.
+   1  2  1  1  1   10   1 60 -1  0  ;
+Warning: Toll 4 negative in network file net/Braess_net.txt.
+   3  4  1  1  1   10   1 60 -1  0  ;
+4 nodes, 5 arcs, and 4 zones
+Total demand 6.000000 compared to metadata 6.000000
+File read and memory allocated.
+Forward and reverse star lists generated.
+Warning: Creating 3 artifical arcs to ensure strong connectivity.
+Starting Algorithm B...
+Iteration 1: gap 0.000000000000000, Beckmann 263, time 0.000 s.

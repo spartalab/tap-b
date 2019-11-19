@@ -1,1 +1,5 @@
 .idea/
+obj/
+.depend/
+bin/
+cmake-build-debug/CMakeFiles/clion-log.txt
