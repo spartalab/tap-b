@@ -1,13 +1,11 @@
-Nodes, arcs, zones, thrunode: 4 5 4 0
-Distance factor, toll factor: 0.000000 1.000000
-Warning: Toll 0 negative in network file net/Braess_net.txt.
-   1  2  1  1  1   10   1 60 -1  0  ;
-Warning: Toll 4 negative in network file net/Braess_net.txt.
-   3  4  1  1  1   10   1 60 -1  0  ;
-4 nodes, 5 arcs, and 4 zones
-Total demand 6.000000 compared to metadata 6.000000
+Warning: Link file net/SiouxFalls_net.txt does not contain distance factor, setting to 0 as default.
+Warning: Link file net/SiouxFalls_net.txt does not contain toll factor, setting to 0 as default.
+Nodes, arcs, zones, thrunode: 24 76 24 0
+Distance factor, toll factor: 0.000000 0.000000
+24 nodes, 76 arcs, and 24 zones
+Total demand 360600.000000 compared to metadata 360600.000000
 File read and memory allocated.
 Forward and reverse star lists generated.
-Warning: Creating 3 artifical arcs to ensure strong connectivity.
 Starting Algorithm B...
-Iteration 1: gap 0.000000000000000, Beckmann 263, time 0.000 s.
+Iteration 1: gap 0.009383659263703, Beckmann 4277170.489623, time 0.004 s.
+Fatal error: Cannot have non-origin node 21 in bush 0 withoutincoming contributing links

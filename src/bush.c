@@ -1,6 +1,7 @@
 #include "bush.h"
 #include <pthread.h> /*used in other parts of the assignment */
 #define NUM_THREADS 2
+#define PAR 1
 
 //Struct for thread arguments
 struct thread_args {
@@ -305,6 +306,13 @@ bushes_type *createBushes(network_type *network) {
     bushes->numMerges = newVector(network->numZones, int);
     bushes->merges = newVector(network->numZones, merge_type**);
 
+#if PAR
+    bushes->LPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
+    bushes->SPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
+    bushes->flow_par = newMatrix(NUM_THREADS, network->numNodes,double);
+    bushes->nodeFlow_par = newMatrix(NUM_THREADS, network->numNodes,double);
+#endif
+
     for (i = 0; i < network->numZones; i++) {
        bushes->numMerges[i] = 0;
     }
@@ -529,12 +537,13 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
         for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                 curArc = curArc->next) {
             hi = ptr2arc(network, curArc->arc);
+            displayMessage(FULL_NOTIFICATIONS, "bushes flow hi: %f\n",bushes->flow[hi]);
+
             if (bushes->flow[hi] > 0 || bushes->flow[hi] == NEW_LINK) {
                 numApproaches++;
                 lastApproach = hi;
             }
         }
-      
         if (numApproaches == 0)
             fatalError("Cannot have non-origin node %d in bush %d without"
                        "incoming contributing links", i, origin);

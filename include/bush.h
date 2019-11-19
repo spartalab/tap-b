@@ -117,6 +117,12 @@ typedef struct bushes_type {
    int      *lastMerge; /* [origin] */
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
+   double   **LPcost_par; /* [thread][node] */
+    double   **SPcost_par; /* [thread][node] */
+    double   **flow_par; /* [thread][node] */
+    double   **nodeFlow_par; /* [thread][node] */
+
+
 } bushes_type;
 
 /*
