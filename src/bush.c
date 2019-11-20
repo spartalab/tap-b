@@ -1,31 +1,16 @@
 #include "bush.h"
 #include "thpool.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 #define PAR 1
 //Struct for thread arguments
 struct thread_args {
     int id;
-    int start;
-    int num_points;
     bushes_type *bushes;
     network_type *network;
     algorithmBParameters_type *parameters;
 };
 
-void updateBushes(void* pVoid) {
-    struct thread_args *args = (struct thread_args *) pVoid;
-    int id = args->id;
-    int start = args->start;
-    int num = args->num_points;
-    bushes_type *bushes = args->bushes;
-    network_type *network = args->network;
-    algorithmBParameters_type *parameters = args->parameters;
-    int i = start;
-    for (; i < start + num && i < network->numZones; i++) {
-        updateBushB_par(i, network, bushes, parameters, id);
-    }
-}
 
 void updateBushPool(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
@@ -34,20 +19,6 @@ void updateBushPool(void* pVoid) {
     network_type *network = args->network;
     algorithmBParameters_type *parameters = args->parameters;
     updateBushB_par(id, network, bushes, parameters, id);
-}
-
-void updateFlows(void* pVoid) {
-    struct thread_args *args = (struct thread_args *) pVoid;
-    int id = args->id;
-    int start = args->start;
-    int num = args->num_points;
-    bushes_type *bushes = args->bushes;
-    network_type *network = args->network;
-    algorithmBParameters_type *parameters = args->parameters;
-    int i = start;
-    for (; i < start + num && i < network->numZones; i++) {
-        updateFlowsB_par(i, network, bushes, parameters, id);
-    }
 }
 
 void updateFlowsPool(void* pVoid) {
@@ -68,10 +39,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     bushes_type *bushes = createBushes(network);
 
     double elapsedTime = 0, gap = INFINITY;
-
-    /* Initialize */
-    clock_t stopTime = clock(); /* used for timing */
-    initializeBushesB(network, bushes, parameters);
     struct thread_args args[network->numZones];
     for (int j = 0; j < network->numZones; ++j) {
         args[j].id = j;
@@ -80,29 +47,28 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         args[j].bushes = bushes;
     }
     threadpool thpool = thpool_init(NUM_THREADS);
+    /* Initialize */
+    clock_t stopTime = clock(); /* used for timing */
+    initializeBushesB(network, bushes, parameters);
     /* Iterate */
     do {
         iteration++;
         for (int j = 0; j < network->numZones; ++j) {
             thpool_add_work(thpool, (void*) updateBushPool, (void*)&args[j]);
-
         }
         thpool_wait(thpool);
         for (int j = 0; j < network->numZones; ++j) {
             thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
-
         }
         thpool_wait(thpool);
 
-        /* Shift flows */ //Parallelize
+        /* Shift flows -- Inner iterations*/
         for (i = 0; i < parameters->innerIterations; i++) {
-            for (origin = 0; origin < network->numZones; origin++) {
-                for (int j = 0; j < network->numZones; ++j) {
-                    thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
+            for (int j = 0; j < network->numZones; ++j) {
+                thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
 
-                }
-                thpool_wait(thpool);
             }
+            thpool_wait(thpool);
         }
 
         /* Check gap and report progress */
