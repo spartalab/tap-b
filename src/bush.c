@@ -1,7 +1,7 @@
 #include "bush.h"
 #include "thpool.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 4
+#define NUM_THREADS 2
 #define PAR 1
 //Struct for thread arguments
 struct thread_args {
@@ -72,7 +72,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         }
 
         /* Check gap and report progress */
-        elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC; /* Exclude gap calculations from run time */
+        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC * NUM_THREADS); /* Exclude gap calculations from run time */
         gap = calculateGap(network, parameters->gapFunction);
         displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
         stopTime = clock();
