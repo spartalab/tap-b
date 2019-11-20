@@ -1,6 +1,6 @@
 #include "bush.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 #define PAR 1
 
 pthread_mutex_t flow_mut;

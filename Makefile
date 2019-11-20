@@ -17,7 +17,7 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 RM = rm -f
 
 CC = gcc
-CFLAGS = -std=c99 -Wall $(INCLUDEFLAG) $(DEPFLAGS)
+CFLAGS = -std=c99 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses
 CFLAGS += -Wpedantic -Warray-bounds 
 CFLAGS += -fmax-errors=10
@@ -37,14 +37,6 @@ all: $(BINDIR)/$(PROJECT)
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
 	$(LINKER) $^ $(LFLAGS) -o $@ 
-	
-# ------- Mac OS target: build the main project for Mac OS ------
-
-.PHONY: mac
-mac: $(BINDIR)/$(PROJECT)
-
-$(BINDIR)/$(PROJECT): $(OBJECTS)
-	$(LINKER) $^ $(MACFLAGS) -o $@ 
 
 # ---------- release target: extra optimization ----
 
