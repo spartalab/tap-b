@@ -4,3 +4,4 @@ obj/
 bin/
 cmake-build-debug/
 cmake-build-debug/
+full_log.txt
