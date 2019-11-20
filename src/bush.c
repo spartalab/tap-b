@@ -1,6 +1,6 @@
 #include "bush.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 4
+#define NUM_THREADS 2
 #define PAR 1
 
 pthread_mutex_t flow_mut;
@@ -14,8 +14,6 @@ struct thread_args {
     algorithmBParameters_type *parameters;
 };
 
-void resetShifts(const network_type *network, const bushes_type *bushes);
-
 void updateBushes(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
     int id = args->id;
@@ -27,7 +25,6 @@ void updateBushes(void* pVoid) {
     int i = start;
     for (; i < start + num && i < network->numZones; i++) {
         updateBushB_par(i, network, bushes, parameters, id);
-//        updateFlowsB(i, network, bushes, parameters);
     }
 }
 
@@ -73,8 +70,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Iterate */
     do {
         iteration++;
-        resetShifts(network, bushes);
-
         for (int j = 0; j < NUM_THREADS; ++j) {
             pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
         }
@@ -83,52 +78,28 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             pthread_join(handles[i], NULL);
         }
 
-        for (int j = 0; j < NUM_THREADS; ++j) {
-            pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
-        }
-
-        for(int i = 0; i < NUM_THREADS; i++) {
-            pthread_join(handles[i], NULL);
-        }
-        double totalShift = 0.0;
-        double totalFlow = 0.0;
-        for (int k = 0; k < network->numZones; ++k) {
-            double toShift = 0.0;
-            for (int j = 0; j < network->numArcs; ++j) {
-                totalShift += bushes->nodeFlowshift_par[k][j];
-                toShift += bushes->nodeFlowshift_par[k][j];
+        for (int k = 0; k < 2; ++k) {
+            for (int j = 0; j < NUM_THREADS; ++j) {
+                pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
             }
-            displayMessage(FULL_NOTIFICATIONS, "to shift amount for node %d is %f\n", k, toShift);
 
-        }
-        displayMessage(FULL_NOTIFICATIONS, "total shifting shift amount is %\n", totalShift);
-
-        totalShift = 0.0;
-        for (int j = 0; j < network->numArcs; ++j) {
-            double toShift = 0.0;
-            for (int k = 0; k < network->numZones; ++k) {
-                toShift += bushes->nodeFlowshift_par[k][j];
+            for(int i = 0; i < NUM_THREADS; i++) {
+                pthread_join(handles[i], NULL);
             }
-            totalShift += toShift;
-            exactCostUpdate(j, toShift, network);
-            displayMessage(FULL_NOTIFICATIONS, "to shift amount for arc %d is %f and new flow is %f\n", j, toShift, network->arcs[j].flow);
-            totalFlow += network->arcs[j].flow;
-
         }
-        displayMessage(FULL_NOTIFICATIONS, "total shifting shift amount is %f and total flow is %f\n", totalShift, totalFlow);
-
-        /* Update bushes */ //Parallelize by doing all updates and then all flows
-//		for (origin = 0; origin < network->numZones; origin++) {
-////			updateBushB(origin, network, bushes, parameters);
-//   		updateFlowsB(origin, network, bushes, parameters);
-//		}
 
         /* Shift flows */ //Parallelize
-//        for (i = 0; i < 1; i++) {
+        for (i = 0; i < parameters->innerIterations; i++) {
 //            for (origin = 0; origin < network->numZones; origin++) {
-//                updateFlowsB(origin, network, bushes, parameters);
+//                for (int j = 0; j < NUM_THREADS; ++j) {
+//                    pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
+//                }
+//
+//                for(int i = 0; i < NUM_THREADS; i++) {
+//                    pthread_join(handles[i], NULL);
+//                }
 //            }
-//        }
+        }
 
         /* Check gap and report progress */
         elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC; /* Exclude gap calculations from run time */
@@ -142,13 +113,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
 }
 
-void resetShifts(const network_type *network, const bushes_type *bushes) {
-    for (int k = 0; k < network->numZones; ++k) {
-        for (int j = 0; j < network->numArcs; ++j) {
-            bushes->nodeFlowshift_par[k][j] = 0.0;
-        }
-    }
-}
 
 /*
  * initializeAlgorithmBParameters -- sets default values for algorithm
@@ -372,7 +336,6 @@ bushes_type *createBushes(network_type *network) {
     bushes->SPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
     bushes->flow_par = newMatrix(NUM_THREADS, network->numArcs,double);
     bushes->nodeFlow_par = newMatrix(NUM_THREADS, network->numNodes,double);
-    bushes->nodeFlowshift_par = newMatrix(network->numZones, network->numArcs,double);
 #endif
 
     for (i = 0; i < network->numZones; i++) {
@@ -986,7 +949,7 @@ void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
     for (i = 0; i < parameters->shiftReps; i++) {
         updateFlowPass_par(origin, network, bushes, parameters, t_id);
         /* Uncomment next line for extra validation checking */
-        /* checkFlows(network, bushes); */
+//        checkFlows_par(network, bushes, t_id);
         if (parameters->rescanAfterShift == TRUE
             && i + 1 < parameters->shiftReps) {
             if (rescanAndCheck_par(origin, network, bushes, parameters, t_id) == FALSE)
@@ -1160,8 +1123,6 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
  * from the OD matrix, and splitting flows as needed.
  */
 void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id) {
-//    displayMessage(FULL_NOTIFICATIONS, "Top of calculate bush flows %d\n", t_id);
-
 
     int i, j, ij, m, node;
     merge_type *merge;
@@ -1190,8 +1151,6 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
             pushBackFlowMerge_par(merge, network, bushes, t_id);
         }
     }
-//    displayMessage(FULL_NOTIFICATIONS, "End of calculate bush flows %d\n", t_id);
-
 
 }
 
@@ -1299,8 +1258,6 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
  * node flow, push everything onto the shortest path.
  */
 void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id) {
-
-//    displayMessage(FULL_NOTIFICATIONS, "top rectify merge\n");
 
     int arc;
     double totalFlow = 0;
@@ -1475,9 +1432,10 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
         }
         bushes->flow_par[t_id][hi] -= shift;
-        bushes->nodeFlowshift_par[origin][hi] -= shift;
-        displayMessage(FULL_NOTIFICATIONS, "LP Bush flow shift for origin %d and arc %d is %f\n", origin, bushes->nodeFlowshift_par[origin][hi]);
+//        bushes->nodeFlowshift_par[origin][hi] -= shift;
+//        displayMessage(FULL_NOTIFICATIONS, "LP Bush flow shift for origin %d and arc %d is %f\n", origin, bushes->nodeFlowshift_par[origin][hi]);
 //        parameters->linkShiftB(hi, -shift, network);
+        exactCostUpdate_par(hi, -shift, network);
         i = network->arcs[hi].tail;
     }
     i = j;
@@ -1491,8 +1449,9 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
         }
         bushes->flow_par[t_id][hi] += shift;
-        bushes->nodeFlowshift_par[origin][hi] += shift;
-        displayMessage(FULL_NOTIFICATIONS, "SP Bush flow shift for origin %d and arc %d is %f\n", origin, hi ,bushes->nodeFlowshift_par[origin][hi]);
+//        bushes->nodeFlowshift_par[origin][hi] += shift;
+//        displayMessage(FULL_NOTIFICATIONS, "SP Bush flow shift for origin %d and arc %d is %f\n", origin, hi ,bushes->nodeFlowshift_par[origin][hi]);
+        exactCostUpdate_par(hi, shift, network);
 
 //        parameters->linkShiftB(hi, shift, network);
         i = network->arcs[hi].tail;
@@ -1574,6 +1533,78 @@ void checkFlows(network_type *network, bushes_type *bushes) {
     deleteVector(flowCheck);
 }
 
+/*
+ * checkFlows_par -- an error-checking routine which can be invoked to see if flow
+ * conservation is properly maintained on the bushes.  In the release
+ * implementation, all calls to this function are commented out.
+ */
+void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
+    int r, i, ij, kl;
+    arcListElt *curArc;
+    double balance;
+
+    declareVector(double, flowCheck, network->numArcs);
+    for (ij = 0; ij < network->numArcs; ij++) {
+        flowCheck[ij] = 0;
+    }
+
+    for (r = 0; r < network->numZones; r++) {
+        calculateBushFlows_par(r, network, bushes, t_id);
+        /* First check bush flow consistency */
+        for (ij = 0; ij < network->numArcs; ij++) {
+            flowCheck[ij] += bushes->flow_par[t_id][ij];
+            if (bushes->flow_par[t_id][ij] < 0) {
+                for (kl = 0; kl < network->numArcs; kl++) {
+                    displayMessage(DEBUG, "(%ld,%ld) %f\n",
+                                   network->arcs[kl].tail + 1,
+                                   network->arcs[kl].head + 1,
+                                   bushes->flow[kl]);
+                }
+                fatalError("Flow validation failed: origin %d, link (%ld,%ld)"
+                           "has negative flow.", r, network->arcs[ij].tail + 1,
+                           network->arcs[ij].head + 1);
+            }
+        }
+        for (i = 0; i < network->numNodes; i++) {
+            if (i == r) continue;
+            balance = 0;
+            for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
+                 curArc = curArc->next) {
+                balance += bushes->flow_par[t_id][ptr2arc(network, curArc->arc)];
+            }
+            for (curArc = network->nodes[i].forwardStar.head; curArc != NULL;
+                 curArc = curArc->next) {
+                balance -= bushes->flow_par[t_id][ptr2arc(network, curArc->arc)];
+            }
+            if (i < network->numZones) balance -= network->OD[r][i].demand;
+            if (fabs(balance) > FLOW_TOLERANCE) {
+                for (kl = 0; kl < network->numArcs; kl++) {
+                    displayMessage(DEBUG, "(%ld,%ld) %f\n",
+                                   network->arcs[kl].tail + 1,
+                                   network->arcs[kl].head + 1,
+                                   bushes->flow_par[t_id][kl]);
+                }
+                fatalError("Flow validation failed: origin %d, node %ld"
+                           "violates conservation.", r, i + 1);
+
+            }
+        }
+
+    }
+
+    /* Then check overall link flow consistency */
+    for (ij = 0; ij < network->numArcs; ij++) {
+        if (fabs(flowCheck[ij] - network->arcs[ij].flow) > FLOW_TOLERANCE) {
+            fatalError("Flow validation failed: link (%ld,%ld) has aggregate"
+                       "flow %f, but %f when disaggregated.",
+                       network->arcs[ij].tail + 1,
+                       network->arcs[ij].head + 1,
+                       network->arcs[ij].flow, flowCheck[ij]);
+        }
+    }
+
+    deleteVector(flowCheck);
+}
 
 /*
  * exactCostUpdate -- The most precise way to update the cost on a link after
@@ -1586,6 +1617,14 @@ void exactCostUpdate(int ij, double shift, network_type *network) {
     network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
 //    pthread_mutex_unlock(&flow_mut);
+}
+
+void exactCostUpdate_par(int ij, double shift, network_type *network) {
+    pthread_mutex_lock(&network->arc_muts[ij]);
+    network->arcs[ij].flow += shift;
+    network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
+    network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    pthread_mutex_unlock(&network->arc_muts[ij]);
 }
 
 /*

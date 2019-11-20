@@ -196,7 +196,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
     network->nodes = newVector(network->numNodes, node_type);
     network->arcs = newVector(network->numArcs, arc_type);
     network->OD = newMatrix(network->numZones, network->numZones, od_type);
-
+    network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
 
     for (i = 0; i < network->numZones; i++) {
         for (j = 0; j < network->numZones; j++) {
@@ -206,6 +206,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
 
     /* Read link data */
     for (i = 0; i < network->numArcs; i++) {
+        pthread_mutex_init(&network->arc_muts[i], NULL);
         if (fgets(fullLine, STRING_SIZE, linkFile) == NULL)
             fatalError("Link file %s ended (or other I/O error) before link "
                     "data complete.", linkFileName);

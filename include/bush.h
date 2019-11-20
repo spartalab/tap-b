@@ -292,9 +292,11 @@ bool isMergeNode(int origin, int i, bushes_type *bushes);
 int pred2merge(int ij);
 int merge2pred(int m);
 void exactCostUpdate(int ij, double shift, network_type *network);
+void exactCostUpdate_par(int ij, double shift, network_type *network);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);
+void checkFlows_par(network_type *network, bushes_type *bushes, int t_id);
 
 /**** Merges and merge-doubly linked lists ****/
 

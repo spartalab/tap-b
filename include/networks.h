@@ -12,6 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include "datastructures.h"
+#include <pthread.h>
 
 #define NO_PATH_EXISTS -1
 #define ARTIFICIAL 99999 /* Value used for costs, etc. on artificial links
@@ -118,6 +119,7 @@ typedef struct {
 typedef struct {
     node_type*  nodes;
     arc_type*   arcs;
+    pthread_mutex_t* arc_muts;
     od_type**   OD;
     long    numNodes;
     long    numArcs;
