@@ -3,6 +3,7 @@
 #define NUM_THREADS 1
 #define PAR 1
 
+
 //Struct for thread arguments
 struct thread_args {
     int id;
@@ -21,13 +22,14 @@ void updateBushes(void* pVoid) {
     bushes_type *bushes = args->bushes;
     network_type *network = args->network;
     algorithmBParameters_type *parameters = args->parameters;
-    for (; start < start + num && start < network->numZones; start++) {
-        updateBushB_par(start, network, bushes, parameters, id);
-//        updateFlowsB(origin, network, bushes, parameters);
+    int i = start;
+    for (; i < start + num && i < network->numZones; i++) {
+        updateBushB_par(i, network, bushes, parameters, id);
     }
 }
 
     void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
+
 
         /* Strong connectivity check */
         makeStronglyConnectedNetwork(network);
@@ -41,13 +43,11 @@ void updateBushes(void* pVoid) {
         /* Initialize */
         clock_t stopTime = clock(); /* used for timing */
         initializeBushesB(network, bushes, parameters);
-
+        pthread_t handles[NUM_THREADS];
+        struct thread_args args[NUM_THREADS];
         /* Iterate */
         do {
             iteration++;
-
-            pthread_t handles[NUM_THREADS];
-            struct thread_args args[NUM_THREADS];
             int pointsPerThread = network->numZones/NUM_THREADS;
 
             for (int j = 0; j < NUM_THREADS; ++j) {
@@ -207,13 +207,15 @@ void genericTopologicalOrder(int origin, network_type *network,
             }
         }
     }
-    if (next < network->numNodes)
+    if (next < network->numNodes) {
+        int j = 0;
+        j += 1;
         fatalError("Graph given to bushTopologicalOrder contains a cycle.");
+    }
     bushes->lastMerge[origin] = highestMerge;
 
     deleteQueue(&LIST);
     deleteVector(indegree);
-    
     /* Suppress warnings -- parameters is not used in this implementation */
     if (0) displayMessage(FULL_DEBUG, "%p", parameters);
 }
@@ -343,13 +345,12 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     }
     deleteVector(bushes->numMerges);
     deleteVector(bushes->merges);
-#if PAR
-//    displayMessage(FULL_NOTIFICATIONS, "Hello\n");
-    deleteMatrix(NUM_THREADS, network->numNodes,double);
-    deleteMatrix(NUM_THREADS, network->numNodes,double);
-    deleteMatrix(NUM_THREADS, network->numArcs,double);
-    deleteMatrix(NUM_THREADS, network->numNodes,double);
-#endif
+//#if PAR
+//    deleteMatrix(bushes->LPcost_par, network->numNodes);
+//    deleteMatrix(bushes->SPcost_par, network->numNodes);
+//    deleteMatrix(bushes->flow_par, network->numArcs);
+//    deleteMatrix(bushes->nodeFlow_par, network->numNodes);
+//#endif
     deleteScalar(bushes);
 }
 
@@ -457,6 +458,7 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters, bool longestUsed, int t_id) {
+//    displayMessage(FULL_NOTIFICATIONS, "Top of scan %d\n", t_id);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
@@ -467,7 +469,7 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
     }
 
     /* Ensure costs are up to date */
-//    if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
+    if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
     bushes->SPcost_par[t_id][origin] = 0;
     bushes->LPcost_par[t_id][origin] = 0;
@@ -476,6 +478,10 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
         /* Iterate over incoming links */
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
+            if(&bushes->merges[origin][m] < (merge_type **) 0x1000000) {
+                int a = 0;
+                displayMessage(FULL_NOTIFICATIONS, "Bad address %x %d\n", &bushes->merges[origin][m], t_id);
+            }
             merge = bushes->merges[origin][m];
             for (curarc = 0; curarc < merge->numApproaches; curarc++) {
                 hi = merge->approach[curarc];
@@ -501,7 +507,7 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
             bushes->SPcost_par[t_id][i] = bushes->SPcost_par[t_id][h] + network->arcs[hi].cost;
         }
     }
-//    displayMessage(FULL_NOTIFICATIONS, "Hello end of scan\n");
+//    displayMessage(FULL_NOTIFICATIONS, "Hello end of scan %d\n", t_id);
 
 
 }
@@ -586,6 +592,8 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
  */
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters, int t_id) {
+//    displayMessage(FULL_NOTIFICATIONS, "Top of update bushb %d %d\n", origin ,t_id);
+
     int ij, i, j, newArcs = 0;
 
     /* First update labels... ignoring longest unused paths since those will be
@@ -639,6 +647,9 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
      * topological order, rectify approach proportions */
     reconstructMerges_par(origin, network, bushes, t_id);
     parameters->topologicalOrder(origin, network, bushes, parameters);
+
+//    displayMessage(FULL_NOTIFICATIONS, "End of update bushb %d\n", t_id);
+
 }
 /*
  * reconstructMerges -- update the merge data structures after a bush is
@@ -725,6 +736,8 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
  * Then transfer into an array for fast indexing.
  */
 void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes, int t_id){
+//    displayMessage(FULL_NOTIFICATIONS, "Top of update reconstructmerg %d\n", t_id);
+
     int i, hi, lastApproach, m, arc, numApproaches;
     arcListElt *curArc;
     merge_type *merge;
@@ -782,6 +795,9 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
     }
 
     deleteMergeDLL(mergeList);
+
+//    displayMessage(FULL_NOTIFICATIONS, "End of update reconstructmerg %d\n", t_id);
+
 }
 
 /* 
@@ -913,6 +929,8 @@ bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
  */
 bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters, int t_id) {
+//    displayMessage(FULL_NOTIFICATIONS, "Top of rescan and check\n");
+
     int i;
     double maxgap = 0;
 
@@ -1009,6 +1027,9 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
  * from the OD matrix, and splitting flows as needed.
  */
 void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id) {
+//    displayMessage(FULL_NOTIFICATIONS, "Top of calculate bush flows %d\n", t_id);
+
+
     int i, j, ij, m, node;
     merge_type *merge;
 
@@ -1036,6 +1057,8 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
             pushBackFlowMerge_par(merge, network, bushes, t_id);
         }
     }
+//    displayMessage(FULL_NOTIFICATIONS, "End of calculate bush flows %d\n", t_id);
+
 
 }
 
@@ -1059,6 +1082,9 @@ void pushBackFlowSimple(int j, int origin, network_type *network,
  */
 void pushBackFlowSimple_par(int j, int origin, network_type *network,
                         bushes_type *bushes, int t_id) {
+
+//    displayMessage(FULL_NOTIFICATIONS, "top pushback simple\n");
+
     int i, ij;
 
     ij = bushes->pred[origin][j];
@@ -1093,6 +1119,9 @@ void pushBackFlowMerge(merge_type *merge, network_type *network,
  */
 void pushBackFlowMerge_par(merge_type *merge, network_type *network,
                        bushes_type *bushes, int t_id) {
+
+//    displayMessage(FULL_NOTIFICATIONS, "top pushback merge\n");
+
     int i, ij, arc;
     double flow;
 
@@ -1137,6 +1166,9 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
  * node flow, push everything onto the shortest path.
  */
 void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id) {
+
+//    displayMessage(FULL_NOTIFICATIONS, "top rectify merge\n");
+
     int arc;
     double totalFlow = 0;
 
