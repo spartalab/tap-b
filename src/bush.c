@@ -62,20 +62,18 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     struct thread_args args[NUM_THREADS];
     int pointsPerThread = network->numZones/NUM_THREADS;
 //        pthread_mutex_init(&flow_mut, NULL);
-
+    for (int j = 0; j < NUM_THREADS; ++j) {
+        args[j].id = j;
+        args[j].start = pointsPerThread * j;
+        args[j].num_points =  pointsPerThread;
+        args[j].network = network;
+        args[j].parameters = parameters;
+        args[j].bushes = bushes;
+    }
     /* Iterate */
     do {
         iteration++;
         resetShifts(network, bushes);
-
-        for (int j = 0; j < NUM_THREADS; ++j) {
-            args[j].id = j;
-            args[j].start = pointsPerThread * j;
-            args[j].num_points =  pointsPerThread;
-            args[j].network = network;
-            args[j].parameters = parameters;
-            args[j].bushes = bushes;
-        }
 
         for (int j = 0; j < NUM_THREADS; ++j) {
             pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
@@ -126,11 +124,11 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 //		}
 
         /* Shift flows */ //Parallelize
-        for (i = 0; i < 1; i++) {
-            for (origin = 0; origin < network->numZones; origin++) {
-                updateFlowsB(origin, network, bushes, parameters);
-            }
-        }
+//        for (i = 0; i < 1; i++) {
+//            for (origin = 0; origin < network->numZones; origin++) {
+//                updateFlowsB(origin, network, bushes, parameters);
+//            }
+//        }
 
         /* Check gap and report progress */
         elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC; /* Exclude gap calculations from run time */
