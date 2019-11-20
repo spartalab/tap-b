@@ -1,0 +1,2108 @@
+Warning: Link file net/SiouxFalls_net.txt does not contain distance factor, setting to 0 as default.
+Warning: Link file net/SiouxFalls_net.txt does not contain toll factor, setting to 0 as default.
+Nodes, arcs, zones, thrunode: 24 76 24 0
+Distance factor, toll factor: 0.000000 0.000000
+24 nodes, 76 arcs, and 24 zones
+Total demand 360600.000000 compared to metadata 360600.000000
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+LP Bush flow shift for origin 0 and arc 64 is -400.000000
+LP Bush flow shift for origin 6 and arc 73 is -400.000000
+LP Bush flow shift for origin 12 and arc 57 is -1100.000000
+LP Bush flow shift for origin 18 and arc 37 is -300.000000
+LP Bush flow shift for origin 0 and arc 74 is -400.000000
+LP Bush flow shift for origin 6 and arc 65 is -400.000000
+LP Bush flow shift for origin 12 and arc 44 is -1100.000000
+LP Bush flow shift for origin 18 and arc 73 is -300.000000
+LP Bush flow shift for origin 0 and arc 38 is -400.000000
+LP Bush flow shift for origin 6 and arc 61 is -400.000000
+LP Bush flow shift for origin 12 and arc 66 is -1100.000000
+LP Bush flow shift for origin 18 and arc 72 is -300.000000
+LP Bush flow shift for origin 0 and arc 36 is -400.000000
+LP Bush flow shift for origin 12 and arc 71 is -1100.000000
+LP Bush flow shift for origin 6 and arc 55 is -400.000000
+LP Bush flow shift for origin 18 and arc 69 is -300.000000
+LP Bush flow shift for origin 0 and arc 6 is -400.000000
+LP Bush flow shift for origin 12 and arc 75 is -1100.000000
+LP Bush flow shift for origin 6 and arc 17 is -400.000000
+LP Bush flow shift for origin 18 and arc 45 is -300.000000
+SP Bush flow shift for origin 0 and arc 45 is 400.000000
+LP Bush flow shift for origin 12 and arc 38 is -1100.000000
+SP Bush flow shift for origin 6 and arc 36 is 400.000000
+SP Bush flow shift for origin 18 and arc 6 is 300.000000
+SP Bush flow shift for origin 0 and arc 27 is 400.000000
+SP Bush flow shift for origin 6 and arc 6 is 400.000000
+SP Bush flow shift for origin 12 and arc 29 is 1100.000000
+SP Bush flow shift for origin 18 and arc 7 is 300.000000
+SP Bush flow shift for origin 0 and arc 24 is 400.000000
+SP Bush flow shift for origin 6 and arc 7 is 400.000000
+SP Bush flow shift for origin 18 and arc 10 is 300.000000
+SP Bush flow shift for origin 12 and arc 24 is 1100.000000
+SP Bush flow shift for origin 0 and arc 12 is 400.000000
+SP Bush flow shift for origin 6 and arc 10 is 400.000000
+SP Bush flow shift for origin 18 and arc 22 is 300.000000
+SP Bush flow shift for origin 12 and arc 12 is 1100.000000
+SP Bush flow shift for origin 0 and arc 8 is 400.000000
+SP Bush flow shift for origin 6 and arc 14 is 400.000000
+SP Bush flow shift for origin 18 and arc 25 is 300.000000
+SP Bush flow shift for origin 12 and arc 8 is 1100.000000
+SP Bush flow shift for origin 0 and arc 5 is 400.000000
+SP Bush flow shift for origin 18 and arc 42 is 300.000000
+SP Bush flow shift for origin 6 and arc 18 is 400.000000
+SP Bush flow shift for origin 12 and arc 5 is 1100.000000
+LP Bush flow shift for origin 0 and arc 52 is -300.000000
+LP Bush flow shift for origin 18 and arc 16 is -241.578971
+SP Bush flow shift for origin 12 and arc 34 is 1100.000000
+SP Bush flow shift for origin 6 and arc 16 is 400.000000
+LP Bush flow shift for origin 0 and arc 48 is -300.000000
+LP Bush flow shift for origin 18 and arc 53 is -241.578971
+SP Bush flow shift for origin 12 and arc 37 is 1100.000000
+LP Bush flow shift for origin 6 and arc 26 is -500.000000
+LP Bush flow shift for origin 0 and arc 21 is -300.000000
+LP Bush flow shift for origin 18 and arc 59 is -241.578971
+LP Bush flow shift for origin 12 and arc 16 is -600.000000
+LP Bush flow shift for origin 6 and arc 47 is -500.000000
+LP Bush flow shift for origin 0 and arc 15 is -300.000000
+LP Bush flow shift for origin 18 and arc 58 is -241.578971
+LP Bush flow shift for origin 12 and arc 53 is -600.000000
+LP Bush flow shift for origin 6 and arc 54 is -500.000000
+LP Bush flow shift for origin 0 and arc 3 is -300.000000
+SP Bush flow shift for origin 18 and arc 23 is 241.578971
+LP Bush flow shift for origin 12 and arc 59 is -600.000000
+LP Bush flow shift for origin 6 and arc 17 is -900.000000
+LP Bush flow shift for origin 0 and arc 0 is -300.000000
+SP Bush flow shift for origin 18 and arc 25 is 541.578971
+LP Bush flow shift for origin 12 and arc 63 is -600.000000
+SP Bush flow shift for origin 6 and arc 9 is 500.000000
+SP Bush flow shift for origin 0 and arc 44 is 300.000000
+SP Bush flow shift for origin 18 and arc 42 is 541.578971
+LP Bush flow shift for origin 12 and arc 74 is -600.000000
+SP Bush flow shift for origin 6 and arc 10 is 900.000000
+SP Bush flow shift for origin 0 and arc 27 is 700.000000
+SP Bush flow shift for origin 18 and arc 56 is 241.578971
+LP Bush flow shift for origin 12 and arc 38 is -1700.000000
+SP Bush flow shift for origin 6 and arc 14 is 900.000000
+SP Bush flow shift for origin 0 and arc 24 is 700.000000
+LP Bush flow shift for origin 18 and arc 39 is -400.000000
+SP Bush flow shift for origin 12 and arc 23 is 600.000000
+SP Bush flow shift for origin 6 and arc 18 is 900.000000
+SP Bush flow shift for origin 0 and arc 12 is 700.000000
+LP Bush flow shift for origin 18 and arc 43 is -400.000000
+SP Bush flow shift for origin 12 and arc 12 is 1700.000000
+SP Bush flow shift for origin 6 and arc 16 is 900.000000
+SP Bush flow shift for origin 0 and arc 8 is 700.000000
+SP Bush flow shift for origin 18 and arc 26 is 400.000000
+SP Bush flow shift for origin 12 and arc 8 is 1700.000000
+LP Bush flow shift for origin 6 and arc 69 is -200.000000
+SP Bush flow shift for origin 0 and arc 5 is 700.000000
+SP Bush flow shift for origin 12 and arc 5 is 1700.000000
+SP Bush flow shift for origin 18 and arc 42 is 941.578971
+LP Bush flow shift for origin 6 and arc 62 is -200.000000
+SP Bush flow shift for origin 12 and arc 34 is 1700.000000
+SP Bush flow shift for origin 0 and arc 1 is 300.000000
+LP Bush flow shift for origin 18 and arc 69 is -1000.000000
+SP Bush flow shift for origin 6 and arc 75 is 200.000000
+SP Bush flow shift for origin 12 and arc 37 is 1700.000000
+LP Bush flow shift for origin 18 and arc 45 is -1000.000000
+LP Bush flow shift for origin 0 and arc 74 is -500.000000
+LP Bush flow shift for origin 12 and arc 66 is -2100.000000
+SP Bush flow shift for origin 6 and arc 65 is -200.000000
+SP Bush flow shift for origin 18 and arc 41 is 700.000000
+LP Bush flow shift for origin 0 and arc 38 is -500.000000
+SP Bush flow shift for origin 6 and arc 61 is -200.000000
+LP Bush flow shift for origin 12 and arc 71 is -2100.000000
+SP Bush flow shift for origin 18 and arc 43 is 300.000000
+LP Bush flow shift for origin 12 and arc 75 is -2100.000000
+LP Bush flow shift for origin 0 and arc 36 is -500.000000
+LP Bush flow shift for origin 6 and arc 25 is -600.000000
+LP Bush flow shift for origin 18 and arc 58 is -375.177066
+LP Bush flow shift for origin 0 and arc 6 is -500.000000
+LP Bush flow shift for origin 12 and arc 38 is -2700.000000
+LP Bush flow shift for origin 6 and arc 47 is -1100.000000
+SP Bush flow shift for origin 18 and arc 67 is 133.598095
+SP Bush flow shift for origin 0 and arc 61 is 100.000000
+LP Bush flow shift for origin 6 and arc 54 is -1100.000000
+SP Bush flow shift for origin 12 and arc 27 is 1000.000000
+SP Bush flow shift for origin 18 and arc 45 is -866.401905
+LP Bush flow shift for origin 6 and arc 17 is -1500.000000
+SP Bush flow shift for origin 0 and arc 55 is 100.000000
+SP Bush flow shift for origin 12 and arc 24 is 2100.000000
+SP Bush flow shift for origin 18 and arc 56 is 375.177066
+SP Bush flow shift for origin 6 and arc 20 is 600.000000
+SP Bush flow shift for origin 0 and arc 17 is 100.000000
+SP Bush flow shift for origin 12 and arc 12 is 2700.000000
+LP Bush flow shift for origin 19 and arc 4 is -300.000000
+SP Bush flow shift for origin 6 and arc 16 is 1500.000000
+SP Bush flow shift for origin 12 and arc 8 is 2700.000000
+SP Bush flow shift for origin 0 and arc 19 is 100.000000
+LP Bush flow shift for origin 6 and arc 52 is -1100.000000
+LP Bush flow shift for origin 19 and arc 34 is -300.000000
+SP Bush flow shift for origin 12 and arc 5 is 2700.000000
+SP Bush flow shift for origin 0 and arc 23 is 100.000000
+LP Bush flow shift for origin 6 and arc 48 is -1100.000000
+SP Bush flow shift for origin 12 and arc 34 is 2700.000000
+LP Bush flow shift for origin 19 and arc 37 is -300.000000
+LP Bush flow shift for origin 6 and arc 54 is -2200.000000
+SP Bush flow shift for origin 0 and arc 12 is 800.000000
+SP Bush flow shift for origin 12 and arc 37 is 2700.000000
+LP Bush flow shift for origin 19 and arc 73 is -300.000000
+SP Bush flow shift for origin 6 and arc 60 is 1100.000000
+SP Bush flow shift for origin 0 and arc 8 is 800.000000
+LP Bush flow shift for origin 19 and arc 65 is -300.000000
+LP Bush flow shift for origin 12 and arc 31 is -898.369867
+SP Bush flow shift for origin 0 and arc 5 is 800.000000
+SP Bush flow shift for origin 6 and arc 55 is 700.000000
+LP Bush flow shift for origin 12 and arc 35 is -898.369867
+LP Bush flow shift for origin 19 and arc 61 is -300.000000
+LP Bush flow shift for origin 6 and arc 47 is -2044.177812
+LP Bush flow shift for origin 0 and arc 48 is -700.000000
+SP Bush flow shift for origin 12 and arc 24 is 2998.369867
+SP Bush flow shift for origin 19 and arc 2 is 300.000000
+SP Bush flow shift for origin 6 and arc 50 is 944.177812
+LP Bush flow shift for origin 0 and arc 21 is -700.000000
+SP Bush flow shift for origin 12 and arc 12 is 3598.369867
+SP Bush flow shift for origin 19 and arc 13 is 300.000000
+SP Bush flow shift for origin 6 and arc 48 is -155.822188
+SP Bush flow shift for origin 12 and arc 8 is 3598.369867
+LP Bush flow shift for origin 0 and arc 15 is -700.000000
+SP Bush flow shift for origin 19 and arc 18 is 300.000000
+LP Bush flow shift for origin 7 and arc 69 is -300.000000
+SP Bush flow shift for origin 12 and arc 5 is 3598.369867
+LP Bush flow shift for origin 0 and arc 3 is -700.000000
+LP Bush flow shift for origin 7 and arc 62 is -300.000000
+SP Bush flow shift for origin 19 and arc 16 is 300.000000
+SP Bush flow shift for origin 12 and arc 34 is 3598.369867
+LP Bush flow shift for origin 0 and arc 0 is -700.000000
+SP Bush flow shift for origin 7 and arc 75 is 300.000000
+SP Bush flow shift for origin 19 and arc 53 is 300.000000
+LP Bush flow shift for origin 12 and arc 63 is -910.282093
+SP Bush flow shift for origin 0 and arc 29 is 400.000000
+SP Bush flow shift for origin 7 and arc 65 is 300.000000
+SP Bush flow shift for origin 19 and arc 59 is 300.000000
+LP Bush flow shift for origin 12 and arc 74 is -910.282093
+SP Bush flow shift for origin 0 and arc 24 is 1100.000000
+SP Bush flow shift for origin 7 and arc 61 is 300.000000
+LP Bush flow shift for origin 19 and arc 39 is -600.000000
+SP Bush flow shift for origin 12 and arc 67 is 310.282093
+SP Bush flow shift for origin 0 and arc 12 is 1200.000000
+LP Bush flow shift for origin 7 and arc 56 is -1000.000000
+LP Bush flow shift for origin 19 and arc 43 is -600.000000
+SP Bush flow shift for origin 12 and arc 71 is -1789.717907
+SP Bush flow shift for origin 0 and arc 8 is 1200.000000
+LP Bush flow shift for origin 7 and arc 52 is -1000.000000
+SP Bush flow shift for origin 12 and arc 75 is -1789.717907
+LP Bush flow shift for origin 19 and arc 56 is -600.000000
+SP Bush flow shift for origin 0 and arc 5 is 1200.000000
+LP Bush flow shift for origin 7 and arc 48 is -1000.000000
+LP Bush flow shift for origin 12 and arc 70 is -600.000000
+LP Bush flow shift for origin 19 and arc 60 is -600.000000
+SP Bush flow shift for origin 0 and arc 1 is 700.000000
+LP Bush flow shift for origin 7 and arc 21 is -1000.000000
+SP Bush flow shift for origin 19 and arc 9 is 600.000000
+LP Bush flow shift for origin 12 and arc 75 is -2389.717907
+LP Bush flow shift for origin 0 and arc 21 is -1200.000000
+SP Bush flow shift for origin 7 and arc 27 is 1000.000000
+SP Bush flow shift for origin 19 and arc 10 is 600.000000
+LP Bush flow shift for origin 12 and arc 38 is -3300.000000
+SP Bush flow shift for origin 0 and arc 54 is 500.000000
+SP Bush flow shift for origin 19 and arc 22 is 600.000000
+SP Bush flow shift for origin 7 and arc 24 is 1000.000000
+SP Bush flow shift for origin 12 and arc 33 is 600.000000
+SP Bush flow shift for origin 0 and arc 17 is 600.000000
+SP Bush flow shift for origin 19 and arc 20 is 600.000000
+SP Bush flow shift for origin 7 and arc 20 is 1000.000000
+SP Bush flow shift for origin 0 and arc 19 is 600.000000
+SP Bush flow shift for origin 12 and arc 35 is -298.369867
+SP Bush flow shift for origin 19 and arc 16 is 900.000000
+LP Bush flow shift for origin 7 and arc 52 is -1700.000000
+LP Bush flow shift for origin 0 and arc 40 is -500.000000
+SP Bush flow shift for origin 12 and arc 37 is 3300.000000
+SP Bush flow shift for origin 19 and arc 53 is 900.000000
+LP Bush flow shift for origin 0 and arc 33 is -500.000000
+LP Bush flow shift for origin 7 and arc 48 is -1700.000000
+SP Bush flow shift for origin 19 and arc 59 is 900.000000
+LP Bush flow shift for origin 13 and arc 46 is -400.000000
+LP Bush flow shift for origin 0 and arc 9 is -500.000000
+LP Bush flow shift for origin 7 and arc 21 is -1700.000000
+LP Bush flow shift for origin 19 and arc 34 is -300.000000
+LP Bush flow shift for origin 13 and arc 51 is -400.000000
+SP Bush flow shift for origin 7 and arc 60 is 700.000000
+SP Bush flow shift for origin 0 and arc 27 is 1200.000000
+LP Bush flow shift for origin 19 and arc 37 is -300.000000
+LP Bush flow shift for origin 13 and arc 57 is -400.000000
+SP Bush flow shift for origin 7 and arc 55 is 700.000000
+SP Bush flow shift for origin 0 and arc 24 is 1600.000000
+LP Bush flow shift for origin 19 and arc 73 is -300.000000
+LP Bush flow shift for origin 13 and arc 44 is -400.000000
+SP Bush flow shift for origin 7 and arc 17 is 700.000000
+SP Bush flow shift for origin 0 and arc 12 is 1700.000000
+LP Bush flow shift for origin 19 and arc 65 is -300.000000
+LP Bush flow shift for origin 13 and arc 40 is -400.000000
+SP Bush flow shift for origin 7 and arc 19 is 700.000000
+SP Bush flow shift for origin 0 and arc 8 is 1700.000000
+LP Bush flow shift for origin 19 and arc 61 is -300.000000
+SP Bush flow shift for origin 13 and arc 16 is 400.000000
+LP Bush flow shift for origin 7 and arc 47 is -2400.000000
+LP Bush flow shift for origin 0 and arc 75 is -300.000000
+SP Bush flow shift for origin 19 and arc 7 is 0.000000
+LP Bush flow shift for origin 7 and arc 21 is -4100.000000
+SP Bush flow shift for origin 13 and arc 53 is 400.000000
+LP Bush flow shift for origin 0 and arc 38 is -800.000000
+SP Bush flow shift for origin 19 and arc 10 is 600.000000
+SP Bush flow shift for origin 7 and arc 24 is 3400.000000
+SP Bush flow shift for origin 13 and arc 59 is 400.000000
+LP Bush flow shift for origin 0 and arc 36 is -800.000000
+SP Bush flow shift for origin 19 and arc 22 is 600.000000
+SP Bush flow shift for origin 7 and arc 20 is 3400.000000
+SP Bush flow shift for origin 13 and arc 67 is 400.000000
+LP Bush flow shift for origin 0 and arc 6 is -800.000000
+SP Bush flow shift for origin 19 and arc 20 is 600.000000
+SP Bush flow shift for origin 13 and arc 71 is 400.000000
+LP Bush flow shift for origin 7 and arc 21 is -7182.055571
+SP Bush flow shift for origin 0 and arc 41 is 300.000000
+SP Bush flow shift for origin 19 and arc 16 is 900.000000
+SP Bush flow shift for origin 13 and arc 41 is 400.000000
+SP Bush flow shift for origin 7 and arc 54 is 3082.055571
+SP Bush flow shift for origin 0 and arc 33 is -200.000000
+SP Bush flow shift for origin 19 and arc 53 is 900.000000
+LP Bush flow shift for origin 13 and arc 49 is -300.000000
+SP Bush flow shift for origin 7 and arc 17 is 3782.055571
+SP Bush flow shift for origin 0 and arc 9 is -200.000000
+SP Bush flow shift for origin 19 and arc 59 is 900.000000
+SP Bush flow shift for origin 7 and arc 19 is 3782.055571
+LP Bush flow shift for origin 13 and arc 51 is -700.000000
+SP Bush flow shift for origin 0 and arc 5 is 1500.000000
+LP Bush flow shift for origin 19 and arc 69 is -700.000000
+LP Bush flow shift for origin 7 and arc 14 is -980.074249
+LP Bush flow shift for origin 13 and arc 57 is -700.000000
+LP Bush flow shift for origin 0 and arc 15 is -1402.381458
+LP Bush flow shift for origin 19 and arc 62 is -700.000000
+LP Bush flow shift for origin 7 and arc 18 is -980.074249
+LP Bush flow shift for origin 13 and arc 44 is -700.000000
+LP Bush flow shift for origin 0 and arc 3 is -1402.381458
+SP Bush flow shift for origin 19 and arc 75 is 700.000000
+SP Bush flow shift for origin 7 and arc 22 is 980.074249
+LP Bush flow shift for origin 13 and arc 40 is -700.000000
+LP Bush flow shift for origin 0 and arc 0 is -1402.381458
+SP Bush flow shift for origin 19 and arc 65 is 400.000000
+SP Bush flow shift for origin 7 and arc 20 is 4380.074249
+SP Bush flow shift for origin 0 and arc 23 is 802.381458
+SP Bush flow shift for origin 13 and arc 59 is 700.000000
+SP Bush flow shift for origin 19 and arc 61 is 400.000000
+LP Bush flow shift for origin 8 and arc 69 is -500.000000
+SP Bush flow shift for origin 13 and arc 67 is 700.000000
+SP Bush flow shift for origin 0 and arc 12 is 2402.381458
+LP Bush flow shift for origin 19 and arc 25 is -1000.000000
+LP Bush flow shift for origin 8 and arc 45 is -500.000000
+SP Bush flow shift for origin 13 and arc 71 is 700.000000
+SP Bush flow shift for origin 0 and arc 8 is 2402.381458
+LP Bush flow shift for origin 19 and arc 42 is -1000.000000
+SP Bush flow shift for origin 8 and arc 41 is 500.000000
+SP Bush flow shift for origin 13 and arc 41 is 700.000000
+SP Bush flow shift for origin 0 and arc 5 is 2202.381458
+LP Bush flow shift for origin 19 and arc 56 is -1600.000000
+SP Bush flow shift for origin 8 and arc 43 is 500.000000
+LP Bush flow shift for origin 13 and arc 8 is -300.000000
+SP Bush flow shift for origin 0 and arc 1 is 1402.381458
+LP Bush flow shift for origin 19 and arc 60 is -1600.000000
+LP Bush flow shift for origin 8 and arc 55 is -600.000000
+LP Bush flow shift for origin 13 and arc 30 is -300.000000
+LP Bush flow shift for origin 1 and arc 56 is -100.000000
+SP Bush flow shift for origin 19 and arc 20 is 1600.000000
+LP Bush flow shift for origin 8 and arc 49 is -600.000000
+LP Bush flow shift for origin 13 and arc 39 is -300.000000
+LP Bush flow shift for origin 1 and arc 52 is -100.000000
+SP Bush flow shift for origin 19 and arc 16 is 1900.000000
+LP Bush flow shift for origin 8 and arc 28 is -600.000000
+SP Bush flow shift for origin 13 and arc 22 is 300.000000
+LP Bush flow shift for origin 1 and arc 48 is -100.000000
+SP Bush flow shift for origin 19 and arc 53 is 1900.000000
+SP Bush flow shift for origin 8 and arc 67 is 600.000000
+SP Bush flow shift for origin 13 and arc 25 is 300.000000
+LP Bush flow shift for origin 1 and arc 21 is -100.000000
+SP Bush flow shift for origin 19 and arc 59 is 1900.000000
+SP Bush flow shift for origin 8 and arc 45 is 100.000000
+SP Bush flow shift for origin 13 and arc 42 is 300.000000
+LP Bush flow shift for origin 1 and arc 15 is -100.000000
+LP Bush flow shift for origin 19 and arc 57 is -689.459536
+SP Bush flow shift for origin 8 and arc 27 is 600.000000
+SP Bush flow shift for origin 13 and arc 40 is -400.000000
+SP Bush flow shift for origin 1 and arc 27 is 100.000000
+LP Bush flow shift for origin 8 and arc 53 is -600.000000
+LP Bush flow shift for origin 19 and arc 60 is -2289.459536
+LP Bush flow shift for origin 13 and arc 58 is -500.000000
+SP Bush flow shift for origin 1 and arc 24 is 100.000000
+LP Bush flow shift for origin 8 and arc 49 is -1200.000000
+LP Bush flow shift for origin 13 and arc 44 is -1200.000000
+SP Bush flow shift for origin 19 and arc 48 is 689.459536
+SP Bush flow shift for origin 1 and arc 12 is 100.000000
+LP Bush flow shift for origin 8 and arc 28 is -1200.000000
+LP Bush flow shift for origin 13 and arc 40 is -900.000000
+SP Bush flow shift for origin 19 and arc 54 is 689.459536
+SP Bush flow shift for origin 1 and arc 14 is 100.000000
+LP Bush flow shift for origin 8 and arc 24 is -600.000000
+SP Bush flow shift for origin 13 and arc 67 is 1200.000000
+SP Bush flow shift for origin 19 and arc 59 is 2589.459536
+LP Bush flow shift for origin 1 and arc 52 is -200.000000
+SP Bush flow shift for origin 8 and arc 19 is 600.000000
+SP Bush flow shift for origin 13 and arc 71 is 1200.000000
+LP Bush flow shift for origin 20 and arc 30 is -200.000000
+LP Bush flow shift for origin 1 and arc 48 is -200.000000
+SP Bush flow shift for origin 8 and arc 23 is 600.000000
+SP Bush flow shift for origin 13 and arc 41 is 1200.000000
+LP Bush flow shift for origin 1 and arc 21 is -200.000000
+LP Bush flow shift for origin 20 and arc 39 is -200.000000
+LP Bush flow shift for origin 13 and arc 57 is -866.206304
+LP Bush flow shift for origin 8 and arc 48 is -900.000000
+LP Bush flow shift for origin 20 and arc 70 is -200.000000
+SP Bush flow shift for origin 1 and arc 60 is 100.000000
+LP Bush flow shift for origin 13 and arc 44 is -1366.206304
+LP Bush flow shift for origin 8 and arc 28 is -2100.000000
+LP Bush flow shift for origin 20 and arc 69 is -200.000000
+SP Bush flow shift for origin 1 and arc 55 is 100.000000
+SP Bush flow shift for origin 13 and arc 29 is 166.206304
+SP Bush flow shift for origin 8 and arc 29 is 900.000000
+LP Bush flow shift for origin 20 and arc 64 is -200.000000
+SP Bush flow shift for origin 1 and arc 17 is 100.000000
+LP Bush flow shift for origin 8 and arc 32 is -1200.000000
+SP Bush flow shift for origin 13 and arc 42 is 466.206304
+SP Bush flow shift for origin 20 and arc 10 is 200.000000
+SP Bush flow shift for origin 1 and arc 19 is 100.000000
+LP Bush flow shift for origin 8 and arc 26 is -1200.000000
+LP Bush flow shift for origin 13 and arc 39 is -440.511962
+SP Bush flow shift for origin 20 and arc 22 is 200.000000
+LP Bush flow shift for origin 1 and arc 47 is -600.000000
+LP Bush flow shift for origin 8 and arc 24 is -1800.000000
+SP Bush flow shift for origin 20 and arc 20 is 200.000000
+SP Bush flow shift for origin 13 and arc 26 is 140.511962
+LP Bush flow shift for origin 1 and arc 21 is -800.000000
+SP Bush flow shift for origin 8 and arc 6 is 1200.000000
+SP Bush flow shift for origin 20 and arc 16 is 200.000000
+SP Bush flow shift for origin 13 and arc 42 is 606.718266
+LP Bush flow shift for origin 1 and arc 15 is -700.000000
+SP Bush flow shift for origin 8 and arc 7 is 1200.000000
+SP Bush flow shift for origin 20 and arc 53 is 200.000000
+SP Bush flow shift for origin 13 and arc 40 is -759.488038
+SP Bush flow shift for origin 1 and arc 24 is 700.000000
+SP Bush flow shift for origin 8 and arc 10 is 1200.000000
+SP Bush flow shift for origin 20 and arc 59 is 200.000000
+LP Bush flow shift for origin 13 and arc 45 is -870.595818
+SP Bush flow shift for origin 1 and arc 12 is 700.000000
+SP Bush flow shift for origin 8 and arc 22 is 1200.000000
+SP Bush flow shift for origin 20 and arc 63 is 200.000000
+LP Bush flow shift for origin 13 and arc 40 is -1630.083856
+SP Bush flow shift for origin 1 and arc 14 is 700.000000
+LP Bush flow shift for origin 8 and arc 33 is -600.000000
+LP Bush flow shift for origin 20 and arc 25 is -400.000000
+SP Bush flow shift for origin 13 and arc 71 is 2070.595818
+LP Bush flow shift for origin 1 and arc 21 is -1400.000000
+LP Bush flow shift for origin 8 and arc 26 is -1800.000000
+SP Bush flow shift for origin 13 and arc 41 is 2070.595818
+LP Bush flow shift for origin 20 and arc 42 is -400.000000
+SP Bush flow shift for origin 1 and arc 54 is 600.000000
+SP Bush flow shift for origin 8 and arc 43 is 1100.000000
+LP Bush flow shift for origin 20 and arc 66 is -400.000000
+LP Bush flow shift for origin 14 and arc 18 is -300.000000
+SP Bush flow shift for origin 1 and arc 17 is 700.000000
+SP Bush flow shift for origin 8 and arc 27 is 1200.000000
+LP Bush flow shift for origin 20 and arc 64 is -600.000000
+LP Bush flow shift for origin 14 and arc 46 is -300.000000
+SP Bush flow shift for origin 1 and arc 19 is 700.000000
+SP Bush flow shift for origin 20 and arc 20 is 600.000000
+LP Bush flow shift for origin 8 and arc 28 is -3378.696070
+LP Bush flow shift for origin 14 and arc 51 is -300.000000
+LP Bush flow shift for origin 1 and arc 10 is -500.000000
+LP Bush flow shift for origin 8 and arc 24 is -3078.696070
+SP Bush flow shift for origin 20 and arc 16 is 600.000000
+LP Bush flow shift for origin 1 and arc 14 is 200.000000
+LP Bush flow shift for origin 14 and arc 57 is -300.000000
+SP Bush flow shift for origin 20 and arc 53 is 600.000000
+SP Bush flow shift for origin 8 and arc 21 is 1278.696070
+LP Bush flow shift for origin 1 and arc 3 is -500.000000
+LP Bush flow shift for origin 14 and arc 44 is -300.000000
+SP Bush flow shift for origin 8 and arc 23 is 1878.696070
+SP Bush flow shift for origin 20 and arc 59 is 600.000000
+SP Bush flow shift for origin 14 and arc 11 is 300.000000
+SP Bush flow shift for origin 1 and arc 5 is 500.000000
+LP Bush flow shift for origin 9 and arc 18 is -1400.000000
+SP Bush flow shift for origin 20 and arc 63 is 600.000000
+SP Bush flow shift for origin 1 and arc 1 is 500.000000
+SP Bush flow shift for origin 14 and arc 22 is 300.000000
+LP Bush flow shift for origin 20 and arc 39 is -600.000000
+SP Bush flow shift for origin 1 and arc 2 is 500.000000
+LP Bush flow shift for origin 9 and arc 46 is -1400.000000
+LP Bush flow shift for origin 20 and arc 70 is -600.000000
+SP Bush flow shift for origin 14 and arc 25 is 300.000000
+LP Bush flow shift for origin 2 and arc 48 is -100.000000
+LP Bush flow shift for origin 9 and arc 28 is -1400.000000
+LP Bush flow shift for origin 20 and arc 69 is -600.000000
+SP Bush flow shift for origin 14 and arc 42 is 300.000000
+LP Bush flow shift for origin 2 and arc 21 is -100.000000
+SP Bush flow shift for origin 9 and arc 11 is 1400.000000
+SP Bush flow shift for origin 20 and arc 26 is 400.000000
+LP Bush flow shift for origin 14 and arc 34 is -600.000000
+LP Bush flow shift for origin 2 and arc 15 is -100.000000
+SP Bush flow shift for origin 9 and arc 22 is 1400.000000
+SP Bush flow shift for origin 20 and arc 42 is 0.000000
+LP Bush flow shift for origin 14 and arc 37 is -600.000000
+LP Bush flow shift for origin 2 and arc 11 is -100.000000
+SP Bush flow shift for origin 9 and arc 25 is 1400.000000
+SP Bush flow shift for origin 20 and arc 66 is 0.000000
+LP Bush flow shift for origin 14 and arc 73 is -600.000000
+SP Bush flow shift for origin 2 and arc 29 is 100.000000
+LP Bush flow shift for origin 9 and arc 46 is -3000.000000
+LP Bush flow shift for origin 20 and arc 29 is -600.000000
+LP Bush flow shift for origin 14 and arc 65 is -600.000000
+SP Bush flow shift for origin 2 and arc 24 is 100.000000
+LP Bush flow shift for origin 9 and arc 28 is -3000.000000
+LP Bush flow shift for origin 20 and arc 42 is -600.000000
+LP Bush flow shift for origin 14 and arc 68 is -600.000000
+SP Bush flow shift for origin 2 and arc 12 is 100.000000
+SP Bush flow shift for origin 9 and arc 23 is 1600.000000
+LP Bush flow shift for origin 20 and arc 66 is -600.000000
+LP Bush flow shift for origin 14 and arc 45 is -600.000000
+LP Bush flow shift for origin 2 and arc 21 is -300.000000
+SP Bush flow shift for origin 9 and arc 25 is 3000.000000
+LP Bush flow shift for origin 20 and arc 64 is -1200.000000
+SP Bush flow shift for origin 14 and arc 7 is 600.000000
+SP Bush flow shift for origin 2 and arc 54 is 200.000000
+LP Bush flow shift for origin 9 and arc 69 is -1800.000000
+SP Bush flow shift for origin 20 and arc 48 is 600.000000
+SP Bush flow shift for origin 14 and arc 10 is 600.000000
+SP Bush flow shift for origin 2 and arc 17 is 200.000000
+LP Bush flow shift for origin 9 and arc 45 is -1800.000000
+SP Bush flow shift for origin 20 and arc 54 is 600.000000
+SP Bush flow shift for origin 14 and arc 22 is 900.000000
+SP Bush flow shift for origin 2 and arc 19 is 200.000000
+SP Bush flow shift for origin 9 and arc 41 is 1800.000000
+SP Bush flow shift for origin 20 and arc 59 is 1200.000000
+SP Bush flow shift for origin 14 and arc 25 is 900.000000
+LP Bush flow shift for origin 2 and arc 66 is -100.000000
+SP Bush flow shift for origin 9 and arc 43 is 1800.000000
+SP Bush flow shift for origin 20 and arc 63 is 1200.000000
+SP Bush flow shift for origin 14 and arc 42 is 900.000000
+LP Bush flow shift for origin 2 and arc 64 is -100.000000
+LP Bush flow shift for origin 9 and arc 32 is -84.794626
+LP Bush flow shift for origin 20 and arc 70 is -1000.000000
+LP Bush flow shift for origin 14 and arc 46 is -900.000000
+LP Bush flow shift for origin 2 and arc 74 is -100.000000
+LP Bush flow shift for origin 9 and arc 26 is -84.794626
+LP Bush flow shift for origin 14 and arc 51 is -900.000000
+LP Bush flow shift for origin 20 and arc 69 is -1000.000000
+LP Bush flow shift for origin 2 and arc 38 is -100.000000
+SP Bush flow shift for origin 9 and arc 6 is 84.794626
+LP Bush flow shift for origin 14 and arc 57 is -900.000000
+SP Bush flow shift for origin 20 and arc 43 is 400.000000
+SP Bush flow shift for origin 9 and arc 7 is 84.794626
+LP Bush flow shift for origin 2 and arc 36 is -100.000000
+SP Bush flow shift for origin 20 and arc 66 is -200.000000
+LP Bush flow shift for origin 14 and arc 44 is -900.000000
+SP Bush flow shift for origin 9 and arc 10 is 84.794626
+LP Bush flow shift for origin 2 and arc 6 is -100.000000
+LP Bush flow shift for origin 20 and arc 44 is -203.771935
+SP Bush flow shift for origin 14 and arc 23 is 600.000000
+SP Bush flow shift for origin 9 and arc 22 is 1484.794626
+SP Bush flow shift for origin 2 and arc 27 is 100.000000
+LP Bush flow shift for origin 20 and arc 66 is -403.771935
+SP Bush flow shift for origin 9 and arc 25 is 3084.794626
+SP Bush flow shift for origin 14 and arc 25 is 1500.000000
+SP Bush flow shift for origin 2 and arc 24 is 200.000000
+LP Bush flow shift for origin 20 and arc 64 is -1403.771935
+LP Bush flow shift for origin 9 and arc 55 is -2500.000000
+SP Bush flow shift for origin 14 and arc 42 is 1500.000000
+SP Bush flow shift for origin 2 and arc 12 is 200.000000
+LP Bush flow shift for origin 9 and arc 49 is -2500.000000
+SP Bush flow shift for origin 20 and arc 60 is 203.771935
+LP Bush flow shift for origin 14 and arc 37 is -1300.000000
+SP Bush flow shift for origin 2 and arc 8 is 100.000000
+LP Bush flow shift for origin 9 and arc 28 is -5500.000000
+SP Bush flow shift for origin 20 and arc 63 is 1403.771935
+LP Bush flow shift for origin 14 and arc 73 is -1300.000000
+SP Bush flow shift for origin 2 and arc 5 is 100.000000
+SP Bush flow shift for origin 9 and arc 67 is 2500.000000
+LP Bush flow shift for origin 20 and arc 69 is -1700.000000
+LP Bush flow shift for origin 14 and arc 65 is -1300.000000
+LP Bush flow shift for origin 2 and arc 64 is -200.000000
+SP Bush flow shift for origin 9 and arc 45 is 700.000000
+LP Bush flow shift for origin 20 and arc 64 is -2103.771935
+LP Bush flow shift for origin 14 and arc 68 is -1300.000000
+LP Bush flow shift for origin 2 and arc 74 is -200.000000
+SP Bush flow shift for origin 9 and arc 27 is 2500.000000
+SP Bush flow shift for origin 20 and arc 75 is 700.000000
+LP Bush flow shift for origin 14 and arc 45 is -1300.000000
+LP Bush flow shift for origin 2 and arc 38 is -200.000000
+LP Bush flow shift for origin 9 and arc 28 is -7534.759041
+SP Bush flow shift for origin 20 and arc 65 is 700.000000
+SP Bush flow shift for origin 14 and arc 32 is 700.000000
+LP Bush flow shift for origin 2 and arc 36 is -200.000000
+SP Bush flow shift for origin 9 and arc 51 is 2034.759041
+LP Bush flow shift for origin 21 and arc 4 is -400.000000
+SP Bush flow shift for origin 14 and arc 26 is 700.000000
+LP Bush flow shift for origin 2 and arc 6 is -200.000000
+SP Bush flow shift for origin 9 and arc 29 is 2034.759041
+LP Bush flow shift for origin 21 and arc 34 is -400.000000
+SP Bush flow shift for origin 2 and arc 71 is 100.000000
+SP Bush flow shift for origin 14 and arc 42 is 2200.000000
+LP Bush flow shift for origin 9 and arc 33 is -2100.000000
+LP Bush flow shift for origin 21 and arc 37 is -400.000000
+SP Bush flow shift for origin 2 and arc 41 is 100.000000
+LP Bush flow shift for origin 14 and arc 69 is -1000.000000
+LP Bush flow shift for origin 9 and arc 26 is -2184.794626
+LP Bush flow shift for origin 21 and arc 73 is -400.000000
+SP Bush flow shift for origin 2 and arc 33 is 100.000000
+LP Bush flow shift for origin 14 and arc 45 is -2300.000000
+SP Bush flow shift for origin 9 and arc 43 is 3900.000000
+SP Bush flow shift for origin 2 and arc 9 is 100.000000
+LP Bush flow shift for origin 21 and arc 72 is -400.000000
+SP Bush flow shift for origin 14 and arc 41 is 1000.000000
+SP Bush flow shift for origin 9 and arc 27 is 4600.000000
+SP Bush flow shift for origin 2 and arc 5 is 200.000000
+LP Bush flow shift for origin 21 and arc 69 is -400.000000
+SP Bush flow shift for origin 14 and arc 43 is 1000.000000
+LP Bush flow shift for origin 10 and arc 53 is -500.000000
+LP Bush flow shift for origin 2 and arc 75 is -100.000000
+SP Bush flow shift for origin 21 and arc 2 is 400.000000
+LP Bush flow shift for origin 14 and arc 49 is -700.000000
+LP Bush flow shift for origin 2 and arc 38 is -300.000000
+LP Bush flow shift for origin 10 and arc 49 is -500.000000
+SP Bush flow shift for origin 21 and arc 13 is 400.000000
+LP Bush flow shift for origin 14 and arc 51 is -1600.000000
+LP Bush flow shift for origin 2 and arc 36 is -300.000000
+SP Bush flow shift for origin 21 and arc 18 is 400.000000
+LP Bush flow shift for origin 10 and arc 51 is -500.000000
+LP Bush flow shift for origin 2 and arc 6 is -300.000000
+LP Bush flow shift for origin 14 and arc 57 is -1600.000000
+SP Bush flow shift for origin 21 and arc 16 is 400.000000
+LP Bush flow shift for origin 10 and arc 29 is -500.000000
+SP Bush flow shift for origin 2 and arc 41 is 200.000000
+LP Bush flow shift for origin 14 and arc 44 is -1600.000000
+SP Bush flow shift for origin 21 and arc 53 is 400.000000
+LP Bush flow shift for origin 10 and arc 31 is -500.000000
+SP Bush flow shift for origin 2 and arc 33 is 200.000000
+SP Bush flow shift for origin 14 and arc 59 is 700.000000
+SP Bush flow shift for origin 21 and arc 59 is 400.000000
+SP Bush flow shift for origin 10 and arc 19 is 500.000000
+SP Bush flow shift for origin 2 and arc 9 is 200.000000
+SP Bush flow shift for origin 14 and arc 67 is 700.000000
+SP Bush flow shift for origin 21 and arc 67 is 400.000000
+SP Bush flow shift for origin 10 and arc 23 is 500.000000
+SP Bush flow shift for origin 2 and arc 5 is 300.000000
+SP Bush flow shift for origin 14 and arc 45 is -1600.000000
+LP Bush flow shift for origin 21 and arc 39 is -1100.000000
+SP Bush flow shift for origin 10 and arc 12 is 500.000000
+LP Bush flow shift for origin 2 and arc 15 is -600.000000
+LP Bush flow shift for origin 14 and arc 30 is -500.000000
+LP Bush flow shift for origin 21 and arc 70 is -1100.000000
+SP Bush flow shift for origin 10 and arc 8 is 500.000000
+LP Bush flow shift for origin 2 and arc 11 is -600.000000
+LP Bush flow shift for origin 21 and arc 69 is -1500.000000
+LP Bush flow shift for origin 14 and arc 39 is -500.000000
+SP Bush flow shift for origin 10 and arc 30 is 500.000000
+SP Bush flow shift for origin 21 and arc 26 is 1100.000000
+SP Bush flow shift for origin 2 and arc 23 is 500.000000
+LP Bush flow shift for origin 14 and arc 43 is 500.000000
+SP Bush flow shift for origin 21 and arc 42 is 1100.000000
+LP Bush flow shift for origin 10 and arc 74 is -400.000000
+SP Bush flow shift for origin 2 and arc 12 is 700.000000
+SP Bush flow shift for origin 21 and arc 66 is 1100.000000
+SP Bush flow shift for origin 14 and arc 10 is 1100.000000
+LP Bush flow shift for origin 10 and arc 72 is -400.000000
+LP Bush flow shift for origin 21 and arc 34 is -500.000000
+LP Bush flow shift for origin 2 and arc 35 is -400.000000
+SP Bush flow shift for origin 14 and arc 22 is 1400.000000
+SP Bush flow shift for origin 10 and arc 68 is 400.000000
+LP Bush flow shift for origin 21 and arc 37 is -500.000000
+LP Bush flow shift for origin 2 and arc 6 is -700.000000
+SP Bush flow shift for origin 14 and arc 25 is 2000.000000
+SP Bush flow shift for origin 10 and arc 71 is 400.000000
+LP Bush flow shift for origin 21 and arc 73 is -500.000000
+SP Bush flow shift for origin 2 and arc 9 is 600.000000
+SP Bush flow shift for origin 14 and arc 42 is 2700.000000
+LP Bush flow shift for origin 10 and arc 13 is -200.000000
+LP Bush flow shift for origin 21 and arc 72 is -500.000000
+SP Bush flow shift for origin 2 and arc 5 is 700.000000
+LP Bush flow shift for origin 14 and arc 58 is -1044.988882
+LP Bush flow shift for origin 10 and arc 11 is -200.000000
+LP Bush flow shift for origin 21 and arc 69 is -1600.000000
+LP Bush flow shift for origin 3 and arc 74 is -200.000000
+LP Bush flow shift for origin 14 and arc 44 is -2644.988882
+LP Bush flow shift for origin 10 and arc 8 is 300.000000
+SP Bush flow shift for origin 21 and arc 7 is 100.000000
+LP Bush flow shift for origin 3 and arc 38 is -200.000000
+SP Bush flow shift for origin 10 and arc 0 is 200.000000
+SP Bush flow shift for origin 14 and arc 67 is 1744.988882
+SP Bush flow shift for origin 21 and arc 10 is 100.000000
+LP Bush flow shift for origin 3 and arc 36 is -200.000000
+SP Bush flow shift for origin 10 and arc 4 is 200.000000
+SP Bush flow shift for origin 14 and arc 45 is -555.011118
+SP Bush flow shift for origin 21 and arc 22 is 100.000000
+SP Bush flow shift for origin 10 and arc 7 is 200.000000
+LP Bush flow shift for origin 3 and arc 6 is -200.000000
+LP Bush flow shift for origin 14 and arc 57 is -1766.206304
+SP Bush flow shift for origin 21 and arc 20 is 100.000000
+LP Bush flow shift for origin 3 and arc 7 is -200.000000
+LP Bush flow shift for origin 10 and arc 25 is -234.808402
+LP Bush flow shift for origin 14 and arc 44 is -2811.195186
+SP Bush flow shift for origin 21 and arc 16 is 500.000000
+LP Bush flow shift for origin 10 and arc 31 is -734.808402
+SP Bush flow shift for origin 3 and arc 61 is 200.000000
+SP Bush flow shift for origin 14 and arc 29 is 166.206304
+SP Bush flow shift for origin 21 and arc 53 is 500.000000
+SP Bush flow shift for origin 10 and arc 12 is 734.808402
+SP Bush flow shift for origin 14 and arc 42 is 2866.206304
+SP Bush flow shift for origin 3 and arc 55 is 200.000000
+SP Bush flow shift for origin 21 and arc 59 is 500.000000
+SP Bush flow shift for origin 10 and arc 8 is 534.808402
+LP Bush flow shift for origin 14 and arc 39 is -1900.000000
+SP Bush flow shift for origin 3 and arc 17 is 200.000000
+SP Bush flow shift for origin 21 and arc 67 is 500.000000
+SP Bush flow shift for origin 10 and arc 30 is 734.808402
+LP Bush flow shift for origin 14 and arc 43 is -900.000000
+LP Bush flow shift for origin 21 and arc 25 is -143.287601
+SP Bush flow shift for origin 3 and arc 19 is 200.000000
+LP Bush flow shift for origin 10 and arc 40 is -2355.074035
+LP Bush flow shift for origin 21 and arc 42 is 956.712399
+SP Bush flow shift for origin 14 and arc 26 is 2100.000000
+SP Bush flow shift for origin 3 and arc 23 is 200.000000
+LP Bush flow shift for origin 21 and arc 66 is 956.712399
+LP Bush flow shift for origin 10 and arc 33 is -2355.074035
+SP Bush flow shift for origin 14 and arc 42 is 4266.206304
+SP Bush flow shift for origin 21 and arc 20 is 243.287601
+SP Bush flow shift for origin 3 and arc 12 is 200.000000
+SP Bush flow shift for origin 10 and arc 27 is 2355.074035
+LP Bush flow shift for origin 15 and arc 37 is -700.000000
+SP Bush flow shift for origin 21 and arc 16 is 643.287601
+SP Bush flow shift for origin 3 and arc 8 is 200.000000
+SP Bush flow shift for origin 10 and arc 31 is 1620.265633
+LP Bush flow shift for origin 15 and arc 73 is -700.000000
+SP Bush flow shift for origin 21 and arc 53 is 643.287601
+LP Bush flow shift for origin 3 and arc 52 is -200.000000
+LP Bush flow shift for origin 15 and arc 65 is -700.000000
+LP Bush flow shift for origin 11 and arc 57 is -1300.000000
+SP Bush flow shift for origin 21 and arc 59 is 643.287601
+LP Bush flow shift for origin 3 and arc 48 is -200.000000
+LP Bush flow shift for origin 15 and arc 61 is -700.000000
+LP Bush flow shift for origin 11 and arc 44 is -1300.000000
+SP Bush flow shift for origin 21 and arc 67 is 643.287601
+LP Bush flow shift for origin 3 and arc 21 is -200.000000
+LP Bush flow shift for origin 15 and arc 55 is -700.000000
+LP Bush flow shift for origin 11 and arc 66 is -1300.000000
+LP Bush flow shift for origin 21 and arc 57 is -201.613100
+LP Bush flow shift for origin 3 and arc 15 is -200.000000
+SP Bush flow shift for origin 15 and arc 6 is 700.000000
+LP Bush flow shift for origin 11 and arc 64 is -1300.000000
+LP Bush flow shift for origin 21 and arc 44 is -201.613100
+LP Bush flow shift for origin 3 and arc 11 is -200.000000
+SP Bush flow shift for origin 15 and arc 7 is 700.000000
+LP Bush flow shift for origin 11 and arc 74 is -1300.000000
+LP Bush flow shift for origin 21 and arc 66 is 755.099299
+SP Bush flow shift for origin 3 and arc 44 is 200.000000
+SP Bush flow shift for origin 15 and arc 10 is 700.000000
+LP Bush flow shift for origin 11 and arc 38 is -1300.000000
+SP Bush flow shift for origin 21 and arc 48 is 201.613100
+SP Bush flow shift for origin 3 and arc 27 is 200.000000
+SP Bush flow shift for origin 15 and arc 22 is 700.000000
+LP Bush flow shift for origin 11 and arc 36 is -1300.000000
+SP Bush flow shift for origin 21 and arc 54 is 201.613100
+SP Bush flow shift for origin 3 and arc 24 is 200.000000
+SP Bush flow shift for origin 15 and arc 20 is 700.000000
+SP Bush flow shift for origin 11 and arc 29 is 1300.000000
+SP Bush flow shift for origin 21 and arc 59 is 844.900701
+SP Bush flow shift for origin 3 and arc 12 is 400.000000
+SP Bush flow shift for origin 15 and arc 16 is 700.000000
+SP Bush flow shift for origin 11 and arc 31 is 1300.000000
+SP Bush flow shift for origin 21 and arc 67 is 844.900701
+LP Bush flow shift for origin 3 and arc 71 is -400.000000
+SP Bush flow shift for origin 15 and arc 53 is 700.000000
+SP Bush flow shift for origin 11 and arc 35 is 1300.000000
+LP Bush flow shift for origin 21 and arc 72 is -3081.319694
+LP Bush flow shift for origin 3 and arc 41 is -400.000000
+LP Bush flow shift for origin 15 and arc 69 is -500.000000
+LP Bush flow shift for origin 11 and arc 53 is -700.000000
+LP Bush flow shift for origin 21 and arc 69 is -4181.319694
+LP Bush flow shift for origin 3 and arc 33 is -400.000000
+LP Bush flow shift for origin 15 and arc 62 is -500.000000
+LP Bush flow shift for origin 11 and arc 59 is -700.000000
+SP Bush flow shift for origin 21 and arc 65 is 2581.319694
+LP Bush flow shift for origin 3 and arc 9 is -400.000000
+SP Bush flow shift for origin 15 and arc 75 is 500.000000
+LP Bush flow shift for origin 11 and arc 63 is -700.000000
+SP Bush flow shift for origin 21 and arc 68 is 2581.319694
+SP Bush flow shift for origin 15 and arc 65 is -200.000000
+SP Bush flow shift for origin 3 and arc 62 is 400.000000
+LP Bush flow shift for origin 11 and arc 74 is -2000.000000
+LP Bush flow shift for origin 21 and arc 70 is -2300.000000
+SP Bush flow shift for origin 15 and arc 61 is -200.000000
+SP Bush flow shift for origin 3 and arc 55 is 600.000000
+LP Bush flow shift for origin 11 and arc 38 is -2000.000000
+LP Bush flow shift for origin 21 and arc 69 is -5381.319694
+LP Bush flow shift for origin 15 and arc 25 is -2658.831356
+SP Bush flow shift for origin 3 and arc 17 is 600.000000
+LP Bush flow shift for origin 11 and arc 36 is -2000.000000
+SP Bush flow shift for origin 21 and arc 43 is 1200.000000
+LP Bush flow shift for origin 15 and arc 47 is -2658.831356
+SP Bush flow shift for origin 3 and arc 19 is 600.000000
+SP Bush flow shift for origin 11 and arc 19 is 700.000000
+SP Bush flow shift for origin 21 and arc 66 is 1955.099299
+SP Bush flow shift for origin 15 and arc 20 is 3358.831356
+SP Bush flow shift for origin 3 and arc 23 is 600.000000
+SP Bush flow shift for origin 11 and arc 23 is 700.000000
+LP Bush flow shift for origin 22 and arc 29 is -600.000000
+SP Bush flow shift for origin 15 and arc 16 is 3358.831356
+SP Bush flow shift for origin 3 and arc 12 is 800.000000
+SP Bush flow shift for origin 11 and arc 12 is 700.000000
+LP Bush flow shift for origin 22 and arc 31 is -600.000000
+SP Bush flow shift for origin 15 and arc 53 is 3358.831356
+SP Bush flow shift for origin 3 and arc 8 is 600.000000
+SP Bush flow shift for origin 11 and arc 8 is 700.000000
+LP Bush flow shift for origin 22 and arc 39 is -600.000000
+SP Bush flow shift for origin 15 and arc 49 is 2658.831356
+SP Bush flow shift for origin 11 and arc 5 is 700.000000
+LP Bush flow shift for origin 3 and arc 48 is -700.000000
+LP Bush flow shift for origin 22 and arc 70 is -600.000000
+LP Bush flow shift for origin 15 and arc 52 is -2521.433417
+LP Bush flow shift for origin 3 and arc 21 is -700.000000
+SP Bush flow shift for origin 11 and arc 34 is 700.000000
+SP Bush flow shift for origin 22 and arc 48 is 600.000000
+LP Bush flow shift for origin 15 and arc 48 is -2521.433417
+LP Bush flow shift for origin 3 and arc 15 is -700.000000
+LP Bush flow shift for origin 11 and arc 66 is -2300.000000
+SP Bush flow shift for origin 22 and arc 54 is 600.000000
+SP Bush flow shift for origin 15 and arc 60 is 2521.433417
+LP Bush flow shift for origin 3 and arc 11 is -700.000000
+LP Bush flow shift for origin 11 and arc 64 is -2300.000000
+SP Bush flow shift for origin 22 and arc 59 is 600.000000
+SP Bush flow shift for origin 15 and arc 55 is 1821.433417
+SP Bush flow shift for origin 3 and arc 29 is 500.000000
+LP Bush flow shift for origin 11 and arc 74 is -3000.000000
+SP Bush flow shift for origin 22 and arc 67 is 600.000000
+SP Bush flow shift for origin 15 and arc 49 is 5180.264773
+SP Bush flow shift for origin 3 and arc 24 is 700.000000
+LP Bush flow shift for origin 11 and arc 38 is -3000.000000
+LP Bush flow shift for origin 15 and arc 46 is -57.376618
+SP Bush flow shift for origin 22 and arc 71 is 600.000000
+SP Bush flow shift for origin 3 and arc 12 is 1300.000000
+LP Bush flow shift for origin 11 and arc 36 is -3000.000000
+SP Bush flow shift for origin 15 and arc 16 is 3416.207974
+LP Bush flow shift for origin 22 and arc 25 is -500.000000
+LP Bush flow shift for origin 3 and arc 21 is -1500.000000
+SP Bush flow shift for origin 11 and arc 27 is 1000.000000
+SP Bush flow shift for origin 15 and arc 53 is 3416.207974
+LP Bush flow shift for origin 22 and arc 31 is -1100.000000
+SP Bush flow shift for origin 3 and arc 54 is 800.000000
+SP Bush flow shift for origin 11 and arc 31 is 2300.000000
+SP Bush flow shift for origin 15 and arc 49 is 5237.641391
+LP Bush flow shift for origin 22 and arc 39 is -1100.000000
+SP Bush flow shift for origin 3 and arc 17 is 1400.000000
+SP Bush flow shift for origin 11 and arc 35 is 2300.000000
+LP Bush flow shift for origin 15 and arc 47 is -3603.009168
+LP Bush flow shift for origin 22 and arc 70 is -1100.000000
+SP Bush flow shift for origin 3 and arc 19 is 1400.000000
+LP Bush flow shift for origin 11 and arc 64 is -3000.000000
+SP Bush flow shift for origin 15 and arc 50 is 944.177812
+SP Bush flow shift for origin 22 and arc 20 is 500.000000
+LP Bush flow shift for origin 3 and arc 38 is -400.000000
+LP Bush flow shift for origin 11 and arc 74 is -3700.000000
+SP Bush flow shift for origin 15 and arc 48 is -1577.255605
+SP Bush flow shift for origin 22 and arc 16 is 500.000000
+LP Bush flow shift for origin 3 and arc 36 is -400.000000
+SP Bush flow shift for origin 11 and arc 71 is 700.000000
+LP Bush flow shift for origin 16 and arc 37 is -600.000000
+SP Bush flow shift for origin 22 and arc 53 is 500.000000
+LP Bush flow shift for origin 3 and arc 6 is -400.000000
+SP Bush flow shift for origin 11 and arc 75 is 700.000000
+LP Bush flow shift for origin 16 and arc 73 is -600.000000
+SP Bush flow shift for origin 22 and arc 59 is 1100.000000
+LP Bush flow shift for origin 3 and arc 7 is -400.000000
+LP Bush flow shift for origin 11 and arc 70 is -700.000000
+LP Bush flow shift for origin 16 and arc 65 is -600.000000
+SP Bush flow shift for origin 22 and arc 67 is 1100.000000
+SP Bush flow shift for origin 3 and arc 72 is 200.000000
+LP Bush flow shift for origin 11 and arc 75 is 0.000000
+LP Bush flow shift for origin 16 and arc 61 is -600.000000
+SP Bush flow shift for origin 22 and arc 71 is 1100.000000
+SP Bush flow shift for origin 3 and arc 41 is -200.000000
+LP Bush flow shift for origin 11 and arc 38 is -3700.000000
+LP Bush flow shift for origin 16 and arc 58 is -600.000000
+LP Bush flow shift for origin 22 and arc 11 is -100.000000
+SP Bush flow shift for origin 3 and arc 33 is -200.000000
+LP Bush flow shift for origin 11 and arc 36 is -3700.000000
+LP Bush flow shift for origin 16 and arc 52 is -600.000000
+LP Bush flow shift for origin 22 and arc 8 is -100.000000
+SP Bush flow shift for origin 3 and arc 9 is -200.000000
+SP Bush flow shift for origin 11 and arc 33 is 700.000000
+SP Bush flow shift for origin 16 and arc 6 is 600.000000
+LP Bush flow shift for origin 22 and arc 30 is -100.000000
+LP Bush flow shift for origin 3 and arc 40 is -500.000000
+SP Bush flow shift for origin 11 and arc 35 is 3000.000000
+SP Bush flow shift for origin 16 and arc 7 is 600.000000
+LP Bush flow shift for origin 22 and arc 39 is -1200.000000
+LP Bush flow shift for origin 3 and arc 33 is -700.000000
+LP Bush flow shift for origin 11 and arc 25 is -1200.000000
+SP Bush flow shift for origin 16 and arc 10 is 600.000000
+LP Bush flow shift for origin 22 and arc 70 is -1200.000000
+LP Bush flow shift for origin 3 and arc 9 is -700.000000
+LP Bush flow shift for origin 11 and arc 31 is 1100.000000
+SP Bush flow shift for origin 16 and arc 22 is 600.000000
+SP Bush flow shift for origin 22 and arc 18 is 100.000000
+SP Bush flow shift for origin 3 and arc 27 is 700.000000
+LP Bush flow shift for origin 11 and arc 35 is 1800.000000
+SP Bush flow shift for origin 16 and arc 25 is 600.000000
+SP Bush flow shift for origin 22 and arc 16 is 600.000000
+SP Bush flow shift for origin 3 and arc 24 is 1200.000000
+SP Bush flow shift for origin 11 and arc 12 is 1900.000000
+SP Bush flow shift for origin 16 and arc 50 is 600.000000
+SP Bush flow shift for origin 22 and arc 53 is 600.000000
+SP Bush flow shift for origin 3 and arc 12 is 1800.000000
+SP Bush flow shift for origin 11 and arc 8 is 1900.000000
+LP Bush flow shift for origin 16 and arc 69 is -600.000000
+SP Bush flow shift for origin 22 and arc 59 is 1200.000000
+SP Bush flow shift for origin 3 and arc 8 is 1100.000000
+SP Bush flow shift for origin 11 and arc 5 is 1900.000000
+LP Bush flow shift for origin 16 and arc 62 is -600.000000
+SP Bush flow shift for origin 22 and arc 67 is 1200.000000
+LP Bush flow shift for origin 3 and arc 15 is -2010.554634
+SP Bush flow shift for origin 11 and arc 34 is 1900.000000
+SP Bush flow shift for origin 22 and arc 71 is 1200.000000
+LP Bush flow shift for origin 16 and arc 58 is -1200.000000
+LP Bush flow shift for origin 3 and arc 11 is -2010.554634
+LP Bush flow shift for origin 22 and arc 31 is -2743.827700
+LP Bush flow shift for origin 16 and arc 52 is -1200.000000
+SP Bush flow shift for origin 3 and arc 23 is 1910.554634
+LP Bush flow shift for origin 22 and arc 39 is -2843.827700
+SP Bush flow shift for origin 16 and arc 41 is 600.000000
+SP Bush flow shift for origin 3 and arc 12 is 3110.554634
+LP Bush flow shift for origin 22 and arc 70 is -2843.827700
+SP Bush flow shift for origin 16 and arc 43 is 600.000000
+LP Bush flow shift for origin 3 and arc 13 is -200.000000
+SP Bush flow shift for origin 22 and arc 42 is 1643.827700
+SP Bush flow shift for origin 16 and arc 27 is 600.000000
+LP Bush flow shift for origin 3 and arc 11 is -2210.554634
+SP Bush flow shift for origin 22 and arc 66 is 1643.827700
+SP Bush flow shift for origin 16 and arc 50 is 1200.000000
+LP Bush flow shift for origin 3 and arc 8 is 900.000000
+SP Bush flow shift for origin 22 and arc 71 is 2843.827700
+LP Bush flow shift for origin 16 and arc 18 is -700.000000
+SP Bush flow shift for origin 3 and arc 0 is 200.000000
+LP Bush flow shift for origin 22 and arc 32 is -700.000000
+LP Bush flow shift for origin 16 and arc 16 is -700.000000
+SP Bush flow shift for origin 3 and arc 4 is 200.000000
+LP Bush flow shift for origin 22 and arc 39 is -3543.827700
+LP Bush flow shift for origin 16 and arc 53 is -700.000000
+SP Bush flow shift for origin 3 and arc 7 is -200.000000
+LP Bush flow shift for origin 22 and arc 70 is -3543.827700
+LP Bush flow shift for origin 16 and arc 49 is -700.000000
+LP Bush flow shift for origin 4 and arc 52 is -100.000000
+SP Bush flow shift for origin 22 and arc 37 is 700.000000
+LP Bush flow shift for origin 16 and arc 51 is -700.000000
+LP Bush flow shift for origin 4 and arc 48 is -100.000000
+SP Bush flow shift for origin 22 and arc 73 is 700.000000
+SP Bush flow shift for origin 16 and arc 11 is 700.000000
+LP Bush flow shift for origin 4 and arc 28 is -100.000000
+SP Bush flow shift for origin 16 and arc 22 is 1300.000000
+SP Bush flow shift for origin 22 and arc 72 is 700.000000
+SP Bush flow shift for origin 4 and arc 44 is 100.000000
+SP Bush flow shift for origin 16 and arc 25 is 1300.000000
+SP Bush flow shift for origin 4 and arc 27 is 100.000000
+LP Bush flow shift for origin 23 and arc 64 is -1027.789517
+SP Bush flow shift for origin 16 and arc 50 is 1900.000000
+LP Bush flow shift for origin 4 and arc 48 is -300.000000
+LP Bush flow shift for origin 23 and arc 74 is -1027.789517
+LP Bush flow shift for origin 16 and arc 39 is -1000.000000
+LP Bush flow shift for origin 4 and arc 28 is -300.000000
+SP Bush flow shift for origin 23 and arc 71 is 1027.789517
+LP Bush flow shift for origin 16 and arc 43 is -400.000000
+SP Bush flow shift for origin 4 and arc 29 is 200.000000
+SP Bush flow shift for origin 23 and arc 75 is 1027.789517
+LP Bush flow shift for origin 16 and arc 56 is -1000.000000
+LP Bush flow shift for origin 4 and arc 28 is -800.000000
+LP Bush flow shift for origin 16 and arc 52 is -2200.000000
+LP Bush flow shift for origin 4 and arc 24 is -500.000000
+SP Bush flow shift for origin 4 and arc 54 is 500.000000
+SP Bush flow shift for origin 16 and arc 26 is 1000.000000
+SP Bush flow shift for origin 4 and arc 17 is 500.000000
+SP Bush flow shift for origin 16 and arc 50 is 2900.000000
+SP Bush flow shift for origin 4 and arc 19 is 500.000000
+LP Bush flow shift for origin 16 and arc 62 is -2300.000000
+SP Bush flow shift for origin 4 and arc 23 is 500.000000
+LP Bush flow shift for origin 16 and arc 58 is -2900.000000
+LP Bush flow shift for origin 4 and arc 33 is -200.000000
+LP Bush flow shift for origin 16 and arc 52 is -3900.000000
+LP Bush flow shift for origin 4 and arc 9 is -200.000000
+SP Bush flow shift for origin 16 and arc 45 is 1700.000000
+LP Bush flow shift for origin 4 and arc 10 is -200.000000
+SP Bush flow shift for origin 16 and arc 27 is 2300.000000
+SP Bush flow shift for origin 4 and arc 43 is 200.000000
+SP Bush flow shift for origin 16 and arc 50 is 4600.000000
+SP Bush flow shift for origin 4 and arc 27 is 300.000000
+LP Bush flow shift for origin 16 and arc 16 is -886.490036
+SP Bush flow shift for origin 4 and arc 24 is -300.000000
+LP Bush flow shift for origin 16 and arc 53 is -886.490036
+SP Bush flow shift for origin 4 and arc 12 is 200.000000
+LP Bush flow shift for origin 16 and arc 49 is -886.490036
+LP Bush flow shift for origin 4 and arc 15 is -800.000000
+LP Bush flow shift for origin 16 and arc 51 is -886.490036
+LP Bush flow shift for origin 4 and arc 11 is -800.000000
+SP Bush flow shift for origin 16 and arc 23 is 186.490036
+SP Bush flow shift for origin 4 and arc 23 is 1300.000000
+SP Bush flow shift for origin 16 and arc 25 is 1486.490036
+SP Bush flow shift for origin 4 and arc 12 is 1000.000000
+SP Bush flow shift for origin 16 and arc 50 is 4786.490036
+LP Bush flow shift for origin 5 and arc 38 is -100.000000
+LP Bush flow shift for origin 16 and arc 58 is -5330.751542
+LP Bush flow shift for origin 5 and arc 36 is -100.000000
+LP Bush flow shift for origin 16 and arc 52 is -6330.751542
+LP Bush flow shift for origin 5 and arc 6 is -100.000000
+SP Bush flow shift for origin 16 and arc 55 is 2430.751542
+LP Bush flow shift for origin 5 and arc 7 is -100.000000
+SP Bush flow shift for origin 16 and arc 49 is 1544.261507
+LP Bush flow shift for origin 5 and arc 10 is -100.000000
+SP Bush flow shift for origin 16 and arc 51 is 1544.261507
+SP Bush flow shift for origin 5 and arc 72 is 100.000000
+LP Bush flow shift for origin 16 and arc 56 is -3200.000000
+SP Bush flow shift for origin 5 and arc 41 is 100.000000
+LP Bush flow shift for origin 16 and arc 52 is -8530.751542
+SP Bush flow shift for origin 5 and arc 43 is 100.000000
+SP Bush flow shift for origin 16 and arc 27 is 4500.000000
+SP Bush flow shift for origin 5 and arc 27 is 100.000000
+SP Bush flow shift for origin 16 and arc 50 is 6986.490036
+SP Bush flow shift for origin 5 and arc 24 is 100.000000
+LP Bush flow shift for origin 17 and arc 37 is -200.000000
+SP Bush flow shift for origin 5 and arc 12 is 100.000000
+LP Bush flow shift for origin 17 and arc 73 is -200.000000
+LP Bush flow shift for origin 5 and arc 52 is -200.000000
+LP Bush flow shift for origin 17 and arc 65 is -200.000000
+LP Bush flow shift for origin 5 and arc 48 is -200.000000
+LP Bush flow shift for origin 17 and arc 61 is -200.000000
+LP Bush flow shift for origin 5 and arc 21 is -200.000000
+LP Bush flow shift for origin 17 and arc 55 is -200.000000
+LP Bush flow shift for origin 5 and arc 15 is -200.000000
+SP Bush flow shift for origin 17 and arc 6 is 200.000000
+SP Bush flow shift for origin 5 and arc 44 is 200.000000
+SP Bush flow shift for origin 17 and arc 7 is 200.000000
+SP Bush flow shift for origin 5 and arc 27 is 300.000000
+SP Bush flow shift for origin 17 and arc 10 is 200.000000
+SP Bush flow shift for origin 5 and arc 24 is 300.000000
+SP Bush flow shift for origin 17 and arc 22 is 200.000000
+SP Bush flow shift for origin 5 and arc 12 is 300.000000
+SP Bush flow shift for origin 17 and arc 20 is 200.000000
+SP Bush flow shift for origin 5 and arc 14 is 200.000000
+SP Bush flow shift for origin 17 and arc 16 is 200.000000
+LP Bush flow shift for origin 5 and arc 62 is -200.000000
+SP Bush flow shift for origin 17 and arc 53 is 200.000000
+LP Bush flow shift for origin 5 and arc 55 is -200.000000
+LP Bush flow shift for origin 17 and arc 39 is -200.000000
+LP Bush flow shift for origin 5 and arc 17 is -200.000000
+LP Bush flow shift for origin 17 and arc 43 is -200.000000
+LP Bush flow shift for origin 5 and arc 19 is -200.000000
+LP Bush flow shift for origin 17 and arc 56 is -200.000000
+LP Bush flow shift for origin 5 and arc 15 is -400.000000
+LP Bush flow shift for origin 17 and arc 60 is -200.000000
+SP Bush flow shift for origin 5 and arc 45 is 200.000000
+LP Bush flow shift for origin 17 and arc 55 is -400.000000
+SP Bush flow shift for origin 5 and arc 27 is 500.000000
+SP Bush flow shift for origin 17 and arc 26 is 200.000000
+SP Bush flow shift for origin 5 and arc 24 is 500.000000
+SP Bush flow shift for origin 17 and arc 24 is 200.000000
+SP Bush flow shift for origin 5 and arc 12 is 500.000000
+SP Bush flow shift for origin 17 and arc 20 is 400.000000
+SP Bush flow shift for origin 5 and arc 14 is 400.000000
+SP Bush flow shift for origin 17 and arc 16 is 400.000000
+LP Bush flow shift for origin 5 and arc 48 is -700.000000
+SP Bush flow shift for origin 17 and arc 53 is 400.000000
+LP Bush flow shift for origin 5 and arc 21 is -700.000000
+LP Bush flow shift for origin 17 and arc 69 is -100.000000
+LP Bush flow shift for origin 5 and arc 15 is -900.000000
+LP Bush flow shift for origin 17 and arc 62 is -100.000000
+SP Bush flow shift for origin 5 and arc 29 is 500.000000
+SP Bush flow shift for origin 17 and arc 75 is 100.000000
+SP Bush flow shift for origin 5 and arc 24 is 1000.000000
+SP Bush flow shift for origin 17 and arc 65 is -100.000000
+SP Bush flow shift for origin 5 and arc 12 is 1000.000000
+SP Bush flow shift for origin 17 and arc 61 is -100.000000
+SP Bush flow shift for origin 5 and arc 14 is 900.000000
+LP Bush flow shift for origin 17 and arc 42 is -700.000000
+LP Bush flow shift for origin 5 and arc 33 is -200.000000
+LP Bush flow shift for origin 17 and arc 56 is -900.000000
+LP Bush flow shift for origin 5 and arc 9 is -200.000000
+LP Bush flow shift for origin 17 and arc 60 is -900.000000
+LP Bush flow shift for origin 5 and arc 10 is -300.000000
+LP Bush flow shift for origin 17 and arc 55 is -1100.000000
+SP Bush flow shift for origin 5 and arc 43 is 300.000000
+SP Bush flow shift for origin 17 and arc 24 is 900.000000
+SP Bush flow shift for origin 5 and arc 27 is 700.000000
+SP Bush flow shift for origin 17 and arc 20 is 1100.000000
+SP Bush flow shift for origin 5 and arc 24 is 1200.000000
+SP Bush flow shift for origin 17 and arc 16 is 1100.000000
+SP Bush flow shift for origin 5 and arc 12 is 1200.000000
+SP Bush flow shift for origin 17 and arc 53 is 1100.000000
+LP Bush flow shift for origin 5 and arc 21 is -1600.000000
+LP Bush flow shift for origin 17 and arc 57 is -600.000000
+SP Bush flow shift for origin 5 and arc 54 is 900.000000
+LP Bush flow shift for origin 17 and arc 60 is -1500.000000
+SP Bush flow shift for origin 5 and arc 17 is 700.000000
+LP Bush flow shift for origin 17 and arc 55 is -1700.000000
+SP Bush flow shift for origin 5 and arc 19 is 700.000000
+SP Bush flow shift for origin 17 and arc 48 is 600.000000
+SP Bush flow shift for origin 17 and arc 54 is 600.000000
+to shift amount for node 0 is 4404.762917
+to shift amount for node 1 is 1200.000000
+to shift amount for node 2 is 200.000000
+to shift amount for node 3 is 3000.000000
+to shift amount for node 4 is 900.000000
+to shift amount for node 5 is 2800.000000
+to shift amount for node 6 is 144.177812
+to shift amount for node 7 is 6164.111142
+to shift amount for node 8 is -900.000000
+to shift amount for node 9 is 2289.142919
+to shift amount for node 10 is 234.808402
+to shift amount for node 11 is -7400.000000
+to shift amount for node 12 is 7105.391694
+to shift amount for node 13 is 681.023924
+to shift amount for node 14 is -3100.000000
+to shift amount for node 15 is 10798.027177
+to shift amount for node 16 is -455.738493
+to shift amount for node 17 is -100.000000
+to shift amount for node 18 is 567.196190
+to shift amount for node 19 is 3189.459536
+to shift amount for node 20 is 596.228065
+to shift amount for node 21 is 1188.188301
+to shift amount for node 22 is 1700.000000
+to shift amount for node 23 is 0.000000
+total shifting shift amount is 
+to shift amount for arc 0 is -1002.381458 and new flow is 2797.618542
+to shift amount for arc 1 is 1902.381458 and new flow is 7902.381458
+to shift amount for arc 2 is 1200.000000 and new flow is 4000.000000
+to shift amount for arc 3 is -1902.381458 and new flow is 4697.618542
+to shift amount for arc 4 is -300.000000 and new flow is 6700.000000
+to shift amount for arc 5 is 8900.751325 and new flow is 17100.751325
+to shift amount for arc 6 is 1484.794626 and new flow is 8884.794626
+to shift amount for arc 7 is 4084.794626 and new flow is 14884.794626
+to shift amount for arc 8 is 9035.559727 and new flow is 21435.559727
+to shift amount for arc 9 is 400.000000 and new flow is 6600.000000
+to shift amount for arc 10 is 4984.794626 and new flow is 19884.794626
+to shift amount for arc 11 is -1510.554634 and new flow is 6289.445366
+to shift amount for arc 12 is 15346.114361 and new flow is 24746.114361
+to shift amount for arc 13 is 300.000000 and new flow is 5900.000000
+to shift amount for arc 14 is 1019.925751 and new flow is 9219.925751
+to shift amount for arc 15 is -6412.936092 and new flow is 6587.063908
+to shift amount for arc 16 is 8431.426568 and new flow is 19531.426568
+to shift amount for arc 17 is 6382.055571 and new flow is 19382.055571
+to shift amount for arc 18 is -1680.074249 and new flow is 10719.925751
+to shift amount for arc 19 is 9682.055571 and new flow is 16882.055571
+to shift amount for arc 20 is 12382.193206 and new flow is 13682.193206
+to shift amount for arc 21 is -11903.359501 and new flow is 1796.640499
+to shift amount for arc 22 is 8764.868876 and new flow is 20264.868876
+to shift amount for arc 23 is 10819.701169 and new flow is 13019.701169
+to shift amount for arc 24 is 8819.673797 and new flow is 27619.673797
+to shift amount for arc 25 is 675.936275 and new flow is 22575.936275
+to shift amount for arc 26 is 855.717336 and new flow is 16755.717336
+to shift amount for arc 27 is 18755.074035 and new flow is 34655.074035
+to shift amount for arc 28 is -11713.455110 and new flow is 5286.544890
+to shift amount for arc 29 is 5667.171649 and new flow is 13767.171649
+to shift amount for arc 30 is -365.191598 and new flow is 6034.808402
+to shift amount for arc 31 is -921.931934 and new flow is 16178.068066
+to shift amount for arc 32 is -1284.794626 and new flow is 6915.205374
+to shift amount for arc 33 is -4855.074035 and new flow is 8544.925965
+to shift amount for arc 34 is 4098.369867 and new flow is 9898.369867
+to shift amount for arc 35 is 1101.630133 and new flow is 9601.630133
+to shift amount for arc 36 is -4900.000000 and new flow is 10600.000000
+to shift amount for arc 37 is 100.000000 and new flow is 14400.000000
+to shift amount for arc 38 is -8600.000000 and new flow is 7500.000000
+to shift amount for arc 39 is -9784.339662 and new flow is 4815.660338
+to shift amount for arc 40 is -4985.157891 and new flow is 6914.842109
+to shift amount for arc 41 is 7070.595818 and new flow is 14370.595818
+to shift amount for arc 42 is 6115.043641 and new flow is 28215.043641
+to shift amount for arc 43 is 5300.000000 and new flow is 13600.000000
+to shift amount for arc 44 is -6182.786525 and new flow is 12817.213475
+to shift amount for arc 45 is 807.991159 and new flow is 20207.991159
+to shift amount for arc 46 is -4357.376618 and new flow is 3942.623382
+to shift amount for arc 47 is -8647.186980 and new flow is 6052.813020
+to shift amount for arc 48 is -4342.005157 and new flow is 10957.994843
+to shift amount for arc 49 is 1581.902897 and new flow is 20781.902897
+to shift amount for arc 50 is 8874.845660 and new flow is 14874.845660
+to shift amount for arc 51 is 779.020547 and new flow is 14779.020547
+to shift amount for arc 52 is -14852.184959 and new flow is 3047.815041
+to shift amount for arc 53 is 5131.426568 and new flow is 22031.426568
+to shift amount for arc 54 is 7073.128207 and new flow is 19873.128207
+to shift amount for arc 55 is 1452.184959 and new flow is 19052.184959
+to shift amount for arc 56 is -6424.822934 and new flow is 14575.177066
+to shift amount for arc 57 is -6523.485244 and new flow is 7976.514756
+to shift amount for arc 58 is -7250.917491 and new flow is 4849.082509
+to shift amount for arc 59 is 5692.781265 and new flow is 20692.781265
+to shift amount for arc 60 is 835.745816 and new flow is 11535.745816
+to shift amount for arc 61 is -100.000000 and new flow is 8900.000000
+to shift amount for arc 62 is -3900.000000 and new flow is 5400.000000
+to shift amount for arc 63 is -206.510157 and new flow is 6993.489843
+to shift amount for arc 64 is -6731.561453 and new flow is 6168.438547
+to shift amount for arc 65 is 1581.319694 and new flow is 12281.319694
+to shift amount for arc 66 is -1304.844936 and new flow is 18595.155064
+to shift amount for arc 67 is 8533.769770 and new flow is 15533.769770
+to shift amount for arc 68 is 1681.319694 and new flow is 10781.319694
+to shift amount for arc 69 is -13781.319694 and new flow is 2618.680306
+to shift amount for arc 70 is -8143.827700 and new flow is 3956.172300
+to shift amount for arc 71 is 4952.495128 and new flow is 15752.495128
+to shift amount for arc 72 is -2781.319694 and new flow is 5718.680306
+to shift amount for arc 73 is -3600.000000 and new flow is 11200.000000
+to shift amount for arc 74 is -6938.071610 and new flow is 5761.928390
+to shift amount for arc 75 is 738.071610 and new flow is 8438.071610
+total shifting shift amount is 35206.779585 and total flow is 927306.779585
+Iteration 1: gap 0.117346451261770, Beckmann 4538455.52555, time 0.055 s.
+LP Bush flow shift for origin 0 and arc 64 is -209.737719
+LP Bush flow shift for origin 6 and arc 43 is -141.599478
+LP Bush flow shift for origin 12 and arc 54 is -591.226649
+LP Bush flow shift for origin 18 and arc 73 is -300.000000
+LP Bush flow shift for origin 0 and arc 74 is -209.737719
+LP Bush flow shift for origin 6 and arc 66 is -141.599478
+LP Bush flow shift for origin 12 and arc 59 is -591.226649
+LP Bush flow shift for origin 18 and arc 72 is -300.000000
+LP Bush flow shift for origin 0 and arc 38 is -209.737719
+LP Bush flow shift for origin 6 and arc 62 is -141.599478
+LP Bush flow shift for origin 12 and arc 63 is -591.226649
+LP Bush flow shift for origin 18 and arc 69 is -300.000000
+LP Bush flow shift for origin 0 and arc 36 is -209.737719
+SP Bush flow shift for origin 6 and arc 70 is 141.599478
+LP Bush flow shift for origin 12 and arc 74 is -591.226649
+LP Bush flow shift for origin 18 and arc 45 is -300.000000
+LP Bush flow shift for origin 0 and arc 6 is -209.737719
+SP Bush flow shift for origin 6 and arc 75 is 141.599478
+SP Bush flow shift for origin 18 and arc 36 is 300.000000
+LP Bush flow shift for origin 12 and arc 38 is -591.226649
+SP Bush flow shift for origin 0 and arc 45 is 209.737719
+SP Bush flow shift for origin 6 and arc 65 is 141.599478
+SP Bush flow shift for origin 18 and arc 6 is 300.000000
+SP Bush flow shift for origin 0 and arc 27 is 209.737719
+SP Bush flow shift for origin 12 and arc 21 is 591.226649
+SP Bush flow shift for origin 18 and arc 7 is 300.000000
+SP Bush flow shift for origin 6 and arc 61 is 141.599478
+SP Bush flow shift for origin 0 and arc 24 is 209.737719
+SP Bush flow shift for origin 12 and arc 23 is 591.226649
+LP Bush flow shift for origin 6 and arc 69 is -200.000000
+SP Bush flow shift for origin 18 and arc 10 is 300.000000
+SP Bush flow shift for origin 0 and arc 12 is 209.737719
+SP Bush flow shift for origin 12 and arc 12 is 591.226649
+LP Bush flow shift for origin 6 and arc 62 is -341.599478
+SP Bush flow shift for origin 18 and arc 22 is 300.000000
+SP Bush flow shift for origin 0 and arc 8 is 209.737719
+SP Bush flow shift for origin 12 and arc 8 is 591.226649
+SP Bush flow shift for origin 6 and arc 75 is 341.599478
+SP Bush flow shift for origin 18 and arc 25 is 300.000000
+SP Bush flow shift for origin 0 and arc 5 is 209.737719
+SP Bush flow shift for origin 12 and arc 5 is 591.226649
+SP Bush flow shift for origin 6 and arc 65 is 341.599478
+SP Bush flow shift for origin 18 and arc 42 is 300.000000
+LP Bush flow shift for origin 0 and arc 52 is -300.000000
+SP Bush flow shift for origin 12 and arc 34 is 591.226649
+SP Bush flow shift for origin 6 and arc 61 is 341.599478
+LP Bush flow shift for origin 18 and arc 32 is -29.821192
+LP Bush flow shift for origin 0 and arc 48 is -300.000000
+SP Bush flow shift for origin 12 and arc 37 is 591.226649
+LP Bush flow shift for origin 6 and arc 66 is -229.125987
+LP Bush flow shift for origin 18 and arc 26 is -29.821192
+LP Bush flow shift for origin 0 and arc 21 is -300.000000
+LP Bush flow shift for origin 12 and arc 53 is -400.000000
+LP Bush flow shift for origin 6 and arc 62 is -429.125987
+SP Bush flow shift for origin 18 and arc 6 is 329.821192
+LP Bush flow shift for origin 0 and arc 15 is -300.000000
+LP Bush flow shift for origin 12 and arc 59 is -991.226649
+SP Bush flow shift for origin 6 and arc 56 is 87.526510
+SP Bush flow shift for origin 18 and arc 7 is 329.821192
+LP Bush flow shift for origin 0 and arc 3 is -300.000000
+LP Bush flow shift for origin 12 and arc 63 is -991.226649
+SP Bush flow shift for origin 6 and arc 60 is 87.526510
+SP Bush flow shift for origin 18 and arc 10 is 329.821192
+LP Bush flow shift for origin 0 and arc 0 is -300.000000
+LP Bush flow shift for origin 12 and arc 74 is -991.226649
+LP Bush flow shift for origin 6 and arc 14 is -396.152545
+SP Bush flow shift for origin 18 and arc 22 is 329.821192
+SP Bush flow shift for origin 0 and arc 44 is 300.000000
+LP Bush flow shift for origin 12 and arc 38 is -991.226649
+LP Bush flow shift for origin 6 and arc 18 is -396.152545
+SP Bush flow shift for origin 18 and arc 25 is 329.821192
+SP Bush flow shift for origin 0 and arc 27 is 509.737719
+SP Bush flow shift for origin 12 and arc 19 is 400.000000
+SP Bush flow shift for origin 6 and arc 22 is 396.152545
+LP Bush flow shift for origin 18 and arc 23 is -241.578971
+SP Bush flow shift for origin 12 and arc 23 is 991.226649
+SP Bush flow shift for origin 0 and arc 24 is 509.737719
+SP Bush flow shift for origin 6 and arc 20 is 396.152545
+LP Bush flow shift for origin 18 and arc 25 is 88.242221
+SP Bush flow shift for origin 12 and arc 12 is 991.226649
+SP Bush flow shift for origin 0 and arc 12 is 509.737719
+LP Bush flow shift for origin 6 and arc 52 is -47.595837
+SP Bush flow shift for origin 12 and arc 8 is 991.226649
+LP Bush flow shift for origin 18 and arc 42 is 58.421029
+SP Bush flow shift for origin 0 and arc 8 is 509.737719
+LP Bush flow shift for origin 6 and arc 48 is -47.595837
+SP Bush flow shift for origin 12 and arc 5 is 991.226649
+LP Bush flow shift for origin 18 and arc 56 is -241.578971
+SP Bush flow shift for origin 0 and arc 5 is 509.737719
+LP Bush flow shift for origin 6 and arc 54 is -47.595837
+SP Bush flow shift for origin 12 and arc 34 is 991.226649
+SP Bush flow shift for origin 18 and arc 16 is 241.578971
+SP Bush flow shift for origin 0 and arc 1 is 300.000000
+SP Bush flow shift for origin 6 and arc 60 is 135.122346
+SP Bush flow shift for origin 12 and arc 37 is 991.226649
+SP Bush flow shift for origin 18 and arc 53 is 241.578971
+LP Bush flow shift for origin 0 and arc 48 is -700.000000
+SP Bush flow shift for origin 6 and arc 55 is 47.595837
+LP Bush flow shift for origin 12 and arc 31 is -123.924101
+SP Bush flow shift for origin 18 and arc 59 is 241.578971
+LP Bush flow shift for origin 0 and arc 21 is -700.000000
+LP Bush flow shift for origin 12 and arc 35 is -123.924101
+LP Bush flow shift for origin 6 and arc 25 is -600.000000
+SP Bush flow shift for origin 18 and arc 58 is 241.578971
+LP Bush flow shift for origin 0 and arc 15 is -700.000000
+SP Bush flow shift for origin 12 and arc 24 is 123.924101
+LP Bush flow shift for origin 6 and arc 47 is -600.000000
+LP Bush flow shift for origin 18 and arc 54 is -158.242798
+LP Bush flow shift for origin 0 and arc 3 is -700.000000
+SP Bush flow shift for origin 12 and arc 12 is 1115.150750
+LP Bush flow shift for origin 6 and arc 54 is -647.595837
+LP Bush flow shift for origin 18 and arc 59 is 83.336173
+LP Bush flow shift for origin 0 and arc 0 is -700.000000
+SP Bush flow shift for origin 12 and arc 8 is 1115.150750
+LP Bush flow shift for origin 6 and arc 17 is -600.000000
+LP Bush flow shift for origin 18 and arc 58 is 83.336173
+SP Bush flow shift for origin 0 and arc 29 is 400.000000
+SP Bush flow shift for origin 12 and arc 5 is 1115.150750
+SP Bush flow shift for origin 6 and arc 20 is 996.152545
+SP Bush flow shift for origin 18 and arc 51 is 158.242798
+SP Bush flow shift for origin 12 and arc 34 is 1115.150750
+SP Bush flow shift for origin 0 and arc 24 is 909.737719
+SP Bush flow shift for origin 6 and arc 16 is 600.000000
+SP Bush flow shift for origin 18 and arc 57 is 158.242798
+LP Bush flow shift for origin 12 and arc 71 is -2.724562
+SP Bush flow shift for origin 0 and arc 12 is 909.737719
+LP Bush flow shift for origin 7 and arc 70 is -400.000000
+LP Bush flow shift for origin 18 and arc 69 is -700.000000
+LP Bush flow shift for origin 12 and arc 75 is -2.724562
+SP Bush flow shift for origin 0 and arc 8 is 909.737719
+LP Bush flow shift for origin 7 and arc 69 is -400.000000
+LP Bush flow shift for origin 18 and arc 45 is -700.000000
+SP Bush flow shift for origin 12 and arc 64 is 2.724562
+SP Bush flow shift for origin 0 and arc 5 is 909.737719
+LP Bush flow shift for origin 7 and arc 62 is -400.000000
+SP Bush flow shift for origin 18 and arc 41 is 400.000000
+SP Bush flow shift for origin 12 and arc 74 is -988.502087
+SP Bush flow shift for origin 0 and arc 1 is 700.000000
+LP Bush flow shift for origin 7 and arc 55 is -400.000000
+SP Bush flow shift for origin 18 and arc 43 is 400.000000
+LP Bush flow shift for origin 12 and arc 70 is -178.148982
+LP Bush flow shift for origin 0 and arc 40 is -500.000000
+LP Bush flow shift for origin 7 and arc 17 is -400.000000
+LP Bush flow shift for origin 19 and arc 42 is -513.809032
+LP Bush flow shift for origin 12 and arc 75 is -180.873544
+LP Bush flow shift for origin 0 and arc 33 is -500.000000
+LP Bush flow shift for origin 7 and arc 19 is -400.000000
+LP Bush flow shift for origin 19 and arc 56 is -513.809032
+LP Bush flow shift for origin 12 and arc 38 is -1169.375631
+LP Bush flow shift for origin 0 and arc 9 is -500.000000
+SP Bush flow shift for origin 7 and arc 33 is 400.000000
+LP Bush flow shift for origin 19 and arc 60 is -513.809032
+SP Bush flow shift for origin 12 and arc 33 is 178.148982
+SP Bush flow shift for origin 0 and arc 27 is 1009.737719
+SP Bush flow shift for origin 7 and arc 26 is 400.000000
+SP Bush flow shift for origin 19 and arc 47 is 513.809032
+SP Bush flow shift for origin 12 and arc 35 is 54.224880
+SP Bush flow shift for origin 0 and arc 24 is 1409.737719
+SP Bush flow shift for origin 7 and arc 24 is 400.000000
+SP Bush flow shift for origin 19 and arc 54 is 513.809032
+SP Bush flow shift for origin 12 and arc 37 is 1169.375631
+SP Bush flow shift for origin 0 and arc 12 is 1409.737719
+SP Bush flow shift for origin 7 and arc 20 is 400.000000
+SP Bush flow shift for origin 19 and arc 59 is 513.809032
+LP Bush flow shift for origin 13 and arc 46 is -400.000000
+SP Bush flow shift for origin 0 and arc 8 is 1409.737719
+LP Bush flow shift for origin 7 and arc 69 is -700.000000
+LP Bush flow shift for origin 19 and arc 43 is -92.634502
+LP Bush flow shift for origin 13 and arc 51 is -400.000000
+LP Bush flow shift for origin 0 and arc 15 is -714.067488
+LP Bush flow shift for origin 7 and arc 62 is -700.000000
+LP Bush flow shift for origin 19 and arc 56 is -606.443534
+LP Bush flow shift for origin 13 and arc 57 is -400.000000
+LP Bush flow shift for origin 0 and arc 3 is -714.067488
+SP Bush flow shift for origin 7 and arc 75 is 300.000000
+LP Bush flow shift for origin 19 and arc 60 is -606.443534
+LP Bush flow shift for origin 13 and arc 44 is -400.000000
+SP Bush flow shift for origin 7 and arc 65 is 300.000000
+LP Bush flow shift for origin 0 and arc 0 is -714.067488
+SP Bush flow shift for origin 19 and arc 70 is 92.634502
+LP Bush flow shift for origin 13 and arc 40 is -400.000000
+SP Bush flow shift for origin 7 and arc 61 is 300.000000
+SP Bush flow shift for origin 0 and arc 23 is 14.067488
+SP Bush flow shift for origin 19 and arc 75 is 92.634502
+SP Bush flow shift for origin 13 and arc 16 is 400.000000
+LP Bush flow shift for origin 7 and arc 56 is -600.000000
+SP Bush flow shift for origin 0 and arc 12 is 1423.805207
+SP Bush flow shift for origin 19 and arc 65 is 92.634502
+SP Bush flow shift for origin 13 and arc 53 is 400.000000
+LP Bush flow shift for origin 7 and arc 52 is -600.000000
+SP Bush flow shift for origin 0 and arc 8 is 1423.805207
+SP Bush flow shift for origin 19 and arc 61 is 92.634502
+SP Bush flow shift for origin 13 and arc 59 is 400.000000
+LP Bush flow shift for origin 7 and arc 48 is -600.000000
+SP Bush flow shift for origin 0 and arc 5 is 923.805207
+LP Bush flow shift for origin 19 and arc 69 is -348.331414
+SP Bush flow shift for origin 13 and arc 67 is 400.000000
+LP Bush flow shift for origin 7 and arc 54 is -600.000000
+SP Bush flow shift for origin 0 and arc 1 is 714.067488
+LP Bush flow shift for origin 19 and arc 62 is -348.331414
+SP Bush flow shift for origin 13 and arc 71 is 400.000000
+LP Bush flow shift for origin 7 and arc 17 is -1000.000000
+SP Bush flow shift for origin 19 and arc 75 is 440.965916
+LP Bush flow shift for origin 1 and arc 56 is -100.000000
+SP Bush flow shift for origin 13 and arc 41 is 400.000000
+LP Bush flow shift for origin 7 and arc 19 is -1000.000000
+LP Bush flow shift for origin 1 and arc 52 is -100.000000
+SP Bush flow shift for origin 19 and arc 65 is 440.965916
+LP Bush flow shift for origin 13 and arc 51 is -537.842370
+SP Bush flow shift for origin 7 and arc 27 is 600.000000
+LP Bush flow shift for origin 1 and arc 48 is -100.000000
+SP Bush flow shift for origin 19 and arc 61 is 440.965916
+LP Bush flow shift for origin 13 and arc 57 is -537.842370
+SP Bush flow shift for origin 7 and arc 24 is 1000.000000
+LP Bush flow shift for origin 1 and arc 21 is -100.000000
+LP Bush flow shift for origin 13 and arc 44 is -537.842370
+LP Bush flow shift for origin 19 and arc 57 is -393.749940
+SP Bush flow shift for origin 7 and arc 20 is 1000.000000
+LP Bush flow shift for origin 1 and arc 15 is -100.000000
+LP Bush flow shift for origin 13 and arc 40 is -537.842370
+LP Bush flow shift for origin 19 and arc 60 is -1000.193475
+LP Bush flow shift for origin 7 and arc 52 is -877.574368
+SP Bush flow shift for origin 13 and arc 54 is 137.842370
+LP Bush flow shift for origin 1 and arc 3 is -100.000000
+SP Bush flow shift for origin 19 and arc 48 is 393.749940
+LP Bush flow shift for origin 7 and arc 48 is -877.574368
+SP Bush flow shift for origin 13 and arc 59 is 537.842370
+SP Bush flow shift for origin 1 and arc 27 is 100.000000
+SP Bush flow shift for origin 19 and arc 54 is 907.558972
+LP Bush flow shift for origin 7 and arc 54 is -877.574368
+SP Bush flow shift for origin 13 and arc 67 is 537.842370
+SP Bush flow shift for origin 1 and arc 24 is 100.000000
+SP Bush flow shift for origin 19 and arc 59 is 907.558972
+SP Bush flow shift for origin 7 and arc 60 is 277.574368
+SP Bush flow shift for origin 13 and arc 71 is 537.842370
+SP Bush flow shift for origin 1 and arc 12 is 100.000000
+SP Bush flow shift for origin 7 and arc 55 is -122.425632
+LP Bush flow shift for origin 20 and arc 30 is -200.000000
+SP Bush flow shift for origin 13 and arc 41 is 537.842370
+SP Bush flow shift for origin 1 and arc 8 is 100.000000
+LP Bush flow shift for origin 7 and arc 9 is -683.810351
+LP Bush flow shift for origin 20 and arc 39 is -200.000000
+SP Bush flow shift for origin 1 and arc 5 is 100.000000
+LP Bush flow shift for origin 13 and arc 68 is -400.000000
+LP Bush flow shift for origin 7 and arc 10 is -683.810351
+LP Bush flow shift for origin 20 and arc 70 is -200.000000
+SP Bush flow shift for origin 1 and arc 1 is 100.000000
+LP Bush flow shift for origin 13 and arc 45 is -400.000000
+LP Bush flow shift for origin 7 and arc 14 is -683.810351
+SP Bush flow shift for origin 1 and arc 2 is 100.000000
+LP Bush flow shift for origin 20 and arc 69 is -200.000000
+LP Bush flow shift for origin 7 and arc 18 is -683.810351
+LP Bush flow shift for origin 13 and arc 40 is -937.842370
+LP Bush flow shift for origin 1 and arc 52 is -200.000000
+SP Bush flow shift for origin 20 and arc 10 is 200.000000
+SP Bush flow shift for origin 13 and arc 74 is 400.000000
+SP Bush flow shift for origin 7 and arc 26 is 1083.810351
+LP Bush flow shift for origin 1 and arc 48 is -200.000000
+SP Bush flow shift for origin 20 and arc 22 is 200.000000
+SP Bush flow shift for origin 13 and arc 72 is 400.000000
+SP Bush flow shift for origin 7 and arc 24 is 1683.810351
+LP Bush flow shift for origin 1 and arc 21 is -200.000000
+SP Bush flow shift for origin 20 and arc 25 is 200.000000
+SP Bush flow shift for origin 13 and arc 41 is 937.842370
+SP Bush flow shift for origin 7 and arc 20 is 1683.810351
+SP Bush flow shift for origin 1 and arc 60 is 100.000000
+SP Bush flow shift for origin 20 and arc 42 is 200.000000
+LP Bush flow shift for origin 13 and arc 58 is -250.518888
+LP Bush flow shift for origin 7 and arc 47 is -1396.861535
+SP Bush flow shift for origin 20 and arc 66 is 200.000000
+SP Bush flow shift for origin 1 and arc 55 is 100.000000
+LP Bush flow shift for origin 13 and arc 44 is -788.361258
+LP Bush flow shift for origin 7 and arc 54 is -2274.435903
+LP Bush flow shift for origin 20 and arc 39 is -600.000000
+LP Bush flow shift for origin 13 and arc 40 is -1188.361258
+SP Bush flow shift for origin 1 and arc 17 is 100.000000
+LP Bush flow shift for origin 7 and arc 17 is -2396.861535
+LP Bush flow shift for origin 20 and arc 70 is -600.000000
+SP Bush flow shift for origin 1 and arc 19 is 100.000000
+SP Bush flow shift for origin 13 and arc 67 is 788.361258
+LP Bush flow shift for origin 7 and arc 19 is -2396.861535
+LP Bush flow shift for origin 20 and arc 69 is -600.000000
+LP Bush flow shift for origin 1 and arc 47 is -600.000000
+SP Bush flow shift for origin 7 and arc 24 is 3080.671885
+SP Bush flow shift for origin 13 and arc 71 is 788.361258
+SP Bush flow shift for origin 20 and arc 26 is 400.000000
+SP Bush flow shift for origin 7 and arc 20 is 3080.671885
+LP Bush flow shift for origin 1 and arc 21 is -800.000000
+SP Bush flow shift for origin 20 and arc 42 is 600.000000
+SP Bush flow shift for origin 13 and arc 41 is 1188.361258
+LP Bush flow shift for origin 7 and arc 54 is -3031.909524
+LP Bush flow shift for origin 1 and arc 15 is -700.000000
+LP Bush flow shift for origin 13 and arc 45 is -885.329233
+SP Bush flow shift for origin 20 and arc 66 is 600.000000
+LP Bush flow shift for origin 7 and arc 17 is -3154.335156
+LP Bush flow shift for origin 1 and arc 3 is -700.000000
+LP Bush flow shift for origin 13 and arc 40 is -1673.690491
+LP Bush flow shift for origin 20 and arc 48 is -304.309558
+LP Bush flow shift for origin 7 and arc 19 is -3154.335156
+SP Bush flow shift for origin 1 and arc 24 is 700.000000
+LP Bush flow shift for origin 20 and arc 54 is -304.309558
+SP Bush flow shift for origin 13 and arc 71 is 1273.690491
+SP Bush flow shift for origin 7 and arc 21 is 757.473622
+LP Bush flow shift for origin 20 and arc 59 is -304.309558
+SP Bush flow shift for origin 1 and arc 12 is 700.000000
+LP Bush flow shift for origin 7 and arc 14 is -1079.962896
+SP Bush flow shift for origin 13 and arc 41 is 1673.690491
+LP Bush flow shift for origin 20 and arc 63 is -304.309558
+LP Bush flow shift for origin 7 and arc 18 is -1079.962896
+SP Bush flow shift for origin 1 and arc 8 is 700.000000
+SP Bush flow shift for origin 20 and arc 57 is 304.309558
+LP Bush flow shift for origin 14 and arc 18 is -300.000000
+SP Bush flow shift for origin 1 and arc 5 is 700.000000
+SP Bush flow shift for origin 7 and arc 22 is 396.152545
+SP Bush flow shift for origin 20 and arc 44 is 304.309558
+LP Bush flow shift for origin 14 and arc 46 is -300.000000
+SP Bush flow shift for origin 1 and arc 1 is 700.000000
+SP Bush flow shift for origin 7 and arc 20 is 3476.824431
+SP Bush flow shift for origin 20 and arc 66 is 904.309558
+LP Bush flow shift for origin 14 and arc 51 is -300.000000
+SP Bush flow shift for origin 1 and arc 2 is 700.000000
+LP Bush flow shift for origin 8 and arc 65 is -200.000000
+SP Bush flow shift for origin 20 and arc 64 is 304.309558
+LP Bush flow shift for origin 14 and arc 57 is -300.000000
+LP Bush flow shift for origin 1 and arc 14 is -135.610351
+LP Bush flow shift for origin 8 and arc 68 is -200.000000
+LP Bush flow shift for origin 20 and arc 69 is -666.314492
+LP Bush flow shift for origin 14 and arc 44 is -300.000000
+LP Bush flow shift for origin 1 and arc 3 is -835.610351
+LP Bush flow shift for origin 8 and arc 45 is -200.000000
+LP Bush flow shift for origin 20 and arc 64 is 237.995066
+SP Bush flow shift for origin 14 and arc 11 is 300.000000
+SP Bush flow shift for origin 1 and arc 8 is 835.610351
+LP Bush flow shift for origin 8 and arc 27 is -200.000000
+SP Bush flow shift for origin 14 and arc 22 is 300.000000
+SP Bush flow shift for origin 20 and arc 75 is 66.314492
+SP Bush flow shift for origin 1 and arc 5 is 835.610351
+LP Bush flow shift for origin 8 and arc 24 is -200.000000
+SP Bush flow shift for origin 14 and arc 25 is 300.000000
+SP Bush flow shift for origin 20 and arc 65 is 66.314492
+SP Bush flow shift for origin 1 and arc 1 is 835.610351
+SP Bush flow shift for origin 14 and arc 42 is 300.000000
+SP Bush flow shift for origin 8 and arc 38 is 200.000000
+LP Bush flow shift for origin 21 and arc 4 is -372.714695
+SP Bush flow shift for origin 1 and arc 2 is 835.610351
+LP Bush flow shift for origin 14 and arc 46 is -786.948710
+SP Bush flow shift for origin 8 and arc 36 is 200.000000
+LP Bush flow shift for origin 21 and arc 34 is -372.714695
+LP Bush flow shift for origin 2 and arc 48 is -100.000000
+LP Bush flow shift for origin 14 and arc 51 is -786.948710
+SP Bush flow shift for origin 8 and arc 6 is 200.000000
+LP Bush flow shift for origin 21 and arc 37 is -372.714695
+LP Bush flow shift for origin 2 and arc 21 is -100.000000
+SP Bush flow shift for origin 8 and arc 7 is 200.000000
+LP Bush flow shift for origin 14 and arc 57 is -786.948710
+LP Bush flow shift for origin 21 and arc 73 is -372.714695
+LP Bush flow shift for origin 2 and arc 15 is -100.000000
+SP Bush flow shift for origin 14 and arc 16 is 486.948710
+SP Bush flow shift for origin 8 and arc 10 is 200.000000
+LP Bush flow shift for origin 21 and arc 72 is -372.714695
+LP Bush flow shift for origin 2 and arc 11 is -100.000000
+SP Bush flow shift for origin 14 and arc 53 is 486.948710
+SP Bush flow shift for origin 8 and arc 22 is 200.000000
+LP Bush flow shift for origin 21 and arc 69 is -372.714695
+SP Bush flow shift for origin 2 and arc 29 is 100.000000
+LP Bush flow shift for origin 8 and arc 53 is -600.000000
+SP Bush flow shift for origin 14 and arc 59 is 486.948710
+SP Bush flow shift for origin 21 and arc 2 is 372.714695
+SP Bush flow shift for origin 2 and arc 24 is 100.000000
+SP Bush flow shift for origin 14 and arc 58 is 486.948710
+LP Bush flow shift for origin 8 and arc 49 is -600.000000
+SP Bush flow shift for origin 21 and arc 13 is 372.714695
+SP Bush flow shift for origin 2 and arc 12 is 100.000000
+LP Bush flow shift for origin 14 and arc 73 is -598.742967
+LP Bush flow shift for origin 8 and arc 28 is -600.000000
+LP Bush flow shift for origin 2 and arc 66 is -100.000000
+SP Bush flow shift for origin 21 and arc 18 is 372.714695
+LP Bush flow shift for origin 14 and arc 65 is -598.742967
+LP Bush flow shift for origin 8 and arc 24 is -800.000000
+LP Bush flow shift for origin 2 and arc 64 is -100.000000
+SP Bush flow shift for origin 21 and arc 16 is 372.714695
+LP Bush flow shift for origin 14 and arc 68 is -598.742967
+SP Bush flow shift for origin 8 and arc 19 is 600.000000
+LP Bush flow shift for origin 2 and arc 74 is -100.000000
+SP Bush flow shift for origin 21 and arc 53 is 372.714695
+LP Bush flow shift for origin 14 and arc 45 is -598.742967
+SP Bush flow shift for origin 8 and arc 23 is 600.000000
+LP Bush flow shift for origin 2 and arc 38 is -100.000000
+SP Bush flow shift for origin 21 and arc 59 is 372.714695
+LP Bush flow shift for origin 8 and arc 69 is -500.000000
+SP Bush flow shift for origin 14 and arc 36 is 598.742967
+LP Bush flow shift for origin 2 and arc 36 is -100.000000
+SP Bush flow shift for origin 21 and arc 67 is 372.714695
+SP Bush flow shift for origin 14 and arc 32 is 598.742967
+LP Bush flow shift for origin 8 and arc 45 is -700.000000
+LP Bush flow shift for origin 2 and arc 6 is -100.000000
+LP Bush flow shift for origin 21 and arc 39 is -236.667111
+SP Bush flow shift for origin 14 and arc 26 is 598.742967
+LP Bush flow shift for origin 8 and arc 27 is -700.000000
+SP Bush flow shift for origin 2 and arc 27 is 100.000000
+LP Bush flow shift for origin 21 and arc 70 is -236.667111
+SP Bush flow shift for origin 14 and arc 42 is 898.742967
+SP Bush flow shift for origin 8 and arc 41 is 500.000000
+SP Bush flow shift for origin 2 and arc 24 is 200.000000
+LP Bush flow shift for origin 21 and arc 69 is -609.381806
+LP Bush flow shift for origin 14 and arc 30 is -1100.000000
+SP Bush flow shift for origin 8 and arc 33 is 500.000000
+SP Bush flow shift for origin 2 and arc 12 is 200.000000
+SP Bush flow shift for origin 21 and arc 26 is 236.667111
+LP Bush flow shift for origin 14 and arc 39 is -1100.000000
+SP Bush flow shift for origin 8 and arc 26 is 500.000000
+SP Bush flow shift for origin 2 and arc 8 is 100.000000
+SP Bush flow shift for origin 21 and arc 42 is 236.667111
+LP Bush flow shift for origin 14 and arc 43 is -1100.000000
+LP Bush flow shift for origin 8 and arc 32 is -209.517330
+SP Bush flow shift for origin 2 and arc 5 is 100.000000
+SP Bush flow shift for origin 21 and arc 66 is 236.667111
+SP Bush flow shift for origin 14 and arc 10 is 1100.000000
+LP Bush flow shift for origin 8 and arc 26 is 290.482670
+LP Bush flow shift for origin 2 and arc 15 is -600.000000
+LP Bush flow shift for origin 21 and arc 34 is -500.000000
+SP Bush flow shift for origin 14 and arc 22 is 1400.000000
+LP Bush flow shift for origin 8 and arc 24 is -1009.517330
+LP Bush flow shift for origin 2 and arc 11 is -600.000000
+LP Bush flow shift for origin 21 and arc 37 is -500.000000
+SP Bush flow shift for origin 14 and arc 25 is 1400.000000
+SP Bush flow shift for origin 8 and arc 6 is 409.517330
+SP Bush flow shift for origin 2 and arc 23 is 500.000000
+SP Bush flow shift for origin 14 and arc 42 is 1998.742967
+LP Bush flow shift for origin 21 and arc 73 is -500.000000
+SP Bush flow shift for origin 8 and arc 7 is 409.517330
+LP Bush flow shift for origin 14 and arc 69 is -706.692718
+SP Bush flow shift for origin 2 and arc 12 is 700.000000
+LP Bush flow shift for origin 21 and arc 72 is -500.000000
+SP Bush flow shift for origin 8 and arc 10 is 409.517330
+LP Bush flow shift for origin 14 and arc 45 is -1305.435685
+LP Bush flow shift for origin 3 and arc 62 is -400.000000
+LP Bush flow shift for origin 21 and arc 69 is -736.667111
+SP Bush flow shift for origin 8 and arc 22 is 409.517330
+SP Bush flow shift for origin 14 and arc 41 is 706.692718
+LP Bush flow shift for origin 3 and arc 55 is -400.000000
+SP Bush flow shift for origin 21 and arc 7 is 127.285305
+SP Bush flow shift for origin 14 and arc 43 is -393.307282
+LP Bush flow shift for origin 8 and arc 48 is -900.000000
+LP Bush flow shift for origin 3 and arc 17 is -400.000000
+SP Bush flow shift for origin 21 and arc 10 is 127.285305
+LP Bush flow shift for origin 14 and arc 39 is -2079.624239
+LP Bush flow shift for origin 8 and arc 28 is -1500.000000
+LP Bush flow shift for origin 3 and arc 19 is -400.000000
+LP Bush flow shift for origin 14 and arc 43 is -1372.931520
+SP Bush flow shift for origin 21 and arc 22 is 127.285305
+SP Bush flow shift for origin 8 and arc 29 is 900.000000
+LP Bush flow shift for origin 3 and arc 15 is -400.000000
+SP Bush flow shift for origin 21 and arc 25 is 127.285305
+SP Bush flow shift for origin 14 and arc 26 is 1578.367206
+LP Bush flow shift for origin 8 and arc 28 is -3100.001582
+LP Bush flow shift for origin 3 and arc 11 is -400.000000
+SP Bush flow shift for origin 21 and arc 42 is 363.952415
+SP Bush flow shift for origin 14 and arc 42 is 2978.367206
+SP Bush flow shift for origin 3 and arc 45 is 400.000000
+LP Bush flow shift for origin 8 and arc 24 is -2609.518912
+LP Bush flow shift for origin 15 and arc 73 is -308.471906
+SP Bush flow shift for origin 21 and arc 66 is 363.952415
+SP Bush flow shift for origin 3 and arc 27 is 400.000000
+SP Bush flow shift for origin 8 and arc 21 is 1600.001582
+LP Bush flow shift for origin 21 and arc 72 is -736.221897
+LP Bush flow shift for origin 15 and arc 65 is -308.471906
+SP Bush flow shift for origin 8 and arc 23 is 2200.001582
+SP Bush flow shift for origin 3 and arc 24 is 400.000000
+LP Bush flow shift for origin 21 and arc 69 is -972.889008
+LP Bush flow shift for origin 15 and arc 61 is -308.471906
+SP Bush flow shift for origin 3 and arc 12 is 400.000000
+LP Bush flow shift for origin 9 and arc 69 is -811.399479
+SP Bush flow shift for origin 21 and arc 65 is 236.221897
+LP Bush flow shift for origin 15 and arc 55 is -308.471906
+LP Bush flow shift for origin 3 and arc 74 is -83.125894
+LP Bush flow shift for origin 9 and arc 45 is -811.399479
+SP Bush flow shift for origin 21 and arc 68 is 236.221897
+SP Bush flow shift for origin 15 and arc 36 is 308.471906
+LP Bush flow shift for origin 3 and arc 38 is -83.125894
+LP Bush flow shift for origin 21 and arc 70 is -432.482173
+LP Bush flow shift for origin 9 and arc 27 is -811.399479
+SP Bush flow shift for origin 15 and arc 6 is 308.471906
+LP Bush flow shift for origin 3 and arc 36 is -83.125894
+SP Bush flow shift for origin 9 and arc 41 is 811.399479
+LP Bush flow shift for origin 21 and arc 69 is -1168.704071
+SP Bush flow shift for origin 15 and arc 7 is 308.471906
+LP Bush flow shift for origin 3 and arc 6 is -83.125894
+SP Bush flow shift for origin 9 and arc 33 is 811.399479
+SP Bush flow shift for origin 21 and arc 43 is 195.815063
+SP Bush flow shift for origin 15 and arc 10 is 308.471906
+LP Bush flow shift for origin 3 and arc 7 is -83.125894
+SP Bush flow shift for origin 9 and arc 26 is 811.399479
+SP Bush flow shift for origin 15 and arc 22 is 308.471906
+SP Bush flow shift for origin 21 and arc 66 is 559.767478
+SP Bush flow shift for origin 3 and arc 61 is 83.125894
+LP Bush flow shift for origin 9 and arc 18 is -301.555133
+SP Bush flow shift for origin 15 and arc 20 is 308.471906
+LP Bush flow shift for origin 22 and arc 11 is -54.270610
+SP Bush flow shift for origin 3 and arc 55 is -316.874106
+LP Bush flow shift for origin 9 and arc 46 is -301.555133
+SP Bush flow shift for origin 15 and arc 16 is 308.471906
+LP Bush flow shift for origin 22 and arc 8 is -54.270610
+SP Bush flow shift for origin 3 and arc 17 is -316.874106
+LP Bush flow shift for origin 9 and arc 28 is -301.555133
+SP Bush flow shift for origin 15 and arc 53 is 308.471906
+LP Bush flow shift for origin 22 and arc 30 is -54.270610
+SP Bush flow shift for origin 3 and arc 19 is -316.874106
+SP Bush flow shift for origin 9 and arc 11 is 301.555133
+LP Bush flow shift for origin 15 and arc 43 is -257.887265
+LP Bush flow shift for origin 22 and arc 39 is -54.270610
+SP Bush flow shift for origin 3 and arc 23 is 83.125894
+SP Bush flow shift for origin 9 and arc 22 is 301.555133
+LP Bush flow shift for origin 15 and arc 56 is -257.887265
+LP Bush flow shift for origin 22 and arc 70 is -54.270610
+SP Bush flow shift for origin 3 and arc 12 is 483.125894
+SP Bush flow shift for origin 9 and arc 25 is 301.555133
+LP Bush flow shift for origin 15 and arc 52 is -257.887265
+SP Bush flow shift for origin 22 and arc 18 is 54.270610
+SP Bush flow shift for origin 3 and arc 8 is 83.125894
+LP Bush flow shift for origin 9 and arc 46 is -502.257171
+LP Bush flow shift for origin 15 and arc 48 is -257.887265
+SP Bush flow shift for origin 22 and arc 16 is 54.270610
+LP Bush flow shift for origin 3 and arc 48 is -500.000000
+LP Bush flow shift for origin 9 and arc 28 is -502.257171
+SP Bush flow shift for origin 15 and arc 70 is 257.887265
+SP Bush flow shift for origin 22 and arc 53 is 54.270610
+LP Bush flow shift for origin 3 and arc 21 is -500.000000
+SP Bush flow shift for origin 9 and arc 23 is 200.702038
+SP Bush flow shift for origin 15 and arc 75 is 257.887265
+SP Bush flow shift for origin 22 and arc 59 is 54.270610
+LP Bush flow shift for origin 3 and arc 15 is -900.000000
+SP Bush flow shift for origin 9 and arc 25 is 502.257171
+SP Bush flow shift for origin 15 and arc 65 is -50.584641
+SP Bush flow shift for origin 22 and arc 67 is 54.270610
+LP Bush flow shift for origin 3 and arc 11 is -900.000000
+LP Bush flow shift for origin 9 and arc 32 is -29.821192
+SP Bush flow shift for origin 15 and arc 61 is -50.584641
+SP Bush flow shift for origin 22 and arc 71 is 54.270610
+SP Bush flow shift for origin 3 and arc 29 is 500.000000
+LP Bush flow shift for origin 9 and arc 26 is 781.578286
+SP Bush flow shift for origin 15 and arc 55 is -50.584641
+LP Bush flow shift for origin 22 and arc 7 is -400.000000
+SP Bush flow shift for origin 3 and arc 24 is 900.000000
+SP Bush flow shift for origin 9 and arc 6 is 29.821192
+SP Bush flow shift for origin 15 and arc 49 is 257.887265
+LP Bush flow shift for origin 22 and arc 30 is -454.270610
+SP Bush flow shift for origin 3 and arc 12 is 983.125894
+SP Bush flow shift for origin 9 and arc 7 is 29.821192
+LP Bush flow shift for origin 15 and arc 69 is -348.331414
+LP Bush flow shift for origin 22 and arc 39 is -454.270610
+LP Bush flow shift for origin 3 and arc 40 is -700.000000
+SP Bush flow shift for origin 9 and arc 10 is 29.821192
+LP Bush flow shift for origin 15 and arc 62 is -348.331414
+LP Bush flow shift for origin 22 and arc 70 is -454.270610
+LP Bush flow shift for origin 3 and arc 33 is -700.000000
+SP Bush flow shift for origin 9 and arc 22 is 331.376325
+SP Bush flow shift for origin 15 and arc 75 is 606.218678
+SP Bush flow shift for origin 22 and arc 34 is 400.000000
+LP Bush flow shift for origin 3 and arc 9 is -700.000000
+SP Bush flow shift for origin 9 and arc 25 is 532.078364
+SP Bush flow shift for origin 15 and arc 65 is 297.746772
+SP Bush flow shift for origin 22 and arc 37 is 400.000000
+SP Bush flow shift for origin 3 and arc 27 is 1100.000000
+LP Bush flow shift for origin 9 and arc 55 is -1167.043008
+SP Bush flow shift for origin 15 and arc 61 is 297.746772
+SP Bush flow shift for origin 22 and arc 73 is 400.000000
+SP Bush flow shift for origin 3 and arc 24 is 1600.000000
+LP Bush flow shift for origin 9 and arc 49 is -1167.043008
+LP Bush flow shift for origin 15 and arc 52 is -566.833827
+SP Bush flow shift for origin 22 and arc 72 is 400.000000
+SP Bush flow shift for origin 3 and arc 12 is 1683.125894
+LP Bush flow shift for origin 9 and arc 28 is -1669.300179
+LP Bush flow shift for origin 15 and arc 48 is -566.833827
+LP Bush flow shift for origin 22 and arc 31 is -252.144673
+SP Bush flow shift for origin 3 and arc 8 is 783.125894
+SP Bush flow shift for origin 9 and arc 58 is 1167.043008
+SP Bush flow shift for origin 15 and arc 60 is 308.946563
+LP Bush flow shift for origin 22 and arc 39 is -706.415283
+LP Bush flow shift for origin 3 and arc 15 is -1649.587770
+SP Bush flow shift for origin 9 and arc 44 is 1167.043008
+SP Bush flow shift for origin 15 and arc 55 is 258.361922
+LP Bush flow shift for origin 3 and arc 11 is -1649.587770
+SP Bush flow shift for origin 22 and arc 42 is 252.144673
+SP Bush flow shift for origin 9 and arc 27 is 355.643530
+SP Bush flow shift for origin 15 and arc 49 is 566.833827
+SP Bush flow shift for origin 3 and arc 23 is 832.713664
+LP Bush flow shift for origin 9 and arc 28 is -2519.990480
+SP Bush flow shift for origin 22 and arc 40 is 252.144673
+LP Bush flow shift for origin 15 and arc 46 is -311.662680
+SP Bush flow shift for origin 3 and arc 12 is 2432.713664
+SP Bush flow shift for origin 9 and arc 51 is 850.690300
+SP Bush flow shift for origin 15 and arc 16 is 620.134586
+LP Bush flow shift for origin 22 and arc 68 is -543.415427
+LP Bush flow shift for origin 4 and arc 68 is -80.090234
+SP Bush flow shift for origin 15 and arc 53 is 620.134586
+SP Bush flow shift for origin 9 and arc 29 is 850.690300
+LP Bush flow shift for origin 22 and arc 71 is -489.144817
+LP Bush flow shift for origin 4 and arc 45 is -80.090234
+SP Bush flow shift for origin 15 and arc 49 is 878.496508
+SP Bush flow shift for origin 22 and arc 74 is 543.415427
+LP Bush flow shift for origin 9 and arc 43 is -306.411078
+LP Bush flow shift for origin 16 and arc 32 is -600.000000
+LP Bush flow shift for origin 4 and arc 27 is -80.090234
+LP Bush flow shift for origin 9 and arc 27 is 49.232452
+SP Bush flow shift for origin 22 and arc 72 is 943.415427
+LP Bush flow shift for origin 16 and arc 39 is -600.000000
+LP Bush flow shift for origin 4 and arc 24 is -80.090234
+SP Bush flow shift for origin 9 and arc 33 is 1117.810556
+LP Bush flow shift for origin 22 and arc 66 is -77.638799
+LP Bush flow shift for origin 16 and arc 43 is -600.000000
+SP Bush flow shift for origin 4 and arc 61 is 80.090234
+SP Bush flow shift for origin 9 and arc 26 is 1087.989364
+LP Bush flow shift for origin 22 and arc 71 is -566.783615
+LP Bush flow shift for origin 16 and arc 27 is -600.000000
+SP Bush flow shift for origin 4 and arc 55 is 80.090234
+LP Bush flow shift for origin 10 and arc 49 is -100.000000
+SP Bush flow shift for origin 22 and arc 40 is 329.783472
+SP Bush flow shift for origin 16 and arc 6 is 600.000000
+SP Bush flow shift for origin 4 and arc 17 is 80.090234
+LP Bush flow shift for origin 10 and arc 51 is -100.000000
+SP Bush flow shift for origin 4 and arc 19 is 80.090234
+SP Bush flow shift for origin 22 and arc 70 is -376.631811
+LP Bush flow shift for origin 10 and arc 29 is -100.000000
+SP Bush flow shift for origin 16 and arc 7 is 600.000000
+SP Bush flow shift for origin 4 and arc 23 is 80.090234
+LP Bush flow shift for origin 23 and arc 20 is -200.000000
+SP Bush flow shift for origin 16 and arc 10 is 600.000000
+SP Bush flow shift for origin 10 and arc 17 is 100.000000
+LP Bush flow shift for origin 4 and arc 52 is -100.000000
+LP Bush flow shift for origin 23 and arc 16 is -200.000000
+SP Bush flow shift for origin 16 and arc 22 is 600.000000
+SP Bush flow shift for origin 10 and arc 19 is 100.000000
+LP Bush flow shift for origin 23 and arc 53 is -200.000000
+LP Bush flow shift for origin 4 and arc 48 is -100.000000
+SP Bush flow shift for origin 16 and arc 25 is 600.000000
+SP Bush flow shift for origin 10 and arc 23 is 100.000000
+LP Bush flow shift for origin 23 and arc 59 is -200.000000
+LP Bush flow shift for origin 4 and arc 28 is -100.000000
+LP Bush flow shift for origin 16 and arc 69 is -600.000000
+SP Bush flow shift for origin 10 and arc 25 is 100.000000
+LP Bush flow shift for origin 23 and arc 63 is -200.000000
+SP Bush flow shift for origin 4 and arc 44 is 100.000000
+LP Bush flow shift for origin 16 and arc 45 is -600.000000
+LP Bush flow shift for origin 10 and arc 71 is -47.744541
+LP Bush flow shift for origin 23 and arc 74 is -200.000000
+SP Bush flow shift for origin 4 and arc 27 is 19.909766
+LP Bush flow shift for origin 10 and arc 41 is -47.744541
+SP Bush flow shift for origin 16 and arc 41 is 600.000000
+SP Bush flow shift for origin 23 and arc 12 is 200.000000
+LP Bush flow shift for origin 4 and arc 48 is -300.000000
+LP Bush flow shift for origin 10 and arc 33 is -47.744541
+SP Bush flow shift for origin 23 and arc 8 is 200.000000
+SP Bush flow shift for origin 16 and arc 43 is 0.000000
+LP Bush flow shift for origin 4 and arc 28 is -300.000000
+SP Bush flow shift for origin 10 and arc 45 is 47.744541
+SP Bush flow shift for origin 23 and arc 5 is 200.000000
+LP Bush flow shift for origin 16 and arc 39 is -1326.360077
+SP Bush flow shift for origin 4 and arc 29 is 200.000000
+SP Bush flow shift for origin 10 and arc 27 is 47.744541
+SP Bush flow shift for origin 23 and arc 34 is 200.000000
+LP Bush flow shift for origin 16 and arc 43 is -726.360077
+LP Bush flow shift for origin 4 and arc 28 is -800.000000
+SP Bush flow shift for origin 10 and arc 31 is 47.744541
+SP Bush flow shift for origin 23 and arc 37 is 200.000000
+LP Bush flow shift for origin 16 and arc 27 is -1326.360077
+LP Bush flow shift for origin 4 and arc 24 is -580.090234
+LP Bush flow shift for origin 10 and arc 40 is -219.186351
+SP Bush flow shift for origin 23 and arc 73 is 200.000000
+SP Bush flow shift for origin 16 and arc 26 is 726.360077
+SP Bush flow shift for origin 4 and arc 21 is 500.000000
+LP Bush flow shift for origin 10 and arc 33 is -266.930892
+LP Bush flow shift for origin 23 and arc 18 is -100.000000
+LP Bush flow shift for origin 16 and arc 45 is -600.000000
+SP Bush flow shift for origin 4 and arc 23 is 580.090234
+SP Bush flow shift for origin 10 and arc 27 is 266.930892
+LP Bush flow shift for origin 23 and arc 16 is -300.000000
+LP Bush flow shift for origin 16 and arc 27 is -1326.360077
+LP Bush flow shift for origin 4 and arc 15 is -749.587770
+SP Bush flow shift for origin 10 and arc 31 is 266.930892
+LP Bush flow shift for origin 23 and arc 53 is -300.000000
+LP Bush flow shift for origin 16 and arc 50 is 0.000000
+LP Bush flow shift for origin 4 and arc 11 is -749.587770
+LP Bush flow shift for origin 11 and arc 57 is -303.144972
+LP Bush flow shift for origin 23 and arc 59 is -300.000000
+SP Bush flow shift for origin 16 and arc 62 is 0.000000
+SP Bush flow shift for origin 4 and arc 23 is 1329.678005
+LP Bush flow shift for origin 23 and arc 63 is -300.000000
+LP Bush flow shift for origin 11 and arc 44 is -303.144972
+SP Bush flow shift for origin 16 and arc 55 is 0.000000
+SP Bush flow shift for origin 4 and arc 12 is 749.587770
+LP Bush flow shift for origin 23 and arc 74 is -300.000000
+LP Bush flow shift for origin 11 and arc 66 is -303.144972
+SP Bush flow shift for origin 16 and arc 49 is 0.000000
+LP Bush flow shift for origin 5 and arc 52 is -200.000000
+SP Bush flow shift for origin 23 and arc 11 is 100.000000
+LP Bush flow shift for origin 11 and arc 64 is -303.144972
+SP Bush flow shift for origin 16 and arc 51 is 0.000000
+LP Bush flow shift for origin 5 and arc 48 is -200.000000
+SP Bush flow shift for origin 23 and arc 8 is 300.000000
+LP Bush flow shift for origin 11 and arc 74 is -303.144972
+LP Bush flow shift for origin 16 and arc 18 is -131.280273
+LP Bush flow shift for origin 5 and arc 21 is -200.000000
+SP Bush flow shift for origin 23 and arc 5 is 300.000000
+LP Bush flow shift for origin 11 and arc 38 is -303.144972
+LP Bush flow shift for origin 16 and arc 16 is -131.280273
+LP Bush flow shift for origin 5 and arc 15 is -200.000000
+SP Bush flow shift for origin 23 and arc 34 is 300.000000
+LP Bush flow shift for origin 11 and arc 36 is -303.144972
+LP Bush flow shift for origin 16 and arc 53 is -131.280273
+SP Bush flow shift for origin 5 and arc 44 is 200.000000
+SP Bush flow shift for origin 23 and arc 37 is 300.000000
+SP Bush flow shift for origin 11 and arc 29 is 303.144972
+LP Bush flow shift for origin 16 and arc 49 is -131.280273
+SP Bush flow shift for origin 5 and arc 27 is 200.000000
+SP Bush flow shift for origin 23 and arc 73 is 300.000000
+SP Bush flow shift for origin 11 and arc 24 is 303.144972
+LP Bush flow shift for origin 16 and arc 51 is -131.280273
+SP Bush flow shift for origin 5 and arc 24 is 200.000000
+LP Bush flow shift for origin 23 and arc 48 is -227.700208
+SP Bush flow shift for origin 11 and arc 12 is 303.144972
+SP Bush flow shift for origin 16 and arc 11 is 131.280273
+SP Bush flow shift for origin 5 and arc 12 is 200.000000
+LP Bush flow shift for origin 23 and arc 54 is -227.700208
+SP Bush flow shift for origin 11 and arc 8 is 303.144972
+SP Bush flow shift for origin 16 and arc 22 is 731.280273
+SP Bush flow shift for origin 5 and arc 14 is 200.000000
+LP Bush flow shift for origin 23 and arc 59 is -527.700208
+SP Bush flow shift for origin 11 and arc 5 is 303.144972
+SP Bush flow shift for origin 16 and arc 25 is 731.280273
+LP Bush flow shift for origin 5 and arc 48 is -288.777637
+LP Bush flow shift for origin 23 and arc 63 is -527.700208
+SP Bush flow shift for origin 11 and arc 34 is 303.144972
+SP Bush flow shift for origin 16 and arc 50 is 131.280273
+LP Bush flow shift for origin 5 and arc 21 is -288.777637
+LP Bush flow shift for origin 23 and arc 74 is -527.700208
+LP Bush flow shift for origin 11 and arc 54 is -700.000000
+LP Bush flow shift for origin 16 and arc 58 is -883.470665
+LP Bush flow shift for origin 5 and arc 15 is -288.777637
+SP Bush flow shift for origin 23 and arc 57 is 227.700208
+LP Bush flow shift for origin 11 and arc 59 is -700.000000
+LP Bush flow shift for origin 16 and arc 52 is -883.470665
+SP Bush flow shift for origin 5 and arc 29 is 88.777637
+SP Bush flow shift for origin 23 and arc 44 is 227.700208
+LP Bush flow shift for origin 11 and arc 63 is -700.000000
+SP Bush flow shift for origin 16 and arc 55 is 883.470665
+SP Bush flow shift for origin 5 and arc 24 is 288.777637
+SP Bush flow shift for origin 23 and arc 40 is 227.700208
+LP Bush flow shift for origin 11 and arc 74 is -1003.144972
+SP Bush flow shift for origin 16 and arc 49 is 752.190392
+SP Bush flow shift for origin 5 and arc 12 is 288.777637
+SP Bush flow shift for origin 23 and arc 70 is 227.700208
+LP Bush flow shift for origin 11 and arc 38 is -1003.144972
+SP Bush flow shift for origin 16 and arc 51 is 752.190392
+SP Bush flow shift for origin 5 and arc 14 is 288.777637
+LP Bush flow shift for origin 11 and arc 36 is -1003.144972
+SP Bush flow shift for origin 23 and arc 75 is 227.700208
+LP Bush flow shift for origin 16 and arc 27 is -1326.360077
+LP Bush flow shift for origin 5 and arc 7 is -195.184519
+SP Bush flow shift for origin 11 and arc 21 is 700.000000
+LP Bush flow shift for origin 23 and arc 66 is -77.638799
+LP Bush flow shift for origin 16 and arc 50 is 131.280273
+LP Bush flow shift for origin 5 and arc 10 is -195.184519
+SP Bush flow shift for origin 11 and arc 23 is 700.000000
+LP Bush flow shift for origin 23 and arc 71 is -77.638799
+SP Bush flow shift for origin 16 and arc 56 is 0.000000
+LP Bush flow shift for origin 5 and arc 14 is 93.593118
+SP Bush flow shift for origin 11 and arc 12 is 1003.144972
+SP Bush flow shift for origin 23 and arc 40 is 305.339007
+SP Bush flow shift for origin 16 and arc 52 is -883.470665
+SP Bush flow shift for origin 5 and arc 1 is 195.184519
+SP Bush flow shift for origin 11 and arc 8 is 1003.144972
+SP Bush flow shift for origin 23 and arc 70 is 305.339007
+SP Bush flow shift for origin 5 and arc 2 is 195.184519
+LP Bush flow shift for origin 17 and arc 37 is -162.232649
+SP Bush flow shift for origin 11 and arc 5 is 1003.144972
+LP Bush flow shift for origin 23 and arc 35 is -175.946839
+SP Bush flow shift for origin 5 and arc 13 is 195.184519
+LP Bush flow shift for origin 17 and arc 73 is -162.232649
+SP Bush flow shift for origin 11 and arc 34 is 1003.144972
+LP Bush flow shift for origin 23 and arc 37 is 124.053161
+LP Bush flow shift for origin 17 and arc 65 is -162.232649
+LP Bush flow shift for origin 11 and arc 53 is -3.173686
+LP Bush flow shift for origin 23 and arc 73 is 124.053161
+LP Bush flow shift for origin 17 and arc 61 is -162.232649
+LP Bush flow shift for origin 11 and arc 59 is -703.173686
+SP Bush flow shift for origin 23 and arc 39 is 175.946839
+LP Bush flow shift for origin 17 and arc 55 is -162.232649
+LP Bush flow shift for origin 11 and arc 63 is -703.173686
+SP Bush flow shift for origin 23 and arc 70 is 481.285846
+SP Bush flow shift for origin 17 and arc 6 is 162.232649
+LP Bush flow shift for origin 11 and arc 74 is -1006.318658
+SP Bush flow shift for origin 17 and arc 7 is 162.232649
+SP Bush flow shift for origin 23 and arc 75 is 403.647047
+LP Bush flow shift for origin 11 and arc 38 is -1006.318658
+SP Bush flow shift for origin 17 and arc 10 is 162.232649
+LP Bush flow shift for origin 23 and arc 71 is -80.363361
+LP Bush flow shift for origin 11 and arc 36 is -1006.318658
+SP Bush flow shift for origin 17 and arc 22 is 162.232649
+SP Bush flow shift for origin 11 and arc 19 is 3.173686
+LP Bush flow shift for origin 23 and arc 75 is 400.922485
+SP Bush flow shift for origin 17 and arc 20 is 162.232649
+SP Bush flow shift for origin 11 and arc 23 is 703.173686
+SP Bush flow shift for origin 23 and arc 64 is 2.724562
+SP Bush flow shift for origin 17 and arc 16 is 162.232649
+SP Bush flow shift for origin 11 and arc 12 is 1006.318658
+SP Bush flow shift for origin 23 and arc 74 is -524.975646
+SP Bush flow shift for origin 17 and arc 53 is 162.232649
+SP Bush flow shift for origin 11 and arc 8 is 1006.318658
+SP Bush flow shift for origin 11 and arc 5 is 1006.318658
+LP Bush flow shift for origin 17 and arc 43 is -92.634502
+SP Bush flow shift for origin 11 and arc 34 is 1006.318658
+LP Bush flow shift for origin 17 and arc 56 is -92.634502
+LP Bush flow shift for origin 11 and arc 66 is -694.468517
+LP Bush flow shift for origin 17 and arc 60 is -92.634502
+LP Bush flow shift for origin 11 and arc 64 is -694.468517
+SP Bush flow shift for origin 17 and arc 70 is 92.634502
+LP Bush flow shift for origin 11 and arc 74 is -1397.642203
+SP Bush flow shift for origin 17 and arc 75 is 92.634502
+LP Bush flow shift for origin 11 and arc 38 is -1397.642203
+SP Bush flow shift for origin 17 and arc 65 is -69.598147
+LP Bush flow shift for origin 11 and arc 36 is -1397.642203
+SP Bush flow shift for origin 17 and arc 61 is -69.598147
+SP Bush flow shift for origin 11 and arc 27 is 391.323545
+LP Bush flow shift for origin 17 and arc 69 is -100.000000
+SP Bush flow shift for origin 11 and arc 24 is 694.468517
+LP Bush flow shift for origin 17 and arc 62 is -100.000000
+SP Bush flow shift for origin 11 and arc 12 is 1397.642203
+SP Bush flow shift for origin 17 and arc 75 is 192.634502
+SP Bush flow shift for origin 11 and arc 8 is 1397.642203
+SP Bush flow shift for origin 17 and arc 65 is 30.401853
+SP Bush flow shift for origin 11 and arc 5 is 1397.642203
+SP Bush flow shift for origin 17 and arc 61 is 30.401853
+SP Bush flow shift for origin 11 and arc 34 is 1397.642203
+LP Bush flow shift for origin 17 and arc 42 is -90.492660
+LP Bush flow shift for origin 11 and arc 31 is -123.924101
+LP Bush flow shift for origin 17 and arc 56 is -183.127163
+LP Bush flow shift for origin 11 and arc 35 is -123.924101
+LP Bush flow shift for origin 17 and arc 60 is -183.127163
+SP Bush flow shift for origin 11 and arc 24 is 818.392618
+LP Bush flow shift for origin 17 and arc 55 is -252.725309
+SP Bush flow shift for origin 11 and arc 12 is 1521.566305
+SP Bush flow shift for origin 17 and arc 47 is 90.492660
+SP Bush flow shift for origin 11 and arc 8 is 1521.566305
+SP Bush flow shift for origin 17 and arc 54 is 90.492660
+SP Bush flow shift for origin 11 and arc 5 is 1521.566305
+SP Bush flow shift for origin 11 and arc 34 is 1521.566305
+LP Bush flow shift for origin 11 and arc 70 is -445.521112
+LP Bush flow shift for origin 11 and arc 75 is -445.521112
+LP Bush flow shift for origin 11 and arc 38 is -1843.163315
+LP Bush flow shift for origin 11 and arc 36 is -1843.163315
+SP Bush flow shift for origin 11 and arc 33 is 445.521112
+SP Bush flow shift for origin 11 and arc 35 is 321.597011
+to shift amount for node 0 is 1437.872695
+to shift amount for node 1 is 1671.220703
+to shift amount for node 2 is -200.000000
+to shift amount for node 3 is -433.748212
+to shift amount for node 4 is -219.909766
+to shift amount for node 5 is 288.777637
+to shift amount for node 6 is -905.996359
+to shift amount for node 7 is -7570.055031
+to shift amount for node 8 is -1690.482670
+to shift amount for node 9 is 940.153878
+to shift amount for node 10 is 100.000000
+to shift amount for node 11 is -431.091347
+to shift amount for node 12 is 2354.225602
+to shift amount for node 13 is 537.842370
+to shift amount for node 14 is 1286.948710
+to shift amount for node 15 is 3030.265488
+to shift amount for node 16 is -100.529761
+to shift amount for node 17 is 336.114480
+to shift amount for node 18 is 831.220780
+to shift amount for node 19 is 834.715856
+to shift amount for node 20 is 200.000000
+to shift amount for node 21 is 500.000000
+to shift amount for node 22 is 54.270610
+to shift amount for node 23 is -0.000000
+total shifting shift amount is 
+to shift amount for arc 0 is -714.067488 and new flow is 3585.932512
+to shift amount for arc 1 is 1744.862358 and new flow is 8244.862358
+to shift amount for arc 2 is 1403.509566 and new flow is 5003.509566
+to shift amount for arc 3 is -1549.677839 and new flow is 4550.322161
+to shift amount for arc 4 is -372.714695 and new flow is 6827.285305
+to shift amount for arc 5 is 4796.132613 and new flow is 18195.354859
+to shift amount for arc 6 is 1447.000656 and new flow is 10334.082033
+to shift amount for arc 7 is 1288.839161 and new flow is 15075.920538
+to shift amount for arc 8 is 6024.987897 and new flow is 22424.210143
+to shift amount for arc 9 is -1883.810351 and new flow is 5316.189649
+to shift amount for arc 10 is 2388.154704 and new flow is 19475.236081
+to shift amount for arc 11 is -2220.610746 and new flow is 6377.834122
+to shift amount for arc 12 is 9131.601334 and new flow is 22830.823580
+to shift amount for arc 13 is 567.899214 and new flow is 5967.899214
+to shift amount for arc 14 is -1518.132675 and new flow is 7381.867325
+to shift amount for arc 15 is -4702.020666 and new flow is 8497.979334
+to shift amount for arc 16 is 2506.599949 and new flow is 15312.295668
+to shift amount for arc 17 is -3791.119028 and new flow is 13926.009216
+to shift amount for arc 18 is -1881.965541 and new flow is 10919.589591
+to shift amount for arc 19 is -2187.945341 and new flow is 11326.009216
+to shift amount for arc 20 is 4743.681531 and new flow is 11249.787577
+to shift amount for arc 21 is 1759.924216 and new flow is 9742.795972
+to shift amount for arc 22 is 4792.290070 and new flow is 18877.816314
+to shift amount for arc 23 is 6629.984142 and new flow is 12267.687388
+to shift amount for arc 24 is 5031.894814 and new flow is 25453.315416
+to shift amount for arc 25 is 2578.886162 and new flow is 22618.207962
+to shift amount for arc 26 is 5373.855585 and new flow is 21487.958137
+to shift amount for arc 27 is 1810.774298 and new flow is 24224.834527
+to shift amount for arc 28 is -6419.992062 and new flow is 7242.990398
+to shift amount for arc 29 is 3242.612909 and new flow is 11278.742649
+to shift amount for arc 30 is -1754.270610 and new flow is 5245.729390
+to shift amount for arc 31 is -233.061983 and new flow is 16959.697681
+to shift amount for arc 32 is -270.416748 and new flow is 8080.269226
+to shift amount for arc 33 is 1174.549758 and new flow is 11301.559602
+to shift amount for arc 34 is 2836.717055 and new flow is 12035.939301
+to shift amount for arc 35 is 199.875052 and new flow is 8209.044145
+to shift amount for arc 36 is -828.812056 and new flow is 13214.351259
+to shift amount for arc 37 is 1031.196143 and new flow is 15144.983446
+to shift amount for arc 38 is -3205.402559 and new flow is 8686.206102
+to shift amount for arc 39 is -4773.119870 and new flow is 6674.063967
+to shift amount for arc 40 is -2457.754363 and new flow is 7461.431988
+to shift amount for arc 41 is 4644.038146 and new flow is 11671.536976
+to shift amount for arc 42 is 3648.583630 and new flow is 27567.636485
+to shift amount for arc 43 is -2394.643359 and new flow is 7602.640718
+to shift amount for arc 44 is 907.546544 and new flow is 18610.691516
+to shift amount for arc 45 is -4424.772370 and new flow is 15547.728800
+to shift amount for arc 46 is -2000.868561 and new flow is 7160.219966
+to shift amount for arc 47 is -1992.559842 and new flow is 9248.608802
+to shift amount for arc 48 is -4619.041495 and new flow is 8307.190524
+to shift amount for arc 49 is -236.356108 and new flow is 19016.946495
+to shift amount for arc 50 is 131.280273 and new flow is 7523.475288
+to shift amount for arc 51 is 336.332411 and new flow is 12375.607122
+to shift amount for arc 52 is -3175.474697 and new flow is 9004.197889
+to shift amount for arc 53 is 903.426263 and new flow is 17912.295668
+to shift amount for arc 54 is -4525.090571 and new flow is 14371.572295
+to shift amount for arc 55 is -489.549398 and new flow is 19091.308310
+to shift amount for arc 56 is -1901.510423 and new flow is 17938.366193
+to shift amount for arc 57 is -1331.433428 and new flow is 9317.347127
+to shift amount for arc 58 is 603.338338 and new flow is 10561.759367
+to shift amount for arc 59 is -83.738570 and new flow is 18332.220562
+to shift amount for arc 60 is -361.677360 and new flow is 10202.583281
+to shift amount for arc 61 is 1573.930147 and new flow is 8536.162797
+to shift amount for arc 62 is -2325.788814 and new flow is 6174.211186
+to shift amount for arc 63 is -2526.410102 and new flow is 5276.763585
+to shift amount for arc 64 is -760.762046 and new flow is 8381.777305
+to shift amount for arc 65 is 914.507442 and new flow is 11725.168798
+to shift amount for arc 66 is 285.204934 and new flow is 19604.064812
+to shift amount for arc 67 is 1215.346564 and new flow is 8215.346564
+to shift amount for arc 68 is -1586.026731 and new flow is 8628.716468
+to shift amount for arc 69 is -6849.773587 and new flow is 4541.097051
+to shift amount for arc 70 is -1366.742486 and new flow is 6902.832611
+to shift amount for arc 71 is 576.074411 and new flow is 10885.507605
+to shift amount for arc 72 is 307.193529 and new flow is 6792.450330
+to shift amount for arc 73 is -1345.394360 and new flow is 10516.838289
+to shift amount for arc 74 is -2360.568123 and new flow is 8218.830423
+to shift amount for arc 75 is 1722.260895 and new flow is 8368.156519
+total shifting shift amount is 2851.815664 and total flow is 903162.482646
+Iteration 2: gap 0.044249336526306, Beckmann 4368041.052947, time 0.103 s.
+Fatal error: Graph given to bushTopologicalOrder contains a cycle.

@@ -2,4 +2,5 @@
 obj/
 .depend/
 bin/
-cmake-build-debug/CMakeFiles/clion-log.txt
+cmake-build-debug/
+cmake-build-debug/

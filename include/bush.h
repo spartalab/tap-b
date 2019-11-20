@@ -121,6 +121,7 @@ typedef struct bushes_type {
    double   **SPcost_par; /* [thread][node] */
    double   **flow_par; /* [thread][node] */
    double   **nodeFlow_par; /* [thread][node] */
+   double   **nodeFlowshift_par; /* [origin][shift] */
 
 
 } bushes_type;
@@ -232,6 +233,8 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters, int t_id);
 void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters);
+void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
+                      algorithmBParameters_type *parameters, int t_id);
 
 /* Basic bush manipulations */
 bushes_type *createBushes(network_type *network);
@@ -261,6 +264,8 @@ bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
                         algorithmBParameters_type *parameters, int t_id);
 void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters);
+void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
+                        algorithmBParameters_type *parameters, int t_id);
 void calculateBushFlows(int origin, network_type *network,
                         bushes_type *bushes);
 void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id);
@@ -277,6 +282,9 @@ void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id);
 void newtonFlowShift(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters);
+void newtonFlowShift_par(int j, merge_type *merge, int origin,
+                         network_type *network, bushes_type *bushes,
+                         algorithmBParameters_type *parameters, int t_id);
 
 /* Utility functions */
 bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes);
