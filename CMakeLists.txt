@@ -13,6 +13,7 @@ add_executable(FinalProject
     include/networks.h
     include/tap.h
     include/utils.h
+    include/thpool.h
     net/Anaheim_net.txt
     net/Anaheim_trips.txt
     net/Austin_sdb_net.txt
@@ -34,5 +35,6 @@ add_executable(FinalProject
     src/networks.c
     src/tap.c
     src/utils.c
+    src/thpool.c
     Makefile
-    README.md)
+    README.md )

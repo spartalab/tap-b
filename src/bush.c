@@ -1,9 +1,8 @@
 #include "bush.h"
+#include "thpool.h"
 #include <pthread.h> /*used in other parts of the assignment */
 #define NUM_THREADS 1
 #define PAR 1
-
-pthread_mutex_t flow_mut;
 //Struct for thread arguments
 struct thread_args {
     int id;
@@ -28,6 +27,15 @@ void updateBushes(void* pVoid) {
     }
 }
 
+void updateBushPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    updateBushB_par(id, network, bushes, parameters, id);
+}
+
 void updateFlows(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
     int id = args->id;
@@ -40,6 +48,15 @@ void updateFlows(void* pVoid) {
     for (; i < start + num && i < network->numZones; i++) {
         updateFlowsB_par(i, network, bushes, parameters, id);
     }
+}
+
+void updateFlowsPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    updateFlowsB_par(id, network, bushes, parameters, id);
 }
 
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
@@ -55,50 +72,37 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
     initializeBushesB(network, bushes, parameters);
-    pthread_t handles[NUM_THREADS];
-    struct thread_args args[NUM_THREADS];
-    int pointsPerThread = network->numZones/NUM_THREADS;
-//        pthread_mutex_init(&flow_mut, NULL);
-    for (int j = 0; j < NUM_THREADS; ++j) {
+    struct thread_args args[network->numZones];
+    for (int j = 0; j < network->numZones; ++j) {
         args[j].id = j;
-        args[j].start = pointsPerThread * j;
-        args[j].num_points =  pointsPerThread;
         args[j].network = network;
         args[j].parameters = parameters;
         args[j].bushes = bushes;
     }
+    threadpool thpool = thpool_init(NUM_THREADS);
     /* Iterate */
     do {
         iteration++;
-        for (int j = 0; j < NUM_THREADS; ++j) {
-            pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
-        }
+        for (int j = 0; j < network->numZones; ++j) {
+            thpool_add_work(thpool, (void*) updateBushPool, (void*)&args[j]);
 
-        for(int i = 0; i < NUM_THREADS; i++) {
-            pthread_join(handles[i], NULL);
         }
+        thpool_wait(thpool);
+        for (int j = 0; j < network->numZones; ++j) {
+            thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
 
-        for (int k = 0; k < 2; ++k) {
-            for (int j = 0; j < NUM_THREADS; ++j) {
-                pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
-            }
-
-            for(int i = 0; i < NUM_THREADS; i++) {
-                pthread_join(handles[i], NULL);
-            }
         }
+        thpool_wait(thpool);
 
         /* Shift flows */ //Parallelize
         for (i = 0; i < parameters->innerIterations; i++) {
-//            for (origin = 0; origin < network->numZones; origin++) {
-//                for (int j = 0; j < NUM_THREADS; ++j) {
-//                    pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
-//                }
-//
-//                for(int i = 0; i < NUM_THREADS; i++) {
-//                    pthread_join(handles[i], NULL);
-//                }
-//            }
+            for (origin = 0; origin < network->numZones; origin++) {
+                for (int j = 0; j < network->numZones; ++j) {
+                    thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
+
+                }
+                thpool_wait(thpool);
+            }
         }
 
         /* Check gap and report progress */
@@ -332,10 +336,10 @@ bushes_type *createBushes(network_type *network) {
     bushes->merges = newVector(network->numZones, merge_type**);
 
 #if PAR
-    bushes->LPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
-    bushes->SPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
-    bushes->flow_par = newMatrix(NUM_THREADS, network->numArcs,double);
-    bushes->nodeFlow_par = newMatrix(NUM_THREADS, network->numNodes,double);
+    bushes->LPcost_par = newMatrix(network->numNodes, network->numNodes,double);
+    bushes->SPcost_par = newMatrix(network->numNodes, network->numNodes,double);
+    bushes->flow_par = newMatrix(network->numNodes, network->numArcs,double);
+    bushes->nodeFlow_par = newMatrix(network->numNodes, network->numNodes,double);
 #endif
 
     for (i = 0; i < network->numZones; i++) {
