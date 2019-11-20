@@ -25,7 +25,8 @@ DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O3
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
 LINKER = gcc
-LFLAGS = -Wall -lm $(INCLUDEFLAG)
+LFLAGS = -Wall -pthread -lm $(INCLUDEFLAG)
+MACFLAGS = -Wall -lm $(INCLUDEFLAG)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 
@@ -37,6 +38,14 @@ all: $(BINDIR)/$(PROJECT)
 $(BINDIR)/$(PROJECT): $(OBJECTS)
 	$(LINKER) $^ $(LFLAGS) -o $@ 
 	
+# ------- Mac OS target: build the main project for Mac OS ------
+
+.PHONY: mac
+mac: $(BINDIR)/$(PROJECT)
+
+$(BINDIR)/$(PROJECT): $(OBJECTS)
+	$(LINKER) $^ $(MACFLAGS) -o $@ 
+
 # ---------- release target: extra optimization ----
 
 .PHONY: release
