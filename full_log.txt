@@ -7,5 +7,49 @@ Total demand 360600.000000 compared to metadata 360600.000000
 File read and memory allocated.
 Forward and reverse star lists generated.
 Starting Algorithm B...
-Iteration 1: gap 0.009383659263703, Beckmann 4277170.489623, time 0.004 s.
-Fatal error: Cannot have non-origin node 21 in bush 0 withoutincoming contributing links
+Iteration 1: gap 0.019522109213685, Beckmann 4303056.289345, time 0.003 s.
+Iteration 2: gap 0.005098458247111, Beckmann 4236802.539447, time 0.004 s.
+Iteration 3: gap 0.000692865188488, Beckmann 4231947.547351, time 0.007 s.
+Iteration 4: gap 0.000014032339768, Beckmann 4231335.916868, time 0.010 s.
+Iteration 5: gap 0.000006368228114, Beckmann 4231335.414107, time 0.015 s.
+Iteration 6: gap 0.000002857173473, Beckmann 4231335.312649, time 0.020 s.
+Iteration 7: gap 0.000001272623833, Beckmann 4231335.292197, time 0.025 s.
+Iteration 8: gap 0.000000555128367, Beckmann 4231335.288121, time 0.029 s.
+Iteration 9: gap 0.000000254947244, Beckmann 4231335.287308, time 0.033 s.
+Iteration 10: gap 0.000000112769206, Beckmann 4231335.287147, time 0.039 s.
+Iteration 11: gap 0.000000048899068, Beckmann 4231335.287115, time 0.043 s.
+Iteration 12: gap 0.000000021561490, Beckmann 4231335.287109, time 0.048 s.
+Iteration 13: gap 0.000000010037601, Beckmann 4231335.287108, time 0.053 s.
+Iteration 14: gap 0.000000004370177, Beckmann 4231335.287108, time 0.058 s.
+Iteration 15: gap 0.000000001851551, Beckmann 4231335.287107, time 0.062 s.
+Iteration 16: gap 0.000000000856416, Beckmann 4231335.287107, time 0.066 s.
+Iteration 17: gap 0.000000000367659, Beckmann 4231335.287107, time 0.070 s.
+Iteration 18: gap 0.000000000171615, Beckmann 4231335.287107, time 0.075 s.
+Iteration 19: gap 0.000000000076672, Beckmann 4231335.287107, time 0.079 s.
+Iteration 20: gap 0.000000000034838, Beckmann 4231335.287107, time 0.084 s.
+Iteration 21: gap 0.000000000015775, Beckmann 4231335.287107, time 0.089 s.
+Iteration 22: gap 0.000000000006699, Beckmann 4231335.287107, time 0.094 s.
+Iteration 23: gap 0.000000000002838, Beckmann 4231335.287107, time 0.097 s.
+Iteration 24: gap 0.000000000001279, Beckmann 4231335.287107, time 0.103 s.
+Iteration 25: gap 0.000000000000600, Beckmann 4231335.287107, time 0.106 s.
+Iteration 26: gap 0.000000000000262, Beckmann 4231335.287107, time 0.110 s.
+Iteration 27: gap 0.000000000000118, Beckmann 4231335.287107, time 0.115 s.
+Iteration 28: gap 0.000000000000056, Beckmann 4231335.287107, time 0.119 s.
+Iteration 29: gap 0.000000000000022, Beckmann 4231335.287107, time 0.124 s.
+Iteration 30: gap 0.000000000000010, Beckmann 4231335.287107, time 0.129 s.
+Iteration 31: gap 0.000000000000005, Beckmann 4231335.287107, time 0.134 s.
+Iteration 32: gap 0.000000000000002, Beckmann 4231335.287107, time 0.139 s.
+Iteration 33: gap 0.000000000000001, Beckmann 4231335.287107, time 0.144 s.
+Warning: Negative gap.  TSTT and denom are 7480225.344921 7480225.344921
+Iteration 34: gap -0.000000000000000, Beckmann 4231335.287107, time 0.149 s.
+Warning: Negative gap.  TSTT and denom are 7480225.344921 7480225.344921
+Iteration 35: gap -0.000000000000000, Beckmann 4231335.287107, time 0.154 s.
+Iteration 36: gap 0.000000000000000, Beckmann 4231335.287107, time 0.160 s.
+Iteration 37: gap 0.000000000000000, Beckmann 4231335.287107, time 0.164 s.
+Iteration 38: gap 0.000000000000001, Beckmann 4231335.287107, time 0.170 s.
+Iteration 39: gap 0.000000000000001, Beckmann 4231335.287107, time 0.175 s.
+Iteration 40: gap 0.000000000000000, Beckmann 4231335.287107, time 0.179 s.
+Iteration 41: gap 0.000000000000000, Beckmann 4231335.287107, time 0.184 s.
+Iteration 42: gap 0.000000000000000, Beckmann 4231335.287107, time 0.188 s.
+Iteration 43: gap 0.000000000000000, Beckmann 4231335.287107, time 0.193 s.
+Iteration 44: gap 0.000000000000000, Beckmann 4231335.287107, time 0.199 s.

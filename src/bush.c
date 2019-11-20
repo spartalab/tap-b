@@ -1,6 +1,6 @@
 #include "bush.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 #define PAR 1
 
 //Struct for thread arguments
@@ -15,13 +15,14 @@ struct thread_args {
 
 void updateBushes(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
     int start = args->start;
     int num = args->num_points;
     bushes_type *bushes = args->bushes;
     network_type *network = args->network;
     algorithmBParameters_type *parameters = args->parameters;
     for (; start < start + num && start < network->numZones; start++) {
-        updateBushB(start, network, bushes, parameters);
+        updateBushB_par(start, network, bushes, parameters, id);
 //        updateFlowsB(origin, network, bushes, parameters);
     }
 }
@@ -307,16 +308,16 @@ bushes_type *createBushes(network_type *network) {
     bushes->merges = newVector(network->numZones, merge_type**);
 
 #if PAR
+//    displayMessage(FULL_NOTIFICATIONS, "Hello\n");
     bushes->LPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
     bushes->SPcost_par = newMatrix(NUM_THREADS, network->numNodes,double);
-    bushes->flow_par = newMatrix(NUM_THREADS, network->numNodes,double);
+    bushes->flow_par = newMatrix(NUM_THREADS, network->numArcs,double);
     bushes->nodeFlow_par = newMatrix(NUM_THREADS, network->numNodes,double);
 #endif
 
     for (i = 0; i < network->numZones; i++) {
        bushes->numMerges[i] = 0;
     }
-
     return bushes;
 }
 
@@ -342,7 +343,13 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     }
     deleteVector(bushes->numMerges);
     deleteVector(bushes->merges);
-   
+#if PAR
+//    displayMessage(FULL_NOTIFICATIONS, "Hello\n");
+    deleteMatrix(NUM_THREADS, network->numNodes,double);
+    deleteMatrix(NUM_THREADS, network->numNodes,double);
+    deleteMatrix(NUM_THREADS, network->numArcs,double);
+    deleteMatrix(NUM_THREADS, network->numNodes,double);
+#endif
     deleteScalar(bushes);
 }
 
@@ -443,6 +450,63 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
 }
 
 /*
+ * scanBushes_par -- simultaneously find shortest and longest paths for a given
+ * bush.  If the longestUsed argument is TRUE, the longest path search will
+ * restrict attention to longest *used* paths.  If FALSE, longest bush paths
+ * will be calculated regardless of whether there is flow on them.
+*/
+void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
+                    algorithmBParameters_type *parameters, bool longestUsed, int t_id) {
+    int h, i, hi, m, curnode, curarc;
+    double tempcost;
+    merge_type *merge;
+
+    for (i = 0; i < network->numNodes; i++) {
+        bushes->LPcost_par[t_id][i] = -INFINITY;
+        bushes->SPcost_par[t_id][i] = INFINITY;
+    }
+
+    /* Ensure costs are up to date */
+//    if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
+
+    bushes->SPcost_par[t_id][origin] = 0;
+    bushes->LPcost_par[t_id][origin] = 0;
+    for (curnode = 1; curnode < network->numNodes; curnode++) {
+        i = bushes->bushOrder[origin][curnode];
+        /* Iterate over incoming links */
+        if (isMergeNode(origin, i, bushes) == TRUE) {
+            m = pred2merge(bushes->pred[origin][i]);
+            merge = bushes->merges[origin][m];
+            for (curarc = 0; curarc < merge->numApproaches; curarc++) {
+                hi = merge->approach[curarc];
+                h = network->arcs[hi].tail;
+                tempcost = bushes->SPcost_par[t_id][h] + network->arcs[hi].cost;
+                if (tempcost < bushes->SPcost_par[t_id][i]) {
+                    bushes->SPcost_par[t_id][i] = tempcost;
+                    merge->SPlink = curarc;
+                }
+                tempcost = bushes->LPcost_par[t_id][h] + network->arcs[hi].cost;
+                if (tempcost > bushes->LPcost_par[t_id][i]
+                    && (longestUsed == FALSE ||
+                        merge->approachFlow[curarc] > parameters->minLinkFlow)
+                        ) {
+                    bushes->LPcost_par[t_id][i] = tempcost;
+                    merge->LPlink = curarc;
+                }
+            }
+        } else { /* Only one incoming bush link, not much to do */
+            hi = bushes->pred[origin][i];
+            h = network->arcs[hi].tail;
+            bushes->LPcost_par[t_id][i] = bushes->LPcost_par[t_id][h] + network->arcs[hi].cost;
+            bushes->SPcost_par[t_id][i] = bushes->SPcost_par[t_id][h] + network->arcs[hi].cost;
+        }
+    }
+//    displayMessage(FULL_NOTIFICATIONS, "Hello end of scan\n");
+
+
+}
+
+/*
  * updateBushB -- updates the topology of a bush: deleting unused links, and
  * adding links which can serve as shortcuts.  Follows Nie (2009) for how this
  * is done, first checking a stronger criterion for adding bush links, then as
@@ -511,6 +575,72 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
 }
 
 /*
+ * updateBushB_par -- updates the topology of a bush: deleting unused links, and
+ * adding links which can serve as shortcuts.  Follows Nie (2009) for how this
+ * is done, first checking a stronger criterion for adding bush links, then as
+ * a fallback checking a weaker one.
+ *
+ * New links are marked using the NEW_LINK constant, for use in
+ * reconstructMerges (the function which rebuilds the merge data structures
+ * after bush updating.)
+ */
+void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
+                 algorithmBParameters_type *parameters, int t_id) {
+    int ij, i, j, newArcs = 0;
+
+    /* First update labels... ignoring longest unused paths since those will be
+     * removed in the next step. */
+    scanBushes_par(origin, network, bushes, parameters, TRUE, t_id);
+    calculateBushFlows_par(origin, network, bushes, t_id);
+    /* Make a first pass... */
+    for (ij = 0; ij < network->numArcs; ij++) {
+        /* Mark links with near-zero contribution for removal by setting to
+         * exactly zero */
+        if (bushes->flow_par[t_id][ij] < parameters->minLinkFlow) bushes->flow_par[t_id][ij] = 0;
+        if (bushes->flow_par[t_id][ij] > 0) continue; /* Link is already in the bush, no
+                                               need to add it again */
+        /* See if the link provides a shortcut using the strict criterion */
+        i = network->arcs[ij].tail;
+        j = network->arcs[ij].head;
+        if (bushes->LPcost_par[t_id][i] == -INFINITY && bushes->LPcost_par[t_id][j] > -INFINITY)
+            continue; /* No path to extend */
+        if (bushes->SPcost_par[t_id][i] + network->arcs[ij].cost < bushes->SPcost_par[t_id][j]
+            && bushes->LPcost_par[t_id][i] < bushes->LPcost_par[t_id][j]
+            && (network->arcs[ij].tail == origin
+                || network->arcs[ij].tail >= network->firstThroughNode))
+        {
+            bushes->flow_par[t_id][ij] = NEW_LINK;
+            newArcs++;
+            /* Never delete shortest path tree... should be OK with floating point
+             * comparison since this is how SPcost is calculated */
+        } else if (bushes->SPcost_par[t_id][i]+network->arcs[ij].cost==bushes->SPcost_par[t_id][j]
+                   && bushes->flow_par[t_id][ij] == 0) {
+            bushes->flow_par[t_id][ij] = NEW_LINK;
+        }
+    }
+
+    /* If strict criterion fails, try a looser one */
+    if (newArcs == 0) {
+        for (ij = 0; ij < network->numArcs; ij++) {
+            i = network->arcs[ij].tail;
+            j = network->arcs[ij].head;
+            if (bushes->LPcost_par[t_id][i]==-INFINITY && bushes->LPcost_par[t_id][j]>-INFINITY)
+                continue; /* No path to extend */
+            if (bushes->flow_par[t_id][ij] == 0 && bushes->LPcost_par[t_id][i] < bushes->LPcost_par[t_id][j]
+                && (network->arcs[ij].tail == origin
+                    || network->arcs[ij].tail >= network->firstThroughNode))
+            {
+                bushes->flow_par[t_id][ij] = NEW_LINK;
+            }
+        }
+    }
+
+    /* Finally update bush data structures: delete/add merges, find a new
+     * topological order, rectify approach proportions */
+    reconstructMerges_par(origin, network, bushes, t_id);
+    parameters->topologicalOrder(origin, network, bushes, parameters);
+}
+/*
  * reconstructMerges -- update the merge data structures after a bush is
  * updated by adding and removing links.  In particular, for each node we do
  * the following...
@@ -537,8 +667,6 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
         for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                 curArc = curArc->next) {
             hi = ptr2arc(network, curArc->arc);
-            displayMessage(FULL_NOTIFICATIONS, "bushes flow hi: %f\n",bushes->flow[hi]);
-
             if (bushes->flow[hi] > 0 || bushes->flow[hi] == NEW_LINK) {
                 numApproaches++;
                 lastApproach = hi;
@@ -560,6 +688,78 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
                     merge->approach[arc] = hi;
                     merge->approachFlow[arc] = bushes->flow[hi];
                     arc++;               
+                }
+            }
+            insertMergeDLL(mergeList, merge, i, mergeList->tail);
+        }
+    }
+
+    /* Now transfer to array, deleting old merges and replacing with new ones*/
+    for (m = 0; m < bushes->numMerges[origin]; m++) {
+        deleteMerge(bushes->merges[origin][m]);
+    }
+    deleteVector(bushes->merges[origin]);
+    bushes->numMerges[origin] = mergeList->size;
+    bushes->merges[origin] = newVector(mergeList->size, merge_type *);
+    m = 0;
+    for (curMerge = mergeList->head; curMerge != NULL;
+         curMerge = curMerge->next) {
+        bushes->merges[origin][m] = curMerge->merge;
+        bushes->pred[origin][curMerge->node] = merge2pred(m);
+        m++;
+    }
+
+    deleteMergeDLL(mergeList);
+}
+
+/*
+ * reconstructMerges_par -- update the merge data structures after a bush is
+ * updated by adding and removing links.  In particular, for each node we do
+ * the following...
+ *
+ * 1. Normalize approach proportions for incoming links -- if there are zero
+ *    such links for a non-origin, throw an error.
+ * 2. Set pred if there is just one incoming link, otherwise create a merge.
+ *
+ * Stores merges in a linked list at first, so they can be created in one pass.
+ * Then transfer into an array for fast indexing.
+ */
+void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes, int t_id){
+    int i, hi, lastApproach, m, arc, numApproaches;
+    arcListElt *curArc;
+    merge_type *merge;
+    mergeDLL *mergeList = createMergeDLL();
+    mergeDLLelt *curMerge;
+
+
+    /* Create necessary merges */
+    for (i = 0; i < network->numNodes; i++) {
+        if (i == origin) continue;
+        numApproaches = 0;
+        for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
+             curArc = curArc->next) {
+            hi = ptr2arc(network, curArc->arc);
+            if (bushes->flow_par[t_id][hi] > 0 || bushes->flow_par[t_id][hi] == NEW_LINK) {
+                numApproaches++;
+                lastApproach = hi;
+            }
+        }
+        if (numApproaches == 0)
+            fatalError("Cannot have non-origin node %d in bush %d without"
+                       "incoming contributing links", i, origin);
+        if (numApproaches == 1) { /* No merge */
+            bushes->pred[origin][i] = lastApproach;
+        } else { /* Must create a merge */
+            merge = createMerge(numApproaches);
+            arc = 0;
+            for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
+                 curArc = curArc->next) {
+                hi = ptr2arc(network, curArc->arc);
+                if (bushes->flow_par[t_id][hi] > 0 || bushes->flow_par[t_id][hi] == NEW_LINK) {
+                    if (bushes->flow_par[t_id][hi] == NEW_LINK) bushes->flow_par[t_id][hi] = 0;
+                    merge->approach[arc] = hi;
+                    merge->approachFlow[arc] = bushes->flow_par[t_id][hi];
+                    arc++;
                 }
             }
             insertMergeDLL(mergeList, merge, i, mergeList->tail);
@@ -706,6 +906,27 @@ bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
 }
 
 /*
+ * rescanAndCheck -- calls functions updating the longest/shortest path labels
+ * on the bush, along with divergence nodes; and then checks whether the bush
+ * is close enough to equilibrium to skip for now (in which case the function
+ * returns FALSE).  If we need to shift flows, it returns TRUE.
+ */
+bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
+                    algorithmBParameters_type *parameters, int t_id) {
+    int i;
+    double maxgap = 0;
+
+    scanBushes_par(origin, network, bushes, parameters, TRUE, t_id);
+    findDivergenceNodes(origin, network, bushes);
+    for (i = 0; i < network->numNodes; i++) {
+        maxgap = max(maxgap, fabs(bushes->LPcost_par[t_id][i] -bushes->SPcost_par[t_id][i]));
+    }
+    if (maxgap < parameters->thresholdGap) return FALSE;
+
+    return TRUE;
+}
+
+/*
  * updateFlowPass -- does the actual work of shifting flows from longest to
  * shortest paths, through a pass in descending topological order. 
  */
@@ -756,12 +977,15 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
     merge_type *merge;
 
     /* Initialize node flows with OD matrix */
-    for (i = 0; i < network->numZones; i++)
+    for (i = 0; i < network->numZones; i++) {
         bushes->nodeFlow[i] = network->OD[origin][i].demand;
-    for (; i < network->numNodes; i++)
+    }
+    for (; i < network->numNodes; i++) {
         bushes->nodeFlow[i] = 0;
-    for (ij = 0; ij < network->numArcs; ij++)
+    }
+    for (ij = 0; ij < network->numArcs; ij++) {
         bushes->flow[ij] = 0;
+    }
 
     /* Descending pass for flow calculations  */
     for (node = network->numNodes - 1; node > 0; node--) {
@@ -772,6 +996,44 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
             pushBackFlowMerge(merge, network, bushes);
+        }
+    }
+
+}
+
+/*
+ * calculateBushFlows_par -- a key feature of this implementation is that bush
+ * flows are not persistently stored, but generated as needed.  This saves
+ * memory at the expense of a little extra computation.  calculateBushFlows
+ * does this by making a pass in descending topological order, loading flows
+ * from the OD matrix, and splitting flows as needed.
+ */
+void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id) {
+    int i, j, ij, m, node;
+    merge_type *merge;
+
+
+    /* Initialize node flows with OD matrix */
+    for (i = 0; i < network->numZones; i++) {
+        bushes->nodeFlow_par[t_id][i] = network->OD[origin][i].demand;
+    }
+    for (; i < network->numNodes; i++) {
+        bushes->nodeFlow_par[t_id][i] = 0;
+    }
+    for (ij = 0; ij < network->numArcs; ij++) {
+        bushes->flow_par[t_id][ij] = 0;
+    }
+
+    /* Descending pass for flow calculations  */
+    for (node = network->numNodes - 1; node > 0; node--) {
+
+        j = bushes->bushOrder[origin][node];
+        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+            pushBackFlowSimple_par(j, origin, network, bushes, t_id);
+        } else {
+            m = pred2merge(bushes->pred[origin][j]);
+            merge = bushes->merges[origin][m];
+            pushBackFlowMerge_par(merge, network, bushes, t_id);
         }
     }
 
@@ -792,6 +1054,22 @@ void pushBackFlowSimple(int j, int origin, network_type *network,
 }
 
 /*
+ * pushBackFlowSimple_par -- the easy way to "split" flow.  For a non-merge node,
+ * just push flow onto the predecessor.
+ */
+void pushBackFlowSimple_par(int j, int origin, network_type *network,
+                        bushes_type *bushes, int t_id) {
+    int i, ij;
+
+    ij = bushes->pred[origin][j];
+    i = network->arcs[ij].tail;
+    bushes->flow_par[t_id][ij] = bushes->nodeFlow_par[t_id][j];
+    bushes->nodeFlow_par[t_id][i] += bushes->nodeFlow_par[t_id][j];
+
+
+}
+
+/*
  * pushBackFlowMerge -- the harder way to split flow, when there are multiple
  * approaches to a merge node.
  */
@@ -806,6 +1084,24 @@ void pushBackFlowMerge(merge_type *merge, network_type *network,
         flow = merge->approachFlow[arc];
         bushes->flow[ij] = flow;
         bushes->nodeFlow[i] += flow;
+    }
+}
+
+/*
+ * pushBackFlowMerge_par -- the harder way to split flow, when there are multiple
+ * approaches to a merge node.
+ */
+void pushBackFlowMerge_par(merge_type *merge, network_type *network,
+                       bushes_type *bushes, int t_id) {
+    int i, ij, arc;
+    double flow;
+
+    for (arc = 0; arc < merge->numApproaches; arc++) {
+        ij = merge->approach[arc];
+        i = network->arcs[ij].tail;
+        flow = merge->approachFlow[arc];
+        bushes->flow_par[t_id][ij] = flow;
+        bushes->nodeFlow_par[t_id][i] += flow;
     }
 }
 
@@ -831,6 +1127,32 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
             merge->approachFlow[arc] = 0;
         }
         merge->approachFlow[merge->SPlink] = bushes->nodeFlow[j];
+    }
+
+}
+
+/*
+ * rectifyMerge_par -- to guard against numerical errors at a particular merge
+ * node, recalculates the approach proportions.  In the degenerate case of zero
+ * node flow, push everything onto the shortest path.
+ */
+void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id) {
+    int arc;
+    double totalFlow = 0;
+
+    for (arc = 0; arc < merge->numApproaches; arc++) {
+        totalFlow += merge->approachFlow[arc];
+    }
+
+    if (totalFlow > 0) {
+        for (arc = 0; arc < merge->numApproaches; arc++) {
+            merge->approachFlow[arc] *= bushes->nodeFlow_par[t_id][j] / totalFlow;
+        }
+    } else {
+        for (arc = 0; arc < merge->numApproaches; arc++) {
+            merge->approachFlow[arc] = 0;
+        }
+        merge->approachFlow[merge->SPlink] = bushes->nodeFlow_par[t_id][j];
     }
 
 }

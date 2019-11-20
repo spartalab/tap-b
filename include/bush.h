@@ -228,6 +228,8 @@ void initializeBushesB(network_type *network, bushes_type *bushes,
                        struct algorithmBParameters_type *parameters);
 void updateBushB(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters);
+void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
+                     algorithmBParameters_type *parameters, int t_id);
 void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters);
 
@@ -247,20 +249,31 @@ void mergeFirstTopologicalOrder(int origin, network_type *network,
                                 algorithmBParameters_type *parameters);
 void scanBushes(int origin, network_type *network, bushes_type *bushes,
                 algorithmBParameters_type *parameters, bool longestUsed);
+void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
+                    algorithmBParameters_type *parameters, bool longestUsed, int t_id);
 void reconstructMerges(int origin, network_type *network, bushes_type *bushes);
+void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes, int t_id);
 void findDivergenceNodes(int origin, network_type *network,
                          bushes_type *bushes);
 bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters);
+bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
+                        algorithmBParameters_type *parameters, int t_id);
 void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters);
 void calculateBushFlows(int origin, network_type *network,
                         bushes_type *bushes);
+void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id);
 void pushBackFlowSimple(int j, int origin, network_type *network,
                         bushes_type *bushes);
+void pushBackFlowSimple_par(int j, int origin, network_type *network,
+                            bushes_type *bushes, int t_id);
 void pushBackFlowMerge(merge_type *merge, network_type *network,
                        bushes_type *bushes);
+void pushBackFlowMerge_par(merge_type *merge, network_type *network,
+                           bushes_type *bushes, int t_id);
 void rectifyMerge(int j, merge_type *merge, bushes_type *bushes);
+void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id);
 void newtonFlowShift(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters);
