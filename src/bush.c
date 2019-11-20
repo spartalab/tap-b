@@ -1,7 +1,7 @@
 #include "bush.h"
 #include "thpool.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 2
+#define NUM_THREADS 4
 #define PAR 1
 //Struct for thread arguments
 struct thread_args {
@@ -18,7 +18,7 @@ void updateBushPool(void* pVoid) {
     bushes_type *bushes = args->bushes;
     network_type *network = args->network;
     algorithmBParameters_type *parameters = args->parameters;
-    updateBushB_par(id, network, bushes, parameters, id);
+    updateBushB_par(id, network, bushes, parameters);
 }
 
 void updateFlowsPool(void* pVoid) {
@@ -27,7 +27,7 @@ void updateFlowsPool(void* pVoid) {
     bushes_type *bushes = args->bushes;
     network_type *network = args->network;
     algorithmBParameters_type *parameters = args->parameters;
-    updateFlowsB_par(id, network, bushes, parameters, id);
+    updateFlowsB_par(id, network, bushes, parameters);
 }
 
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
@@ -448,54 +448,50 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
  * will be calculated regardless of whether there is flow on them.
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
-                    algorithmBParameters_type *parameters, bool longestUsed, int t_id) {
+                    algorithmBParameters_type *parameters, bool longestUsed) {
 //    displayMessage(FULL_NOTIFICATIONS, "Top of scan %d\n", t_id);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
 
     for (i = 0; i < network->numNodes; i++) {
-        bushes->LPcost_par[t_id][i] = -INFINITY;
-        bushes->SPcost_par[t_id][i] = INFINITY;
+        bushes->LPcost_par[origin][i] = -INFINITY;
+        bushes->SPcost_par[origin][i] = INFINITY;
     }
 
     /* Ensure costs are up to date */
     if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
-    bushes->SPcost_par[t_id][origin] = 0;
-    bushes->LPcost_par[t_id][origin] = 0;
+    bushes->SPcost_par[origin][origin] = 0;
+    bushes->LPcost_par[origin][origin] = 0;
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
         /* Iterate over incoming links */
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
-            if(&bushes->merges[origin][m] < (merge_type **) 0x1000000) {
-                int a = 0;
-                displayMessage(FULL_NOTIFICATIONS, "Bad address %x %d\n", &bushes->merges[origin][m], t_id);
-            }
             merge = bushes->merges[origin][m];
             for (curarc = 0; curarc < merge->numApproaches; curarc++) {
                 hi = merge->approach[curarc];
                 h = network->arcs[hi].tail;
-                tempcost = bushes->SPcost_par[t_id][h] + network->arcs[hi].cost;
-                if (tempcost < bushes->SPcost_par[t_id][i]) {
-                    bushes->SPcost_par[t_id][i] = tempcost;
+                tempcost = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
+                if (tempcost < bushes->SPcost_par[origin][i]) {
+                    bushes->SPcost_par[origin][i] = tempcost;
                     merge->SPlink = curarc;
                 }
-                tempcost = bushes->LPcost_par[t_id][h] + network->arcs[hi].cost;
-                if (tempcost > bushes->LPcost_par[t_id][i]
+                tempcost = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
+                if (tempcost > bushes->LPcost_par[origin][i]
                     && (longestUsed == FALSE ||
                         merge->approachFlow[curarc] > parameters->minLinkFlow)
                         ) {
-                    bushes->LPcost_par[t_id][i] = tempcost;
+                    bushes->LPcost_par[origin][i] = tempcost;
                     merge->LPlink = curarc;
                 }
             }
         } else { /* Only one incoming bush link, not much to do */
             hi = bushes->pred[origin][i];
             h = network->arcs[hi].tail;
-            bushes->LPcost_par[t_id][i] = bushes->LPcost_par[t_id][h] + network->arcs[hi].cost;
-            bushes->SPcost_par[t_id][i] = bushes->SPcost_par[t_id][h] + network->arcs[hi].cost;
+            bushes->LPcost_par[origin][i] = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
+            bushes->SPcost_par[origin][i] = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
         }
     }
 //    displayMessage(FULL_NOTIFICATIONS, "Hello end of scan %d\n", t_id);
@@ -582,39 +578,39 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
  * after bush updating.)
  */
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
-                 algorithmBParameters_type *parameters, int t_id) {
+                 algorithmBParameters_type *parameters) {
 //    displayMessage(FULL_NOTIFICATIONS, "Top of update bushb %d %d\n", origin ,t_id);
 
     int ij, i, j, newArcs = 0;
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    scanBushes_par(origin, network, bushes, parameters, TRUE, t_id);
-    calculateBushFlows_par(origin, network, bushes, t_id);
+    scanBushes_par(origin, network, bushes, parameters, TRUE);
+    calculateBushFlows_par(origin, network, bushes);
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
         /* Mark links with near-zero contribution for removal by setting to
          * exactly zero */
-        if (bushes->flow_par[t_id][ij] < parameters->minLinkFlow) bushes->flow_par[t_id][ij] = 0;
-        if (bushes->flow_par[t_id][ij] > 0) continue; /* Link is already in the bush, no
+        if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) bushes->flow_par[origin][ij] = 0;
+        if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
                                                need to add it again */
         /* See if the link provides a shortcut using the strict criterion */
         i = network->arcs[ij].tail;
         j = network->arcs[ij].head;
-        if (bushes->LPcost_par[t_id][i] == -INFINITY && bushes->LPcost_par[t_id][j] > -INFINITY)
+        if (bushes->LPcost_par[origin][i] == -INFINITY && bushes->LPcost_par[origin][j] > -INFINITY)
             continue; /* No path to extend */
-        if (bushes->SPcost_par[t_id][i] + network->arcs[ij].cost < bushes->SPcost_par[t_id][j]
-            && bushes->LPcost_par[t_id][i] < bushes->LPcost_par[t_id][j]
+        if (bushes->SPcost_par[origin][i] + network->arcs[ij].cost < bushes->SPcost_par[origin][j]
+            && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
             && (network->arcs[ij].tail == origin
                 || network->arcs[ij].tail >= network->firstThroughNode))
         {
-            bushes->flow_par[t_id][ij] = NEW_LINK;
+            bushes->flow_par[origin][ij] = NEW_LINK;
             newArcs++;
             /* Never delete shortest path tree... should be OK with floating point
              * comparison since this is how SPcost is calculated */
-        } else if (bushes->SPcost_par[t_id][i]+network->arcs[ij].cost==bushes->SPcost_par[t_id][j]
-                   && bushes->flow_par[t_id][ij] == 0) {
-            bushes->flow_par[t_id][ij] = NEW_LINK;
+        } else if (bushes->SPcost_par[origin][i]+network->arcs[ij].cost==bushes->SPcost_par[origin][j]
+                   && bushes->flow_par[origin][ij] == 0) {
+            bushes->flow_par[origin][ij] = NEW_LINK;
         }
     }
 
@@ -623,20 +619,20 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
         for (ij = 0; ij < network->numArcs; ij++) {
             i = network->arcs[ij].tail;
             j = network->arcs[ij].head;
-            if (bushes->LPcost_par[t_id][i]==-INFINITY && bushes->LPcost_par[t_id][j]>-INFINITY)
+            if (bushes->LPcost_par[origin][i]==-INFINITY && bushes->LPcost_par[origin][j]>-INFINITY)
                 continue; /* No path to extend */
-            if (bushes->flow_par[t_id][ij] == 0 && bushes->LPcost_par[t_id][i] < bushes->LPcost_par[t_id][j]
+            if (bushes->flow_par[origin][ij] == 0 && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
                 && (network->arcs[ij].tail == origin
                     || network->arcs[ij].tail >= network->firstThroughNode))
             {
-                bushes->flow_par[t_id][ij] = NEW_LINK;
+                bushes->flow_par[origin][ij] = NEW_LINK;
             }
         }
     }
 
     /* Finally update bush data structures: delete/add merges, find a new
      * topological order, rectify approach proportions */
-    reconstructMerges_par(origin, network, bushes, t_id);
+    reconstructMerges_par(origin, network, bushes);
     parameters->topologicalOrder(origin, network, bushes, parameters);
 
 //    displayMessage(FULL_NOTIFICATIONS, "End of update bushb %d\n", t_id);
@@ -726,7 +722,7 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
  * Stores merges in a linked list at first, so they can be created in one pass.
  * Then transfer into an array for fast indexing.
  */
-void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes, int t_id){
+void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes){
 //    displayMessage(FULL_NOTIFICATIONS, "Top of update reconstructmerg %d\n", t_id);
 
     int i, hi, lastApproach, m, arc, numApproaches;
@@ -743,7 +739,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
         for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
              curArc = curArc->next) {
             hi = ptr2arc(network, curArc->arc);
-            if (bushes->flow_par[t_id][hi] > 0 || bushes->flow_par[t_id][hi] == NEW_LINK) {
+            if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
                 numApproaches++;
                 lastApproach = hi;
             }
@@ -759,10 +755,10 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
             for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                  curArc = curArc->next) {
                 hi = ptr2arc(network, curArc->arc);
-                if (bushes->flow_par[t_id][hi] > 0 || bushes->flow_par[t_id][hi] == NEW_LINK) {
-                    if (bushes->flow_par[t_id][hi] == NEW_LINK) bushes->flow_par[t_id][hi] = 0;
+                if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
+                    if (bushes->flow_par[origin][hi] == NEW_LINK) bushes->flow_par[origin][hi] = 0;
                     merge->approach[arc] = hi;
-                    merge->approachFlow[arc] = bushes->flow_par[t_id][hi];
+                    merge->approachFlow[arc] = bushes->flow_par[origin][hi];
                     arc++;
                 }
             }
@@ -906,23 +902,23 @@ void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
  *   case we want to do multiple shifts per origin.
  */
 void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
-                  algorithmBParameters_type *parameters, int t_id) {
+                  algorithmBParameters_type *parameters) {
     int i;
 
     /* Recompute bush flows for this origin */
-    calculateBushFlows_par(origin, network, bushes, t_id);
+    calculateBushFlows_par(origin, network, bushes);
 
     /* Update longest/shortest paths, check whether there is work to do */
-    if (rescanAndCheck_par(origin, network, bushes, parameters, t_id) == FALSE) return;
+    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) return;
 
     /* Now do (possibly multiple) shifts per origin */
     for (i = 0; i < parameters->shiftReps; i++) {
-        updateFlowPass_par(origin, network, bushes, parameters, t_id);
+        updateFlowPass_par(origin, network, bushes, parameters);
         /* Uncomment next line for extra validation checking */
 //        checkFlows_par(network, bushes, t_id);
         if (parameters->rescanAfterShift == TRUE
             && i + 1 < parameters->shiftReps) {
-            if (rescanAndCheck_par(origin, network, bushes, parameters, t_id) == FALSE)
+            if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE)
                 return;
         }
     }
@@ -957,16 +953,16 @@ bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
  * returns FALSE).  If we need to shift flows, it returns TRUE.
  */
 bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
-                    algorithmBParameters_type *parameters, int t_id) {
+                    algorithmBParameters_type *parameters) {
 //    displayMessage(FULL_NOTIFICATIONS, "Top of rescan and check\n");
 
     int i;
     double maxgap = 0;
 
-    scanBushes_par(origin, network, bushes, parameters, TRUE, t_id);
+    scanBushes_par(origin, network, bushes, parameters, TRUE);
     findDivergenceNodes(origin, network, bushes);
     for (i = 0; i < network->numNodes; i++) {
-        maxgap = max(maxgap, fabs(bushes->LPcost_par[t_id][i] -bushes->SPcost_par[t_id][i]));
+        maxgap = max(maxgap, fabs(bushes->LPcost_par[origin][i] -bushes->SPcost_par[origin][i]));
     }
     if (maxgap < parameters->thresholdGap) return FALSE;
 
@@ -1017,33 +1013,33 @@ void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
  * shortest paths, through a pass in descending topological order.
  */
 void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
-                    algorithmBParameters_type *parameters, int t_id) {
+                    algorithmBParameters_type *parameters) {
     int i, j, k, m, node;
     merge_type *merge;
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++)
-        bushes->nodeFlow_par[t_id][i] = network->OD[origin][i].demand;
+        bushes->nodeFlow_par[origin][i] = network->OD[origin][i].demand;
 
-    for (; i < network->numNodes; i++) bushes->nodeFlow_par[t_id][i] = 0;
+    for (; i < network->numNodes; i++) bushes->nodeFlow_par[origin][i] = 0;
 
     /* Descending pass for flow shifts */
     for (node = network->numNodes - 1; node > 0; node--) {
         j = bushes->bushOrder[origin][node];
         if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
-            pushBackFlowSimple_par(j, origin, network, bushes, t_id);
+            pushBackFlowSimple_par(j, origin, network, bushes);
         } else {
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
             if (merge->LPlink == merge->SPlink
-                || fabs(bushes->LPcost_par[t_id][j] - bushes->SPcost_par[t_id][j]
+                || fabs(bushes->LPcost_par[origin][j] - bushes->SPcost_par[origin][j]
                         < parameters->minCostDifference)
-                || bushes->nodeFlow_par[t_id][j] < parameters->minLinkFlowShift
+                || bushes->nodeFlow_par[origin][j] < parameters->minLinkFlowShift
                 || merge->LPlink == NO_PATH_EXISTS)
             { /* Also nothing to do */
-                pushBackFlowMerge_par(merge, network, bushes, t_id);
+                pushBackFlowMerge_par(merge, network, bushes, origin);
             } else {
-                newtonFlowShift_par(j,merge,origin,network,bushes,parameters, t_id);
+                newtonFlowShift_par(j,merge,origin,network,bushes,parameters);
             }
         }
     }
@@ -1092,7 +1088,7 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
  * does this by making a pass in descending topological order, loading flows
  * from the OD matrix, and splitting flows as needed.
  */
-void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes, int t_id) {
+void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes) {
 
     int i, j, ij, m, node;
     merge_type *merge;
@@ -1100,13 +1096,13 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++) {
-        bushes->nodeFlow_par[t_id][i] = network->OD[origin][i].demand;
+        bushes->nodeFlow_par[origin][i] = network->OD[origin][i].demand;
     }
     for (; i < network->numNodes; i++) {
-        bushes->nodeFlow_par[t_id][i] = 0;
+        bushes->nodeFlow_par[origin][i] = 0;
     }
     for (ij = 0; ij < network->numArcs; ij++) {
-        bushes->flow_par[t_id][ij] = 0;
+        bushes->flow_par[origin][ij] = 0;
     }
 
     /* Descending pass for flow calculations  */
@@ -1114,11 +1110,11 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
 
         j = bushes->bushOrder[origin][node];
         if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
-            pushBackFlowSimple_par(j, origin, network, bushes, t_id);
+            pushBackFlowSimple_par(j, origin, network, bushes);
         } else {
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
-            pushBackFlowMerge_par(merge, network, bushes, t_id);
+            pushBackFlowMerge_par(merge, network, bushes, origin);
         }
     }
 
@@ -1143,7 +1139,7 @@ void pushBackFlowSimple(int j, int origin, network_type *network,
  * just push flow onto the predecessor.
  */
 void pushBackFlowSimple_par(int j, int origin, network_type *network,
-                        bushes_type *bushes, int t_id) {
+                        bushes_type *bushes) {
 
 //    displayMessage(FULL_NOTIFICATIONS, "top pushback simple\n");
 
@@ -1151,8 +1147,8 @@ void pushBackFlowSimple_par(int j, int origin, network_type *network,
 
     ij = bushes->pred[origin][j];
     i = network->arcs[ij].tail;
-    bushes->flow_par[t_id][ij] = bushes->nodeFlow_par[t_id][j];
-    bushes->nodeFlow_par[t_id][i] += bushes->nodeFlow_par[t_id][j];
+    bushes->flow_par[origin][ij] = bushes->nodeFlow_par[origin][j];
+    bushes->nodeFlow_par[origin][i] += bushes->nodeFlow_par[origin][j];
 
 
 }
@@ -1341,7 +1337,7 @@ void newtonFlowShift(int j, merge_type *merge, int origin,
  */
 void newtonFlowShift_par(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
-                     algorithmBParameters_type *parameters, int t_id) {
+                     algorithmBParameters_type *parameters) {
     double flow1, flow2, cost1, cost2, der1, der2, shift;
     int i, hi, m;
     merge_type *segmentMerge;
@@ -1401,10 +1397,7 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             hi = segmentMerge->approach[segmentMerge->LPlink];
             segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
         }
-        bushes->flow_par[t_id][hi] -= shift;
-//        bushes->nodeFlowshift_par[origin][hi] -= shift;
-//        displayMessage(FULL_NOTIFICATIONS, "LP Bush flow shift for origin %d and arc %d is %f\n", origin, bushes->nodeFlowshift_par[origin][hi]);
-//        parameters->linkShiftB(hi, -shift, network);
+        bushes->flow_par[origin][hi] -= shift;
         exactCostUpdate_par(hi, -shift, network);
         i = network->arcs[hi].tail;
     }
@@ -1418,9 +1411,7 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             hi = segmentMerge->approach[segmentMerge->SPlink];
             segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
         }
-        bushes->flow_par[t_id][hi] += shift;
-//        bushes->nodeFlowshift_par[origin][hi] += shift;
-//        displayMessage(FULL_NOTIFICATIONS, "SP Bush flow shift for origin %d and arc %d is %f\n", origin, hi ,bushes->nodeFlowshift_par[origin][hi]);
+        bushes->flow_par[origin][hi] += shift;
         exactCostUpdate_par(hi, shift, network);
 
 //        parameters->linkShiftB(hi, shift, network);
@@ -1519,7 +1510,7 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
     }
 
     for (r = 0; r < network->numZones; r++) {
-        calculateBushFlows_par(r, network, bushes, t_id);
+        calculateBushFlows_par(r, network, bushes);
         /* First check bush flow consistency */
         for (ij = 0; ij < network->numArcs; ij++) {
             flowCheck[ij] += bushes->flow_par[t_id][ij];
