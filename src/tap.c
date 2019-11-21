@@ -6,6 +6,9 @@
 */
 
 #include "tap.h"
+#if PARALLELISM
+    #include "pthread.h"
+#endif
 
 //////////////////////////////////
 // General network calculations //
@@ -204,8 +207,9 @@ double SPTT(network_type *network) {
     for (i = 0; i < network->numArcs; i++) { 
     // Save old costs (we will be using new ones based on costFunction)
       oldCosts[i] = network->arcs[i].cost;
-      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
+      network->arcs[i].cost = network->arcs[i].calculateCost(&network->arcs[i]);
    }
+    
     for (i = 0; i < network->numZones; i++) {
         BellmanFord(i, SPcosts, backnode, network, DEQUE);
         for (j = 0; j < network->numZones; j++) {
@@ -222,6 +226,94 @@ double SPTT(network_type *network) {
     deleteVector(oldCosts);
     return sptt;
 }
+
+#if PARALLELISM
+
+struct thread_args {
+    int id;
+    int start;
+    int num_points;
+    network_type *network;
+	long* backnode;
+	double* SPcosts;
+	double* threadSPTT;
+};
+
+void BellmanFord_par(struct thread_args* args) {
+    int start = args->start;
+    int end = args->num_points + start;
+    int thread_id = args->id;
+    double* SPcosts = args->SPcosts;
+    long* backnode = args->backnode;
+    double* threadSPTT = args->threadSPTT;
+    network_type *network = args->network;
+
+    for (; start < end && start < network->numZones; start++) {
+        BellmanFord(start, SPcosts, backnode, network, DEQUE);
+        for (int j = 0; j < network->numZones; j++) {
+            if (SPcosts[j] > 9e9 && network->OD[start][j].demand > 0)
+                displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", start, j, 
+                        SPcosts[j], network->OD[start][j].demand);
+            threadSPTT[thread_id] += network->OD[start][j].demand * SPcosts[j];
+        }
+    }
+}
+
+/*
+SPTT_par calculates the shortest-path travel time on the network, that is, the
+total system travel time if everyone could be loaded on the current shortest
+paths without changing the travel times.  This function actually re-solves
+shortest paths for each origin, rather than using the OD cost field in the
+network struct -- this allows SPTT to be calculated without changing any values
+in the network, at the expense of a little more run time.
+*/
+double SPTT_par(network_type *network) {
+    long i, j;
+    double sptt = 0;
+    declareMatrix(double, SPcosts, 8, network->numNodes);
+    declareVector(long, backnode, network->numNodes);
+    declareVector(double, oldCosts, network->numArcs);
+    declareVector(double, threadSPTT, 8);
+
+    for (i = 0; i < network->numArcs; i++) { 
+    // Save old costs (we will be using new ones based on costFunction)
+      oldCosts[i] = network->arcs[i].cost;
+      network->arcs[i].cost = network->arcs[i].calculateCost(&network->arcs[i]);
+   }
+    
+    pthread_t handles[8];
+    struct thread_args args[8];
+    int pointsPerThread = network->numZones/8;
+
+    for (int j = 0; j < 8; ++j) {
+        args[j].id = j;
+        args[j].start = pointsPerThread * j;
+        args[j].num_points =  pointsPerThread;
+        args[j].network = network;
+        args[j].backnode = backnode;
+        args[j].SPcosts = SPcosts[j];
+        args[j].threadSPTT = threadSPTT;
+    }
+
+    for (int j = 0; j < 8; ++j) {
+        pthread_create(&handles[j], NULL, (void* (*)(void*)) BellmanFord_par, &args[j]);
+    }
+    for(int i = 0; i < 8; i++) {
+        pthread_join(handles[i], NULL);
+    }
+
+    for (int i = 0; i < 8; i++) {
+        sptt += threadSPTT[i];
+    }
+
+    for (i = 0; i < network->numArcs; i++) // Restore old costs
+      network->arcs[i].cost = oldCosts[i];
+    deleteVector(SPcosts);
+    deleteVector(backnode);
+    deleteVector(oldCosts);
+    return sptt;
+}
+#endif
 
 /*
 TSTT calculates the total system travel time on the network, that is, the dot
@@ -267,7 +359,7 @@ averageExcessCost calculates the difference between TSTT and SPTT, normalized
 by total demand in the network.
 */
 double averageExcessCost(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
     return ((tstt - sptt) / network->totalODFlow);
@@ -277,7 +369,7 @@ double averageExcessCost(network_type *network) {
 relativeGap1 calculates the ratio between (TSTT - SPTT) and SPTT.
 */
 double relativeGap1(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
     displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
                           "path TSTT: %f\n", tstt, sptt);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
@@ -297,7 +389,7 @@ flow solution x* gives this formula.)  Since any lower bound will do, this
 function stores the best lower bound seen thus far.
 */
 double relativeGap2(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
 
     // Warning: This is a hack and will give incorrect values if relativeGap2
     // is used with a non-BPR function.  TODO: Fix later

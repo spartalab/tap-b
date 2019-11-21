@@ -2,9 +2,9 @@
 #include <time.h>
 
 #if PARALLELISM
-#include "thpool.h"
-#include <pthread.h> /*used in other parts of the assignment */
-#include "parallel_bush.h"
+    #include "thpool.h"
+    #include <pthread.h> /*used in other parts of the assignment */
+    #include "parallel_bush.h"
 #endif
 
 //Struct for thread arguments
