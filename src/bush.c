@@ -1,7 +1,7 @@
 #include "bush.h"
 #include "thpool.h"
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 #define PAR 1
 //Struct for thread arguments
 struct thread_args {
@@ -35,7 +35,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     makeStronglyConnectedNetwork(network);
 
     /* Allocate memory for bushes */
-    int origin, i, iteration = 0;
+    int i, iteration = 0;
     bushes_type *bushes = createBushes(network);
 
     double elapsedTime = 0, gap = INFINITY;
@@ -1014,7 +1014,7 @@ void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
  */
 void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters) {
-    int i, j, k, m, node;
+    int i, j, m, node;
     merge_type *merge;
 
     /* Initialize node flows with OD matrix */
@@ -1138,7 +1138,7 @@ void pushBackFlowSimple(int j, int origin, network_type *network,
  * pushBackFlowSimple_par -- the easy way to "split" flow.  For a non-merge node,
  * just push flow onto the predecessor.
  */
-void pushBackFlowSimple_par(int j, int origin, network_type *network,
+inline void pushBackFlowSimple_par(int j, int origin, network_type *network,
                         bushes_type *bushes) {
 
 //    displayMessage(FULL_NOTIFICATIONS, "top pushback simple\n");
@@ -1157,7 +1157,7 @@ void pushBackFlowSimple_par(int j, int origin, network_type *network,
  * pushBackFlowMerge -- the harder way to split flow, when there are multiple
  * approaches to a merge node.
  */
-void pushBackFlowMerge(merge_type *merge, network_type *network,
+inline void pushBackFlowMerge(merge_type *merge, network_type *network,
                        bushes_type *bushes) {
     int i, ij, arc;
     double flow;
@@ -1175,7 +1175,7 @@ void pushBackFlowMerge(merge_type *merge, network_type *network,
  * pushBackFlowMerge_par -- the harder way to split flow, when there are multiple
  * approaches to a merge node.
  */
-void pushBackFlowMerge_par(merge_type *merge, network_type *network,
+inline void pushBackFlowMerge_par(merge_type *merge, network_type *network,
                        bushes_type *bushes, int t_id) {
 
 //    displayMessage(FULL_NOTIFICATIONS, "top pushback merge\n");
@@ -1593,7 +1593,7 @@ void exactCostUpdate_par(int ij, double shift, network_type *network) {
  * linear approximation to the BPR function (and keeping the derivative
  * unchanged.)
  */
-void linearCostUpdate(int ij, double shift, network_type *network) {
+inline void linearCostUpdate(int ij, double shift, network_type *network) {
     network->arcs[ij].flow += shift;
     network->arcs[ij].cost += shift * network->arcs[ij].der;
 }
@@ -1602,7 +1602,7 @@ void linearCostUpdate(int ij, double shift, network_type *network) {
  * noCostUpdate -- The laziest way to "update" costs -- do nothing except shift
  * the flow.  Be careful to update the cost explicitly somewhere else.
  */
-void noCostUpdate(int ij, double shift, network_type *network) {
+inline void noCostUpdate(int ij, double shift, network_type *network) {
     network->arcs[ij].flow += shift;
 }
 

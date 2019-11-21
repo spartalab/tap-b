@@ -18,7 +18,7 @@ RM = rm -f
 
 CC = gcc
 CFLAGS = -std=c99 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
-CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses
+CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
 CFLAGS += -Wpedantic -Warray-bounds 
 CFLAGS += -fmax-errors=10
 DEBUGFLAGS = -g -O0
