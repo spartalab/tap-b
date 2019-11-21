@@ -33,6 +33,9 @@ int main(int argc, char* argv[]) {
     Bparameters.gapFunction = RELATIVE_GAP_1;
 #if PARALLELISM
     Bparameters.numThreads = atoi(argv[3]);
+    if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
+        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
+    }
 #endif
     AlgorithmB(network, &Bparameters);
 
