@@ -227,7 +227,7 @@ double SPTT(network_type *network) {
     return sptt;
 }
 
-#if PARALLELISM
+#if 0
 
 struct thread_args {
     int id;
