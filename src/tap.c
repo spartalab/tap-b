@@ -308,10 +308,10 @@ double SPTT_par(network_type *network) {
 
     for (i = 0; i < network->numArcs; i++) // Restore old costs
       network->arcs[i].cost = oldCosts[i];
-    deleteMatrix(SPcosts);
+    deleteMatrix(SPcosts, 8);
     deleteVector(backnode);
     deleteVector(oldCosts);
-    deleteVector(threadSPTT)
+    deleteVector(threadSPTT);
     return sptt;
 }
 #endif
