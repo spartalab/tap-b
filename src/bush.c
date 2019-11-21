@@ -1,4 +1,5 @@
 #include "bush.h"
+#include <time.h>
 #include <pthread.h> /*used in other parts of the assignment */
 #define NUM_THREADS 1
 #define PAR 1
@@ -49,11 +50,11 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Allocate memory for bushes */
     int origin, i, iteration = 0;
     bushes_type *bushes = createBushes(network);
+    struct timespec tick, tock;
 
     double elapsedTime = 0, gap = INFINITY;
 
     /* Initialize */
-    clock_t stopTime = clock(); /* used for timing */
     initializeBushesB(network, bushes, parameters);
     pthread_t handles[NUM_THREADS];
     struct thread_args args[NUM_THREADS];
@@ -69,6 +70,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     }
     /* Iterate */
     do {
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
         iteration++;
         for (int j = 0; j < NUM_THREADS; ++j) {
             pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
@@ -78,34 +80,32 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             pthread_join(handles[i], NULL);
         }
 
-        for (int k = 0; k < 2; ++k) {
-            for (int j = 0; j < NUM_THREADS; ++j) {
-                pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
-            }
-
-            for(int i = 0; i < NUM_THREADS; i++) {
-                pthread_join(handles[i], NULL);
-            }
+        for (int j = 0; j < NUM_THREADS; ++j) {
+            pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
         }
+
+        for(int i = 0; i < NUM_THREADS; i++) {
+            pthread_join(handles[i], NULL);
+        }
+
 
         /* Shift flows */ //Parallelize
         for (i = 0; i < parameters->innerIterations; i++) {
-//            for (origin = 0; origin < network->numZones; origin++) {
-//                for (int j = 0; j < NUM_THREADS; ++j) {
-//                    pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
-//                }
-//
-//                for(int i = 0; i < NUM_THREADS; i++) {
-//                    pthread_join(handles[i], NULL);
-//                }
-//            }
-        }
+            for (origin = 0; origin < network->numZones; origin++) {
+                for (int j = 0; j < NUM_THREADS; ++j) {
+                    pthread_create(&handles[j], NULL, (void* (*)(void*)) updateFlows, &args[j]);
+                }
 
+                for(int i = 0; i < NUM_THREADS; i++) {
+                    pthread_join(handles[i], NULL);
+                }
+            }
+        }
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
         /* Check gap and report progress */
-        elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC; /* Exclude gap calculations from run time */
+        elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
         gap = calculateGap(network, parameters->gapFunction);
         displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
-        stopTime = clock();
     } while (elapsedTime < parameters->maxTime && iteration < parameters->maxIterations && gap > parameters->convergenceGap);
 
     /* Clean up */

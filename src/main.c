@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     makeStronglyConnectedNetwork(network); /* Check connectivity */
 
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-    Bparameters.convergenceGap = -500;
+    Bparameters.convergenceGap = 1e-14;
     Bparameters.maxIterations = 1000;
     Bparameters.maxTime = 3000;
     Bparameters.gapFunction = RELATIVE_GAP_1;
