@@ -359,7 +359,7 @@ averageExcessCost calculates the difference between TSTT and SPTT, normalized
 by total demand in the network.
 */
 double averageExcessCost(network_type *network) {
-    double sptt = SPTT_par(network), tstt = TSTT(network);
+    double sptt = SPTT(network), tstt = TSTT(network);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
     return ((tstt - sptt) / network->totalODFlow);
@@ -369,7 +369,7 @@ double averageExcessCost(network_type *network) {
 relativeGap1 calculates the ratio between (TSTT - SPTT) and SPTT.
 */
 double relativeGap1(network_type *network) {
-    double sptt = SPTT_par(network), tstt = TSTT(network);
+    double sptt = SPTT(network), tstt = TSTT(network);
     displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
                           "path TSTT: %f\n", tstt, sptt);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
@@ -389,7 +389,7 @@ flow solution x* gives this formula.)  Since any lower bound will do, this
 function stores the best lower bound seen thus far.
 */
 double relativeGap2(network_type *network) {
-    double sptt = SPTT_par(network), tstt = TSTT(network);
+    double sptt = SPTT(network), tstt = TSTT(network);
 
     // Warning: This is a hack and will give incorrect values if relativeGap2
     // is used with a non-BPR function.  TODO: Fix later
