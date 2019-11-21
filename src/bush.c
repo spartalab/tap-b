@@ -1,4 +1,5 @@
 #include "bush.h"
+#include <time.h>
 
 #if PARALLELISM
 #include "thpool.h"
@@ -41,8 +42,11 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Allocate memory for bushes */
     int i, iteration = 0;
     bushes_type *bushes = createBushes(network);
-
+    struct timespec tick, tock;
     double elapsedTime = 0, gap = INFINITY;
+
+    /* Initialize */
+    initializeBushesB(network, bushes, parameters);
 #if PARALLELISM
     struct thread_args args[network->numZones];
     for (int j = 0; j < network->numZones; ++j) {
@@ -55,11 +59,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     threadpool thpool = thpool_init(parameters->numThreads);
 #endif
 
-    /* Initialize */
-    clock_t stopTime = clock(); /* used for timing */
-    initializeBushesB(network, bushes, parameters);
     /* Iterate */
     do {
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
         iteration++;
 
 #if PARALLELISM
@@ -80,7 +82,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             }
             thpool_wait(thpool);
         }
-        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC * parameters->numThreads); /* Exclude gap calculations from run time */
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
 #else
         int origin = 0;
         for (origin = 0; origin < network->numZones; origin++) {
@@ -94,12 +96,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
                 updateFlowsB(origin, network, bushes, parameters);
             }
         }
-        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC); /* Exclude gap calculations from run time */
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
 #endif
+        elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
         /* Check gap and report progress */
         gap = calculateGap(network, parameters->gapFunction);
         displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
-        stopTime = clock();
     } while (elapsedTime < parameters->maxTime && iteration < parameters->maxIterations && gap > parameters->convergenceGap);
 
     /* Clean up */
