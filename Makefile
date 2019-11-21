@@ -38,6 +38,12 @@ all: $(BINDIR)/$(PROJECT)
 $(BINDIR)/$(PROJECT): $(OBJECTS)
 	$(LINKER) $^ $(LFLAGS) -o $@ 
 
+# ------- parallel target: build the main project ------
+.PHONY: parallel
+parallel: CFLAGS += -DPARALLELISM=1
+parallel: $(BINDIR)/$(PROJECT)
+
+
 # ---------- release target: extra optimization ----
 
 .PHONY: release

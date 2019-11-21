@@ -40,7 +40,7 @@
 #include "utils.h"
 
 #define NEW_LINK -1
-#define PARALLELISM 1
+//#define PARALLELISM 1
 
 /*
  * merge_type: Extra data for merge nodes
