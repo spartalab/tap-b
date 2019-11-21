@@ -227,7 +227,7 @@ double SPTT(network_type *network) {
     return sptt;
 }
 
-#if 0
+#if PARALLELISM
 
 struct thread_args {
     int id;
@@ -268,7 +268,7 @@ network struct -- this allows SPTT to be calculated without changing any values
 in the network, at the expense of a little more run time.
 */
 double SPTT_par(network_type *network) {
-    long i, j;
+    long i;
     double sptt = 0;
     declareMatrix(double, SPcosts, 8, network->numNodes);
     declareVector(long, backnode, network->numNodes);
@@ -308,9 +308,10 @@ double SPTT_par(network_type *network) {
 
     for (i = 0; i < network->numArcs; i++) // Restore old costs
       network->arcs[i].cost = oldCosts[i];
-    deleteVector(SPcosts);
+    deleteMatrix(SPcosts);
     deleteVector(backnode);
     deleteVector(oldCosts);
+    deleteVector(threadSPTT)
     return sptt;
 }
 #endif
@@ -359,7 +360,7 @@ averageExcessCost calculates the difference between TSTT and SPTT, normalized
 by total demand in the network.
 */
 double averageExcessCost(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
     return ((tstt - sptt) / network->totalODFlow);
@@ -369,7 +370,7 @@ double averageExcessCost(network_type *network) {
 relativeGap1 calculates the ratio between (TSTT - SPTT) and SPTT.
 */
 double relativeGap1(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
     displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
                           "path TSTT: %f\n", tstt, sptt);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
@@ -389,7 +390,7 @@ flow solution x* gives this formula.)  Since any lower bound will do, this
 function stores the best lower bound seen thus far.
 */
 double relativeGap2(network_type *network) {
-    double sptt = SPTT(network), tstt = TSTT(network);
+    double sptt = SPTT_par(network), tstt = TSTT(network);
 
     // Warning: This is a hack and will give incorrect values if relativeGap2
     // is used with a non-BPR function.  TODO: Fix later

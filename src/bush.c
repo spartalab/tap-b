@@ -44,7 +44,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
 
-    double elapsedTime = 0, gap = INFINITY, timeTaken = 0;
+    double elapsedTime = 0, gap = INFINITY;
 
     /* Initialize */
     initializeBushesB(network, bushes, parameters);
