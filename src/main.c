@@ -22,6 +22,12 @@ int main(int argc, char* argv[]) {
 
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
 
+#if PARALLELISM
+    Bparameters.numThreads = atoi(argv[3]);
+    if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
+        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
+    }
+#endif
     readOBANetwork(network, argv[1], argv[2]);
 
     makeStronglyConnectedNetwork(network); /* Check connectivity */
@@ -31,12 +37,7 @@ int main(int argc, char* argv[]) {
     Bparameters.maxIterations = 1000;
     Bparameters.maxTime = 3000;
     Bparameters.gapFunction = RELATIVE_GAP_1;
-#if PARALLELISM
-    Bparameters.numThreads = atoi(argv[3]);
-    if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
-        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
-    }
-#endif
+
     AlgorithmB(network, &Bparameters);
 
     deleteNetwork(network);
