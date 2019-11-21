@@ -43,7 +43,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     int i, iteration = 0;
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
-    struct timeval start, end; 
 
     double elapsedTime = 0, gap = INFINITY, timeTaken = 0;
 
@@ -64,7 +63,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Iterate */
     do {
         clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
-        gettimeofday(&start, NULL); 
         iteration++;
 
 #if PARALLELISM
@@ -86,7 +84,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             thpool_wait(thpool);
         }
         clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-        gettimeofday(&end, NULL); 
 #else
         int origin = 0;
         for (origin = 0; origin < network->numZones; origin++) {
@@ -101,12 +98,8 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             }
         }
         clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-        gettimeofday(&end, NULL); 
 #endif
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
-        // timeTaken += (end.tv_sec - start.tv_sec) * 1e6; 
-        // timeTaken += (timeTaken + (end.tv_usec -  
-        //                          start.tv_usec)) * 1e-6; 
         /* Check gap and report progress */
         gap = calculateGap(network, parameters->gapFunction);
         displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
