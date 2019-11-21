@@ -218,6 +218,10 @@ typedef struct algorithmBParameters_type{
    void     (*topologicalOrder)(int, network_type *, bushes_type *,
                                 struct algorithmBParameters_type *);
    void     (*linkShiftB)(int, double, network_type *);
+
+#if PARALLELISM
+   int numThreads;
+#endif
 } algorithmBParameters_type;
 
 

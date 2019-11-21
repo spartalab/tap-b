@@ -52,7 +52,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         args[j].bushes = bushes;
     }
     
-    threadpool thpool = thpool_init(NUM_THREADS);
+    threadpool thpool = thpool_init(parameters->numThreads);
 #endif
 
     /* Initialize */
@@ -80,6 +80,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             }
             thpool_wait(thpool);
         }
+        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC * parameters->numThreads); /* Exclude gap calculations from run time */
 #else
         int origin = 0;
         for (origin = 0; origin < network->numZones; origin++) {
@@ -93,9 +94,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
                 updateFlowsB(origin, network, bushes, parameters);
             }
         }
+        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC); /* Exclude gap calculations from run time */
 #endif
         /* Check gap and report progress */
-        elapsedTime += ((double)(clock() - stopTime)) / (CLOCKS_PER_SEC); /* Exclude gap calculations from run time */
         gap = calculateGap(network, parameters->gapFunction);
         displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f, Beckmann %.13g, time %.3f s.\n", iteration, gap, BeckmannFunction(network), elapsedTime);
         stopTime = clock();

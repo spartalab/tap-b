@@ -9,8 +9,6 @@
 #include "utils.h"
 #include "bush.h"
 
-#define NUM_THREADS 2
-
 /* Parallized main Algorithm B helper functions */
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters);

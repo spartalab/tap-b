@@ -8,10 +8,16 @@ int main(int argc, char* argv[]) {
         debugFile = openFile("full_log.txt", "w");
     #endif
 
-    if (argc != 3) 
+#if PARALLELISM
+    if (argc != 4)
+        fatalError("Must specify three arguments\n\nUsage: tap "
+                   "networkfile demandfile numthreads\n");
+#else
+    if (argc != 3)
          fatalError("Must specify two arguments\n\nUsage: tap "
                     "networkfile demandfile\n");
 
+#endif
     network_type *network = newScalar(network_type);
 
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
@@ -25,7 +31,9 @@ int main(int argc, char* argv[]) {
     Bparameters.maxIterations = 1000;
     Bparameters.maxTime = 3000;
     Bparameters.gapFunction = RELATIVE_GAP_1;
-    
+#if PARALLELISM
+    Bparameters.numThreads = atoi(argv[3]);
+#endif
     AlgorithmB(network, &Bparameters);
 
     deleteNetwork(network);

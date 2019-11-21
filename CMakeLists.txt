@@ -10,6 +10,7 @@ add_executable(FinalProject
     include/datastructures.h
     include/fileio.h
     include/main.h
+    include/parallel_bush.h
     include/networks.h
     include/tap.h
     include/utils.h
@@ -33,6 +34,7 @@ add_executable(FinalProject
     src/fileio.c
     src/main.c
     src/networks.c
+    src/parallel_bush.c
     src/tap.c
     src/utils.c
     src/thpool.c
