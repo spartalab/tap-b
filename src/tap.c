@@ -255,10 +255,11 @@ void BellmanFord_par(struct thread_args* args) {
                 displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", start, j, 
                         SPcosts[j], network->OD[start][j].demand);
             threadSPTT[thread_id] += network->OD[start][j].demand * SPcosts[j];
+//            displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for thread %d start %d dest %d\n", threadSPTT[thread_id], thread_id, start, j);
         }
     }
 }
-
+#define SPTT_THREADS 4
 /*
 SPTT_par calculates the shortest-path travel time on the network, that is, the
 total system travel time if everyone could be loaded on the current shortest
@@ -270,10 +271,10 @@ in the network, at the expense of a little more run time.
 double SPTT_par(network_type *network) {
     long i;
     double sptt = 0;
-    declareMatrix(double, SPcosts, 8, network->numNodes);
-    declareVector(long, backnode, network->numNodes);
+    declareMatrix(double, SPcosts, SPTT_THREADS, network->numNodes);
+    declareMatrix(long, backnode, SPTT_THREADS,network->numNodes);
     declareVector(double, oldCosts, network->numArcs);
-    declareVector(double, threadSPTT, 8);
+    declareVector(double, threadSPTT, SPTT_THREADS);
 
     for (i = 0; i < network->numArcs; i++) { 
     // Save old costs (we will be using new ones based on costFunction)
@@ -281,35 +282,39 @@ double SPTT_par(network_type *network) {
       network->arcs[i].cost = network->arcs[i].calculateCost(&network->arcs[i]);
    }
     
-    pthread_t handles[8];
-    struct thread_args args[8];
-    int pointsPerThread = network->numZones/8;
+    pthread_t handles[SPTT_THREADS];
+    struct thread_args args[SPTT_THREADS];
+    int pointsPerThread = network->numZones/SPTT_THREADS;
 
-    for (int j = 0; j < 8; ++j) {
+    for (int j = 0; j < SPTT_THREADS; ++j) {
         args[j].id = j;
         args[j].start = pointsPerThread * j;
         args[j].num_points =  pointsPerThread;
         args[j].network = network;
-        args[j].backnode = backnode;
+        args[j].backnode = backnode[j];
         args[j].SPcosts = SPcosts[j];
+        threadSPTT[j] = 0;
         args[j].threadSPTT = threadSPTT;
     }
 
-    for (int j = 0; j < 8; ++j) {
+    for (int j = 0; j < SPTT_THREADS; ++j) {
         pthread_create(&handles[j], NULL, (void* (*)(void*)) BellmanFord_par, &args[j]);
     }
-    for(int i = 0; i < 8; i++) {
+    for(int i = 0; i < SPTT_THREADS; i++) {
         pthread_join(handles[i], NULL);
     }
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < SPTT_THREADS; i++) {
+        displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for thread %d\n", threadSPTT[i], i);
         sptt += threadSPTT[i];
     }
 
     for (i = 0; i < network->numArcs; i++) // Restore old costs
       network->arcs[i].cost = oldCosts[i];
-    deleteMatrix(SPcosts, 8);
-    deleteVector(backnode);
+
+    displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for all\n", sptt);
+    deleteMatrix(SPcosts, SPTT_THREADS);
+    deleteMatrix(backnode, SPTT_THREADS);
     deleteVector(oldCosts);
     deleteVector(threadSPTT);
     return sptt;
