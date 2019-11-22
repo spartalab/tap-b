@@ -6,6 +6,10 @@ Fast, efficient C implementation of Algorithm-B for the traffic assignment probl
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. There are two main options: normal and parallel.
 
+## Configurations
+
+Specific configurations such as convergence gap and maximum number of iterations are things that must be modified in "main.c". 
+
 ### Installing
 
 First make sure to clone the repo as such:
