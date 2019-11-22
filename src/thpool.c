@@ -5,6 +5,7 @@
  *               work. For usage, check the thpool.h file or README.md
  *
  *//** @file thpool.h *//*
+ * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
  *
  ********************************/
 
@@ -290,7 +291,7 @@ static int thread_init (thpool_* thpool_p, struct thread** thread_p, int id){
     (*thread_p)->thpool_p = thpool_p;
     (*thread_p)->id       = id;
 
-    pthread_create(&(*thread_p)->pthread, NULL, (void *)thread_do, (*thread_p));
+    pthread_create(&(*thread_p)->pthread, NULL, (void *(*)(void *)) thread_do, (*thread_p));
     pthread_detach((*thread_p)->pthread);
     return 0;
 }

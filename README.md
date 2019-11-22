@@ -35,13 +35,13 @@ make parallel
 To run the normal executable run the following:
 
 ```
-./bin/tap net/<network>_net.txt net/<network>_trips.txt
+./bin/tap  net/<network>_net.txt  net/<network>_trips.txt
 ```
 
 To run the parallelized binary run the following:
 
 ```
-./bin/tap net/<network>_net.txt net/<network>_trips.txt <num_of_threads>
+./bin/tap  net/<network>_net.txt  net/<network>_trips.txt  <num_of_threads>
 ```
 
 NOTE: if you do not state the number of threads, you will be assigned to a default number of threads based on the number of cores on your machine. If you don't like that, make sure to input the number of threads so that you machine does not get overworked!
@@ -59,4 +59,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Keshav Pingali for CS377P
+* Keshav Pingali's CS377P: Programming for Performance class with lectures and study about parallel programming

@@ -279,7 +279,7 @@ void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
             if (merge->LPlink == merge->SPlink
-                || fabs(bushes->LPcost_par[origin][j] - bushes->SPcost_par[origin][j]
+                || (fabs(bushes->LPcost_par[origin][j] - bushes->SPcost_par[origin][j])
                         < parameters->minCostDifference)
                 || bushes->nodeFlow_par[origin][j] < parameters->minLinkFlowShift
                 || merge->LPlink == NO_PATH_EXISTS)

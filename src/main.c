@@ -40,8 +40,8 @@ int main(int argc, char* argv[]) {
     #ifdef DEBUG_MODE
         debugFile = openFile("full_log.txt", "w");
     #endif
-    int numOfThreads = 0;
 #if PARALLELISM
+    int numOfThreads = 0;
     if (argc != 4) {
         displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
         displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());

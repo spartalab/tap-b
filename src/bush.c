@@ -67,18 +67,18 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
 #if PARALLELISM
         for (int j = 0; j < network->numZones; ++j) {
-            thpool_add_work(thpool, (void*) updateBushPool, (void*)&args[j]);
+            thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
         }
         thpool_wait(thpool);
         for (int j = 0; j < network->numZones; ++j) {
-            thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
+            thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
         }
         thpool_wait(thpool);
 
         /* Shift flows -- Inner iterations*/
         for (i = 0; i < parameters->innerIterations; i++) {
             for (int j = 0; j < network->numZones; ++j) {
-                thpool_add_work(thpool, (void*) updateFlowsPool, (void*)&args[j]);
+                thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
 
             }
             thpool_wait(thpool);
@@ -752,7 +752,7 @@ void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
             if (merge->LPlink == merge->SPlink
-                || fabs(bushes->LPcost[j] - bushes->SPcost[j]
+                || (fabs(bushes->LPcost[j] - bushes->SPcost[j])
                         < parameters->minCostDifference)
                 || bushes->nodeFlow[j] < parameters->minLinkFlowShift
                 || merge->LPlink == NO_PATH_EXISTS)

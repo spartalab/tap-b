@@ -2,6 +2,7 @@
  * @author      Johan Hanssen Seferidis
  * License:     MIT
  *
+ * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
  **********************************/
 
 #ifndef _THPOOL_
@@ -183,5 +184,12 @@ int thpool_num_threads_working(threadpool);
 #ifdef __cplusplus
 }
 #endif
-
+#if defined(__linux__)
+/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
+	prctl(PR_SET_NAME, thread_name);
+#elif defined(__APPLE__) && defined(__MACH__)
+int pthread_setname_np(const char*);
+#else
+err("thread_do(): pthread_setname_np is not supported on this system");
+#endif
 #endif
