@@ -1,3 +1,15 @@
+/*
+ * parallel_bush.h -- This is the header file for the bush and merge data 
+ * structures that are used specifically for the parallelization workloads.
+ * 
+ * All the method implementation details are the exact same as those in bush.h,
+ * the only difference is that this file defines functions that implement separate
+ * data structures for each thread, which are then merged for the final result 
+ * used to solve equilibrium for the network.
+ * 
+ */
+
+
 #ifndef PARALLEL_BUSH_H
 #define PARALLEL_BUSH_H
 

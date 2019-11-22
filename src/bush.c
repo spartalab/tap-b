@@ -3,12 +3,12 @@
 
 #if PARALLELISM
     #include "thpool.h"
-    #include <pthread.h> /*used in other parts of the assignment */
+    #include <pthread.h> 
     #include "parallel_bush.h"
 #endif
 
-//Struct for thread arguments
 #if PARALLELISM
+//Struct for thread arguments
 struct thread_args {
     int id;
     bushes_type *bushes;
@@ -83,7 +83,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             }
             thpool_wait(thpool);
         }
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
 #else
         int origin = 0;
         for (origin = 0; origin < network->numZones; origin++) {
@@ -97,8 +96,8 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
                 updateFlowsB(origin, network, bushes, parameters);
             }
         }
+#endif  
         clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-#endif
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
         /* Check gap and report progress */
         gap = calculateGap(network, parameters->gapFunction);
@@ -107,7 +106,6 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     /* Clean up */
     deleteBushes(network, bushes);
-
 }
 
 
@@ -1031,11 +1029,9 @@ void checkFlows(network_type *network, bushes_type *bushes) {
  * derivative.
  */
 void exactCostUpdate(int ij, double shift, network_type *network) {
-//    pthread_mutex_lock(&flow_mut);
     network->arcs[ij].flow += shift;
     network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
-//    pthread_mutex_unlock(&flow_mut);
 }
 
 /*
