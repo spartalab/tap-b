@@ -228,6 +228,7 @@ double SPTT(network_type *network) {
 }
 
 #if PARALLELISM
+#define SPTT_THREADS 4
 
 struct thread_args {
     int id;
@@ -247,19 +248,18 @@ void BellmanFord_par(struct thread_args* args) {
     long* backnode = args->backnode;
     double* threadSPTT = args->threadSPTT;
     network_type *network = args->network;
-
-    for (; start < end && start < network->numZones; start++) {
+    if(thread_id == SPTT_THREADS - 1)
+        end = network->numZones;
+    for (; start < end; start++) {
         BellmanFord(start, SPcosts, backnode, network, DEQUE);
         for (int j = 0; j < network->numZones; j++) {
             if (SPcosts[j] > 9e9 && network->OD[start][j].demand > 0)
                 displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", start, j, 
                         SPcosts[j], network->OD[start][j].demand);
             threadSPTT[thread_id] += network->OD[start][j].demand * SPcosts[j];
-//            displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for thread %d start %d dest %d\n", threadSPTT[thread_id], thread_id, start, j);
         }
     }
 }
-#define SPTT_THREADS 4
 /*
 SPTT_par calculates the shortest-path travel time on the network, that is, the
 total system travel time if everyone could be loaded on the current shortest
@@ -305,14 +305,11 @@ double SPTT_par(network_type *network) {
     }
 
     for (int i = 0; i < SPTT_THREADS; i++) {
-        displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for thread %d\n", threadSPTT[i], i);
         sptt += threadSPTT[i];
     }
 
     for (i = 0; i < network->numArcs; i++) // Restore old costs
       network->arcs[i].cost = oldCosts[i];
-
-    displayMessage(FULL_NOTIFICATIONS, "SPTT is %f for all\n", sptt);
     deleteMatrix(SPcosts, SPTT_THREADS);
     deleteMatrix(backnode, SPTT_THREADS);
     deleteVector(oldCosts);
