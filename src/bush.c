@@ -363,12 +363,12 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     }
     deleteVector(bushes->numMerges);
     deleteVector(bushes->merges);
-//#if PAR
-//    deleteMatrix(bushes->LPcost_par, network->numNodes);
-//    deleteMatrix(bushes->SPcost_par, network->numNodes);
-//    deleteMatrix(bushes->flow_par, network->numArcs);
-//    deleteMatrix(bushes->nodeFlow_par, network->numNodes);
-//#endif
+#if PARALLELISM
+   deleteMatrix(bushes->LPcost_par, network->numNodes);
+   deleteMatrix(bushes->SPcost_par, network->numNodes);
+   deleteMatrix(bushes->flow_par, network->numNodes);
+   deleteMatrix(bushes->nodeFlow_par, network->numNodes);
+#endif
     deleteScalar(bushes);
 }
 

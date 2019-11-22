@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 #if PARALLELISM
     if (argc != 4) {
         displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
-        displayMessage(FULL_NOTIFICATIONS, "Number of available codes: %d\n", getNumCores);
+        displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
         numOfThreads = getNumCores();
     } else {
         numOfThreads = atoi(argv[3]);
