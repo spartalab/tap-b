@@ -45,9 +45,9 @@ NOTE: if you do not state the number of threads, you will be assigned to a defau
 
 ## Authors
 
-* **Steve Boyles** - *Primary implementation* )
-* **Rishabh Thakkar** - *Parallelized implementation* )
-* **Karthik Velayutham** - *Parallelized implementation* )
+* **Steve Boyles** - *Primary implementation* 
+* **Rishabh Thakkar** - *Parallelized implementation* 
+* **Karthik Velayutham** - *Parallelized implementation* 
 
 ## License
 
