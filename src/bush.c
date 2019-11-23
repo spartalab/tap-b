@@ -1111,7 +1111,7 @@ mergeDLLelt *insertMergeDLL(mergeDLL *list, merge_type *merge, int i,
         newNode->next->prev = newNode;
     else
         list->tail = newNode;
-        after->next = newNode;
+    after->next = newNode;
     } else {
         newNode->prev = NULL;
         newNode->next = list->head;

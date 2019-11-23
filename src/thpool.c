@@ -17,9 +17,6 @@
 #include <pthread.h>
 #include <errno.h>
 #include <time.h>
-#if defined(__linux__)
-#include <sys/prctl.h>
-#endif
 
 #include "thpool.h"
 

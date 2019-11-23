@@ -185,8 +185,9 @@ int thpool_num_threads_working(threadpool);
 }
 #endif
 #if defined(__linux__)
+#include <sys/prctl.h>
 /* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
-	prctl(PR_SET_NAME, thread_name);
+	int prctl(int, ...);
 #elif defined(__APPLE__) && defined(__MACH__)
 int pthread_setname_np(const char*);
 #else
