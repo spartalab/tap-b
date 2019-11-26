@@ -8,9 +8,9 @@ int main(int argc, char* argv[]) {
         debugFile = openFile("full_log.txt", "w");
     #endif
 
-    if (argc != 3) 
-         fatalError("Must specify two arguments\n\nUsage: tap "
-                    "networkfile demandfile\n");
+    if (argc != 4)
+         fatalError("Must specify three  arguments\n\nUsage: tap "
+                    "networkfile demandfile num_threads\n");
 
     network_type *network = newScalar(network_type);
 
@@ -23,8 +23,9 @@ int main(int argc, char* argv[]) {
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
     Bparameters.convergenceGap = 1e-14;
     Bparameters.maxIterations = 1000;
-    Bparameters.maxTime = 3000;
+    Bparameters.maxTime = 3600;
     Bparameters.gapFunction = RELATIVE_GAP_1;
+    Bparameters.numThreads = atoi(argv[3]);
     
     AlgorithmB(network, &Bparameters);
 

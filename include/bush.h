@@ -211,6 +211,7 @@ typedef struct algorithmBParameters_type{
    double   minDerivative;
    double   newtonStep;
    int      numNewtonShifts;
+   int      numThreads;
    queueDiscipline SPQueueDiscipline;
    void     (*createInitialBush)(int, network_type *, bushes_type *,
                                  struct algorithmBParameters_type *);
@@ -237,7 +238,7 @@ void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
                       algorithmBParameters_type *parameters, int t_id);
 
 /* Basic bush manipulations */
-bushes_type *createBushes(network_type *network);
+bushes_type *createBushes(network_type *network, int threads);
 void deleteBushes(network_type *network, bushes_type *bushes);
 void initialBushShortestPath(int origin, network_type *network,
                              bushes_type *bushes,

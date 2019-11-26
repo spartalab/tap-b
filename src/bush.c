@@ -1,7 +1,6 @@
 #include "bush.h"
 #include <time.h>
 #include <pthread.h> /*used in other parts of the assignment */
-#define NUM_THREADS 1
 #define PAR 1
 
 pthread_mutex_t flow_mut;
@@ -46,14 +45,14 @@ void updateFlows(void* pVoid) {
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
+    int NUM_THREADS = parameters->numThreads;
 
     /* Allocate memory for bushes */
     int origin, i, iteration = 0;
-    bushes_type *bushes = createBushes(network);
+    bushes_type *bushes = createBushes(network, NUM_THREADS);
     struct timespec tick, tock;
 
     double elapsedTime = 0, gap = INFINITY;
-
     /* Initialize */
     initializeBushesB(network, bushes, parameters);
     pthread_t handles[NUM_THREADS];
@@ -317,7 +316,7 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
  * createBushes -- Initialize the bushes data structure for a particular
  * network, allocating memory as needed.
  */
-bushes_type *createBushes(network_type *network) {
+bushes_type *createBushes(network_type *network, int NUM_THREADS) {
     declareScalar(bushes_type, bushes);
     int i;
 
