@@ -4,3 +4,5 @@ obj/
 bin/
 cmake-build-debug/
 full_log.txt
+net/Sydney*
+results/

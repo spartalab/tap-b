@@ -84,13 +84,13 @@ double linkCost(arc_type *arc, cost_type costFunction) {
        return INFINITY; /* Protect against division by zero */
     switch (costFunction) {
     case BPR:
-      if (arc->flow <= 0) 
-          return arc->freeFlowTime + arc->fixedCost; 
+      if (arc->flow <= 0)
+          return arc->freeFlowTime + arc->fixedCost;
           // Protect against negative flow values and 0^0 errors
-        return arc->fixedCost + arc->freeFlowTime * 
+        return arc->fixedCost + arc->freeFlowTime *
             (1 + arc->alpha * pow(arc->flow / arc->capacity, arc->beta));
     case BPR_DER:
-      if (arc->flow <= 0) { /* Protect against negative flow values and 0^0 
+      if (arc->flow <= 0) { /* Protect against negative flow values and 0^0
                                errors */
          if (arc->beta != 1)
             return 0;
@@ -102,8 +102,8 @@ double linkCost(arc_type *arc, cost_type costFunction) {
     case BPR_INT:
       if (arc->flow <= 0) return 0; /* Protect against negative flow values and
                                        0^0 errors */
-      return arc->flow * (arc->fixedCost + arc->freeFlowTime * 
-              (1 + arc->alpha / (arc->beta + 1) * 
+      return arc->flow * (arc->fixedCost + arc->freeFlowTime *
+              (1 + arc->alpha / (arc->beta + 1) *
                pow(arc->flow / arc->capacity, arc->beta)));
     default:
         fatalError("Unknown cost function.");
@@ -115,11 +115,11 @@ double linkCost(arc_type *arc, cost_type costFunction) {
  * generalBPRcost -- Evaluates the BPR function for an arbitrary polynomial.
  */
 double generalBPRcost(struct arc_type *arc) {
-   if (arc->flow <= 0) 
+   if (arc->flow <= 0)
    // Protect against negative flow values and 0^0 errors
        return arc->freeFlowTime + arc->fixedCost;
 
-   return arc->fixedCost + arc->freeFlowTime * 
+   return arc->fixedCost + arc->freeFlowTime *
        (1 + arc->alpha * pow(arc->flow / arc->capacity, arc->beta));
 }
 
@@ -128,7 +128,7 @@ double generalBPRcost(struct arc_type *arc) {
  * function.
  */
 double generalBPRder(struct arc_type *arc) {
-   if (arc->flow <= 0) { /* Protect against negative flow values and 0^0 
+   if (arc->flow <= 0) { /* Protect against negative flow values and 0^0
                             errors */
       if (arc->beta != 1)
          return 0;
@@ -139,20 +139,20 @@ double generalBPRder(struct arc_type *arc) {
               * pow(arc->flow / arc->capacity, arc->beta - 1);
 }
 
-/* 
+/*
  * generalBPRint -- Evaluate integral of an arbitrary polynomial BPR function.
  */
 double generalBPRint(struct arc_type *arc) {
-   if (arc->flow <= 0) return 0; /* Protect against negative flow values and 
+   if (arc->flow <= 0) return 0; /* Protect against negative flow values and
                                     0^0 errors */
-   return arc->flow * (arc->fixedCost + arc->freeFlowTime * 
-           (1 + arc->alpha / (arc->beta + 1) * 
+   return arc->flow * (arc->fixedCost + arc->freeFlowTime *
+           (1 + arc->alpha / (arc->beta + 1) *
             pow(arc->flow / arc->capacity, arc->beta)));
 }
 
 /* linearBPRcost/der/int -- Faster implementation for linear BPR functions. */
 double linearBPRcost(struct arc_type *arc) {
-   return arc->fixedCost + arc->freeFlowTime * 
+   return arc->fixedCost + arc->freeFlowTime *
        (1 + arc->alpha * arc->flow / arc->capacity);
 }
 
@@ -161,7 +161,7 @@ double linearBPRder(struct arc_type *arc) {
 }
 
 double linearBPRint(struct arc_type *arc) {
-   return arc->flow * (arc->fixedCost + arc->freeFlowTime * 
+   return arc->flow * (arc->fixedCost + arc->freeFlowTime *
            (1 + arc->alpha / arc->capacity / 2));
 }
 
@@ -179,14 +179,14 @@ double quarticBPRder(struct arc_type *arc) {
    y *= y;
    y *= arc->flow;
    return 4 * arc->freeFlowTime * arc->alpha * y;
-   
+
 }
 
 double quarticBPRint(struct arc_type *arc) {
    double y = arc->flow / arc->capacity;
    y *= y;
    y *= y;
-   return arc->flow * (arc->fixedCost + arc->freeFlowTime * 
+   return arc->flow * (arc->fixedCost + arc->freeFlowTime *
            (1 + arc->alpha * y / 5));
 }
 
@@ -204,17 +204,17 @@ double SPTT(network_type *network) {
     declareVector(double, SPcosts, network->numNodes);
     declareVector(long, backnode, network->numNodes);
     declareVector(double, oldCosts, network->numArcs);
-    for (i = 0; i < network->numArcs; i++) { 
+    for (i = 0; i < network->numArcs; i++) {
     // Save old costs (we will be using new ones based on costFunction)
       oldCosts[i] = network->arcs[i].cost;
       network->arcs[i].cost = network->arcs[i].calculateCost(&network->arcs[i]);
    }
-    
+
     for (i = 0; i < network->numZones; i++) {
         BellmanFord(i, SPcosts, backnode, network, DEQUE);
         for (j = 0; j < network->numZones; j++) {
          if (SPcosts[j] > 9e9 && network->OD[i][j].demand > 0)
-             displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", i, j, 
+             displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", i, j,
                      SPcosts[j], network->OD[i][j].demand);
             sptt += network->OD[i][j].demand * SPcosts[j];
         }
@@ -228,7 +228,7 @@ double SPTT(network_type *network) {
 }
 
 #if PARALLELISM
-#define SPTT_THREADS 4
+#define SPTT_THREADS 12
 
 struct thread_args {
     int id;
@@ -254,7 +254,7 @@ void BellmanFord_par(struct thread_args* args) {
         BellmanFord(start, SPcosts, backnode, network, DEQUE);
         for (int j = 0; j < network->numZones; j++) {
             if (SPcosts[j] > 9e9 && network->OD[start][j].demand > 0)
-                displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", start, j, 
+                displayMessage(LOW_NOTIFICATIONS, "%d -> %d: %f %f\n", start, j,
                         SPcosts[j], network->OD[start][j].demand);
             threadSPTT[thread_id] += network->OD[start][j].demand * SPcosts[j];
         }
@@ -276,12 +276,12 @@ double SPTT_par(network_type *network) {
     declareVector(double, oldCosts, network->numArcs);
     declareVector(double, threadSPTT, SPTT_THREADS);
 
-    for (i = 0; i < network->numArcs; i++) { 
+    for (i = 0; i < network->numArcs; i++) {
     // Save old costs (we will be using new ones based on costFunction)
       oldCosts[i] = network->arcs[i].cost;
       network->arcs[i].cost = network->arcs[i].calculateCost(&network->arcs[i]);
    }
-    
+
     pthread_t handles[SPTT_THREADS];
     struct thread_args args[SPTT_THREADS];
     int pointsPerThread = network->numZones/SPTT_THREADS;
@@ -326,9 +326,9 @@ double TSTT(network_type *network) {
     double sum = 0;
     long i;
     for (i = 0; i < network->numArcs; i++)
-        sum += network->arcs[i].flow * 
+        sum += network->arcs[i].flow *
             network->arcs[i].calculateCost(&network->arcs[i]);
-   if (isnan(sum)) displayNetwork(DEBUG, network); /* Oops.  Indicates some 
+   if (isnan(sum)) displayNetwork(DEBUG, network); /* Oops.  Indicates some
                    kind of numerical error (likely division by zero or 0^0) */
     return sum;
 }
@@ -411,8 +411,8 @@ double relativeGap2(network_type *network) {
 
     // Warning: This is a hack and will give incorrect values if relativeGap2
     // is used with a non-BPR function.  TODO: Fix later
-    network->beckmann = BeckmannFunction(network); 
-    network->beckmannLB = min(network->beckmannLB, network->beckmann + sptt - 
+    network->beckmann = BeckmannFunction(network);
+    network->beckmannLB = min(network->beckmannLB, network->beckmann + sptt -
                                                    tstt);
     displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
             "path TSTT: %f\n", tstt, sptt);
@@ -446,7 +446,7 @@ void makeStronglyConnectedNetwork(network_type *network) {
         if (backnode[i] == NO_PATH_EXISTS) newArcs++;
         if (forwardnode[i] == NO_PATH_EXISTS) newArcs++;
     }
-    if (newArcs == 0) { /* Nothing to do, network is already strongly 
+    if (newArcs == 0) { /* Nothing to do, network is already strongly
                            connected, so clean up/return */
         deleteVector(order);
         deleteVector(backnode);
@@ -454,7 +454,7 @@ void makeStronglyConnectedNetwork(network_type *network) {
         return;
     }
 
-   /* Create new arc vector, with all the old ones plus the new artificial 
+   /* Create new arc vector, with all the old ones plus the new artificial
     * links */
     displayMessage(FULL_NOTIFICATIONS, "Warning: Creating %d artifical arcs "
             "to ensure strong connectivity.\n", newArcs);
@@ -464,7 +464,7 @@ void makeStronglyConnectedNetwork(network_type *network) {
     }
     for (j = 0; j < network->numNodes; j++) {
         if (backnode[j] == NO_PATH_EXISTS) {
-            displayMessage(DEBUG, "Creating (%d,%d)\n", network->numNodes, 
+            displayMessage(DEBUG, "Creating (%d,%d)\n", network->numNodes,
                            j + 1);
             newArcVector[i].tail = network->numNodes - 1;
             newArcVector[i].head = j;
@@ -476,9 +476,9 @@ void makeStronglyConnectedNetwork(network_type *network) {
             newArcVector[i].toll = ARTIFICIAL;
             newArcVector[i].freeFlowTime = ARTIFICIAL;
            newArcVector[i].calculateCost = &linearBPRcost;
-           newArcVector[i].calculateDer = &linearBPRder;           
-           newArcVector[i].calculateInt = &linearBPRint;        
-           newArcVector[i].cost = newArcVector[i].freeFlowTime; 
+           newArcVector[i].calculateDer = &linearBPRder;
+           newArcVector[i].calculateInt = &linearBPRint;
+           newArcVector[i].cost = newArcVector[i].freeFlowTime;
             i++;
         }
         if (forwardnode[j] == NO_PATH_EXISTS) {
@@ -494,9 +494,9 @@ void makeStronglyConnectedNetwork(network_type *network) {
             newArcVector[i].toll = ARTIFICIAL;
             newArcVector[i].freeFlowTime = ARTIFICIAL;
            newArcVector[i].calculateCost = &linearBPRcost;
-           newArcVector[i].calculateDer = &linearBPRder;           
-           newArcVector[i].calculateInt = &linearBPRint;         
-           newArcVector[i].cost = newArcVector[i].freeFlowTime;           
+           newArcVector[i].calculateDer = &linearBPRder;
+           newArcVector[i].calculateInt = &linearBPRint;
+           newArcVector[i].cost = newArcVector[i].freeFlowTime;
             i++;
         }
     }

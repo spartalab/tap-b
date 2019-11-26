@@ -17,9 +17,9 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 RM = rm -f
 
 CC = gcc
-CFLAGS = -std=c11 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
+CFLAGS = -std=c99 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
-CFLAGS += -Wpedantic -Warray-bounds 
+CFLAGS += -Wpedantic -Warray-bounds
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O3
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
@@ -35,7 +35,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 all: $(BINDIR)/$(PROJECT)
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
-	$(LINKER) $^ $(LFLAGS) -o $@ 
+	$(LINKER) $^ $(LFLAGS) -o $@
 
 # ------- parallel target: build the main project ------
 .PHONY: parallel
