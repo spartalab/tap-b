@@ -145,11 +145,11 @@ void displayDoublyLinkedList(int minVerbosity, doublyLinkedList *list) {
 
 /**** Standard queue with memory ****/
 
-queue_type createQueue(long size, long eltsize) {
-    long i;
+queue_type createQueue(int size, long eltsize) {
+    int i;
 
     queue_type queue;
-    queue.node = newVector(size, long);
+    queue.node = newVector(size, int);
     queue.history = newVector(eltsize, char);
     queue.readptr = 0;
     queue.writeptr = 0;
@@ -166,7 +166,7 @@ void deleteQueue(queue_type *queue) {
     deleteVector(queue->history);
 }
 
-void enQueue(queue_type *queue, long elt) {
+void enQueue(queue_type *queue, int elt) {
     if (queue->history[elt] == IN_QUEUE) return;
     if (queue->curelts == queue->size) fatalError("Queue not large enough!");
     queue->curelts++;
@@ -176,7 +176,7 @@ void enQueue(queue_type *queue, long elt) {
     queue->history[elt] = IN_QUEUE;
 }
 
-void frontQueue(queue_type *queue, long elt) {
+void frontQueue(queue_type *queue, int elt) {
     if (queue->history[elt] == IN_QUEUE) return;
     if (queue->readptr == 0)
         queue->readptr = queue->size - 1;
@@ -188,8 +188,8 @@ void frontQueue(queue_type *queue, long elt) {
     queue->history[elt] = IN_QUEUE;
 }
 
-long deQueue(queue_type *queue) {
-    long val = queue->node[queue->readptr];
+int deQueue(queue_type *queue) {
+    int val = queue->node[queue->readptr];
     queue->history[queue->node[queue->readptr]] = WAS_IN_QUEUE;
     queue->readptr++;
     queue->curelts--;
@@ -198,7 +198,7 @@ long deQueue(queue_type *queue) {
 }
 
 void displayQueue(int minVerbosity, queue_type *queue) {
-    long i;
+    int i;
     for (i = 0; i < queue->size; i++) {
         displayMessage(minVerbosity, "%ld ", queue->node[i]);
         if (i == queue->readptr)
@@ -313,7 +313,7 @@ int minChild(heap_type *heap, int elt) {
 }
 
 void heapify(heap_type *heap) {
-    long i;
+    int i;
     for (i = heapPred(heap->last); i >= 0; i--)
         siftDown(heap, i);
 }
@@ -352,7 +352,7 @@ void *allocateScalar(size_t size) {
     return scalar;
 }
 
-void *allocateVector(long u, size_t size) {
+void *allocateVector(int u, size_t size) {
     void *vector = malloc(u * size);
     if (vector == NULL)
         fatalError("Unable to allocate memory for vector of size %ld.", u);
@@ -365,8 +365,8 @@ void *allocateVector(long u, size_t size) {
     return vector;
 }
 
-void **allocateMatrix(long u1, long u2, size_t size) {
-    long i;
+void **allocateMatrix(int u1, long u2, size_t size) {
+    int i;
     void **matrix = malloc(u1 * sizeof(void *));
     if (matrix == NULL) fatalError("Unable to allocate memory for matrix of "
                                    "size %ld x %ld.", u1, u2);
@@ -385,8 +385,8 @@ void **allocateMatrix(long u1, long u2, size_t size) {
     return matrix;
 }
 
-void ***allocate3DArray(long u1, long u2, long u3, size_t size) {
-    long i, j;
+void ***allocate3DArray(int u1, long u2, long u3, size_t size) {
+    int i, j;
     void ***matrix = malloc(u1 * sizeof(void **));
     if (matrix == NULL)
         fatalError("Unable to allocate 3D array of size "
@@ -432,8 +432,8 @@ void killVector(void *vector) {
     #endif
 }
 
-void killMatrix(void **matrix, long u1) {
-    long i;
+void killMatrix(void **matrix, int u1) {
+    int i;
     for (i = 0; i < u1; i++) free(matrix[i]);
     free(matrix);
     #ifdef MEMCHECK
@@ -444,8 +444,8 @@ void killMatrix(void **matrix, long u1) {
     #endif
 }
 
-void kill3DArray(void ***array, long u1, long u2) {
-    long i, j;
+void kill3DArray(void ***array, int u1, long u2) {
+    int i, j;
     for (i = 0; i < u1; i++) {
         for (j = 0; j < u2; j++) {
             free(array[i][j]);

@@ -19,44 +19,71 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     makeStronglyConnectedNetwork(network);
 
     /* Allocate memory for bushes */
-    int origin, i, iteration = 0;
+    int batch, iteration = 0, lastClass = IS_MISSING;
     bushes_type *bushes = createBushes(network);
+    char beckmannString[STRING_SIZE];
 
-    double elapsedTime = 0, gap = INFINITY;
+    double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
 
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
-    initializeBushesB(network, bushes, parameters);
+    initializeAlgorithmB(network, bushes, parameters);
+    displayMessage(LOW_NOTIFICATIONS, "Initialization done in %.3f s.\n",
+        ((double)(clock() - stopTime)) / CLOCKS_PER_SEC);
+    displayMessage(DEBUG, "Initial Beckmann: %f\n", BeckmannFunction(network));
 
     /* Iterate */
-    do {
-        iteration++;
-
-        /* Update bushes */
-        for (origin = 0; origin < network->numZones; origin++) {
-            updateBushB(origin, network, bushes, parameters);
-            updateFlowsB(origin, network, bushes, parameters);
-        }
-
-        /* Shift flows */
-        for (i = 0; i < parameters->innerIterations; i++) {
-            for (origin = 0; origin < network->numZones; origin++) {
-                updateFlowsB(origin, network, bushes, parameters);
-            }
-        }
-
-        /* Check gap and report progress. (Pause timer to find gap.)  */
-        elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
-        gap = calculateGap(network, parameters->gapFunction);
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %ld: gap %.15f,"
-                       "Beckmann %.13g, time %.3f s.\n", iteration, gap,
-                       BeckmannFunction(network), elapsedTime);
-        stopTime = clock();
-    } while (elapsedTime < parameters->maxTime
+    parameters->innerIterations = 1;
+    while (elapsedTime < parameters->maxTime
              && iteration < parameters->maxIterations
-             && gap > parameters->convergenceGap);
+             && (iteration == 0 || gap > parameters->convergenceGap)) {
+        iteration++;
+        gap = 0; /* Will accumulate total gap across batches for averaging */
 
-   /* Clean up */
+        /* Iterate over batches of origins */
+        for (batch = 0; batch < network->numBatches; batch++) {
+            /* Do main work for this batch */
+            loadBatch(batch, network, bushes, parameters);
+            updateBatchBushes(network, bushes, &lastClass, parameters);
+            updateBatchFlows(network, bushes, &lastClass, parameters);
+            storeBatch(batch, network, bushes, parameters);
+
+            /* Check gap and report progress. */
+            elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
+            stopTime = clock();
+            batchGap = bushRelativeGap(network, bushes, parameters);
+            gap += batchGap;
+            if (parameters->includeGapTime == FALSE) stopTime = clock(); 
+            if (parameters->calculateBeckmann == TRUE) {
+                sprintf(beckmannString, "obj %.15g, ",
+                        BeckmannFunction(network));
+            } else {
+                beckmannString[0] = '\0';
+            }
+
+            if (network->numBatches > 1) {
+                displayMessage(LOW_NOTIFICATIONS, "*Batch %ld: batchgap %.15f,"
+                       " %stime %.3f s.\n", batch, batchGap,
+                           beckmannString, elapsedTime);  
+            }
+                    
+        }
+        /* Report information from the entire iteration (all batches) */
+        gap /= network->numBatches;
+        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, "
+                       "%stime %.3f, %d shifts\n",
+                        iteration, 
+                        network->numBatches > 1 ? " est." : "",
+                        gap,
+                        beckmannString,
+                        elapsedTime,
+                        parameters->numFlowShifts);
+        parameters->innerIterations = 20; /* Tuneable parameter */
+        parameters->thresholdAEC = 0.25 * gap; /* Tuneable parameter */
+
+    } 
+
+    /* Clean up */
     deleteBushes(network, bushes);
 
 }
@@ -71,13 +98,14 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.gapFunction = RELATIVE_GAP_1;
     parameters.convergenceGap = 0;
     parameters.maxTime = INFINITY;
-    parameters.maxIterations = LONG_MAX;
+    parameters.maxIterations = INT_MAX;
 
     parameters.innerIterations = 20;
     parameters.shiftReps = 1;
     parameters.rescanAfterShift = FALSE;
 
     parameters.thresholdGap = 0;
+    parameters.thresholdAEC = 0;
     parameters.minCostDifference = 0;
     parameters.minLinkFlowShift = 0;
 
@@ -86,13 +114,166 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.newtonStep = 1;
     parameters.numNewtonShifts = 1;
 
+    parameters.numFlowShifts = 0;
+
+    parameters.demandMultiplier = 1;
+
+    parameters.storeMatrices = FALSE;
+    parameters.storeBushes = FALSE;
+    parameters.reuseFirstBush = FALSE;
+
+    snprintf(parameters.batchStem, sizeof(parameters.batchStem), "batch");
+    snprintf(parameters.matrixStem, sizeof(parameters.matrixStem), "matrix");
+    snprintf(parameters.flowsFile, sizeof(parameters.flowsFile), "flows.txt");
+
+    parameters.warmStart = FALSE;
+    parameters.calculateBeckmann = TRUE;
+
     parameters.SPQueueDiscipline = DEQUE;
+    
+    parameters.includeGapTime = TRUE;
 
     parameters.createInitialBush = &initialBushShortestPath;
     parameters.topologicalOrder = &genericTopologicalOrder;
     parameters.linkShiftB = &exactCostUpdate;
 
     return parameters;
+}
+
+void initializeAlgorithmB(network_type *network, bushes_type *bushes,
+                          algorithmBParameters_type *parameters) {
+
+    int batch, c, ij, origin;
+    char batchFileName[STRING_SIZE];    
+    
+    /* 1. Initialize flows to zero and costs to free-flow */
+    for (ij = 0; ij < network->numArcs; ij++) {
+        network->arcs[ij].flow = 0;
+        network->arcs[ij].cost = network->arcs[ij].freeFlowTime;
+        for (c = 0; c < network->numClasses; c++) {
+            network->arcs[ij].classFlow[c] = 0;
+        }
+    }
+    
+    /* 2. Now create bushes, either reading from a file (if warmStart parameter
+          is TRUE); or creating entirely from scratch (default); or by
+          creating one set of bushes from scratch and reusing for other classes
+          (can only use if reuseFirstBush parameter is TRUE *and* batch size
+          is the same as the number of origins.  The following code handles
+          all of these cases*/
+    if (network->numBatches != network->numClasses &&
+            parameters->reuseFirstBush == TRUE) {
+        fatalError("Cannot reuse bushes unless batches match classes.");
+    }
+              
+    for (batch = 0; batch < network->numBatches; batch++) {
+        /* Set up new batch */
+        network->curBatch = batch;
+        sprintf(batchFileName, "%s%d.bin", parameters->batchStem,
+                network->curBatch);
+        if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
+            readBinaryMatrix(network, parameters);
+        }
+        displayMessage(FULL_NOTIFICATIONS, "Read matrix\n");
+
+        /* Form bush structure: either read from file or recreate */
+        if (parameters->warmStart == TRUE) { /* Read file and rectify */
+            readBushes(network, &bushes, batchFileName);
+            displayMessage(FULL_NOTIFICATIONS, "Read batch %d\n", batch);
+        } else { /* No warm start, have to re-initialize */
+            /* Do we have to create a bush from scratch, or can we reuse
+             * the first? */
+            if (batch == 0 || parameters->reuseFirstBush == FALSE) {
+                initializeBushesB(network, bushes, parameters);
+            }
+            displayMessage(FULL_NOTIFICATIONS, "Created batch %d\n", batch);
+        }
+        /* Now load demand onto these bushes to calculate flows.  Need to do
+         * this (regardless of fresh initialization) for two reasons:
+         *  1. In case demand changes (warm starting)
+         *  2. To get the initial arc flows correct
+         */
+        for (origin = 0; origin < network->batchSize; origin++) {
+            rectifyBushFlows(origin, network, bushes); 
+            c = origin2class(network, origin);
+            for (ij = 0; ij < network->numArcs; ij++) {
+                network->arcs[ij].flow += bushes->flow[ij];
+                network->arcs[ij].classFlow[c] += bushes->flow[ij];
+                network->arcs[ij].cost =
+                    network->arcs[ij].calculateCost(&network->arcs[ij]);
+            }
+        }
+        sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+        if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
+            writeBushes(network, bushes, batchFileName);
+        }
+    }
+    for (ij = 0; ij < network->numArcs; ij++) {
+        network->arcs[ij].der =
+            network->arcs[ij].calculateDer(&network->arcs[ij]);
+    }    
+}
+
+void loadBatch(int batch, network_type *network, bushes_type *bushes,
+               algorithmBParameters_type *parameters) {
+    char batchFileName[STRING_SIZE];
+    
+    network->curBatch = batch;
+    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+    if (network->numBatches > 1) {
+        /* Even if storeBushes == TRUE, if there is only one batch
+         * there is no point in reading it again */
+        readBushes(network, &bushes, batchFileName);
+    }
+    if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
+        readBinaryMatrix(network, parameters);
+    }               
+}               
+
+void storeBatch(int batch, network_type *network, bushes_type *bushes,
+                algorithmBParameters_type *parameters) {
+    char batchFileName[STRING_SIZE];
+    
+    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);                
+    if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
+        writeBushes(network, bushes, batchFileName);
+    }
+}
+
+void updateBatchBushes(network_type *network, bushes_type *bushes,
+                       int *lastClass, algorithmBParameters_type *parameters) {
+    int origin, c;                       
+    for (origin = 0; origin < network->batchSize; origin++) {
+        if (outOfOrigins(network, origin) == TRUE) break;
+        bushes->updateBush[origin] = TRUE;
+        c = origin2class(network, origin);
+        if (c != *lastClass) {
+            changeFixedCosts(network, c);
+        }
+        updateBushB(origin, network, bushes, parameters);
+        updateFlowsB(origin, network, bushes, parameters);
+        *lastClass = c;
+    }    
+}
+
+void updateBatchFlows(network_type *network, bushes_type *bushes,
+                      int *lastClass, algorithmBParameters_type *parameters) {
+    int i, origin, c;                       
+    bool doneAny;
+    for (i = 0; i < parameters->innerIterations; i++) {
+        doneAny = FALSE;
+        for (origin = 0; origin < network->batchSize; origin++) {
+            if (outOfOrigins(network, origin) == TRUE) break;
+            if (bushes->updateBush[origin] == FALSE) continue;
+            c = origin2class(network, origin);
+            if (c != *lastClass) {
+                changeFixedCosts(network, c);
+            }
+            doneAny |= updateFlowsB(origin,network,bushes,parameters);
+            *lastClass = c;
+        }
+        if (doneAny == FALSE) break;
+    }
 }
 
 /*
@@ -105,12 +286,32 @@ void initialBushShortestPath(int origin, network_type *network,
                              bushes_type *bushes,
                              algorithmBParameters_type *parameters) {
     /* Find shortest path and set bush preds */
-    arcIndexBellmanFord(origin, bushes->SPcost, bushes->pred[origin], network,
-                        parameters->SPQueueDiscipline);
+    int ij, originNode = origin2node(network, origin);
+    arcIndexBellmanFord(originNode, bushes->SPcost, bushes->pred[origin],
+                        network, parameters->SPQueueDiscipline);
+    
+    for (ij = 0; ij < network->numNodes; ij++) {
+        if (ij != originNode && bushes->pred[origin][ij] == IS_MISSING) {
+            if (verbosity >= DEBUG) {
+                for (ij = 0; ij < network->numNodes; ij++) {
+                    displayMessage(DEBUG, "%d %d %f\n", ij + 1,
+                                    bushes->pred[origin][ij],
+                                    bushes->SPcost[ij]);
+                }
+                for (ij = 0; ij < network->numArcs; ij++) {
+                    displayMessage(DEBUG, "(%d,%d) %f %f\n", 
+                                   network->arcs[ij].tail+1,
+                                   network->arcs[ij].head+1,
+                                   network->arcs[ij].flow,
+                                   network->arcs[ij].cost);
+                }
+            }
+            fatalError("Cannot find initial connected bush.");
+        }
+    }
 
     /* Set bush topological order */
     bushes->numMerges[origin] = 0;
-    bushes->merges[origin] = newVector(0, merge_type *);
     parameters->topologicalOrder(origin, network, bushes, parameters);
 }
 
@@ -143,18 +344,22 @@ void genericTopologicalOrder(int origin, network_type *network,
     int i, j, m,  next, highestMerge = 0;
     
     declareVector(int, indegree, network->numNodes);
+
     for (i = 0; i < network->numNodes; i++) {
         indegree[i] = 1; /* By default non-origin nodes are assumed to have 1
                             incoming link; merges and origin handled below */
          bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
     }
+    /*displayMessage(DEBUG, "Now working with origin %d, really %d\n",
+                  origin, origin2node(network, origin));*/
     for (i = 0; i < network->numNodes; i++) {
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
+            /*displayMessage(DEBUG, "Node %d is merge node %d\n", i, m);*/
             indegree[i] = bushes->merges[origin][m]->numApproaches;
         }
     }
-    indegree[origin] = 0;
+    indegree[origin2node(network, origin)] = 0;
 
     queue_type LIST = createQueue(network->numNodes, network->numNodes);
     next = 0;
@@ -176,8 +381,9 @@ void genericTopologicalOrder(int origin, network_type *network,
             }
         }
     }
-    if (next < network->numNodes)
+    if (next < network->numNodes) {
         fatalError("Graph given to bushTopologicalOrder contains a cycle.");
+    }
     bushes->lastMerge[origin] = highestMerge;
 
     deleteQueue(&LIST);
@@ -218,7 +424,8 @@ void mergeFirstTopologicalOrder(int origin, network_type *network,
  * corresponding to origin.
  */
 bool isMergeNode(int origin, int i, bushes_type *bushes) {
-    return (bushes->pred[origin][i] < 0 && i != origin) ? TRUE : FALSE;
+    return (bushes->pred[origin][i] < 0 &&
+            i != origin2node(bushes->network, origin)) ? TRUE : FALSE;
 }
 
 /*
@@ -257,6 +464,97 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
     return FALSE;
 }
 
+/***********************
+ * CUSTOM GAP ROUTINES *
+ ***********************/
+
+/* 
+ * bushSPTT -- specialized SPTT finding using bush structures as a warm start
+ */
+double bushSPTT(network_type *network, bushes_type *bushes,
+              algorithmBParameters_type *parameters) {
+    int r, j, c, lastClass = IS_MISSING, originNode;
+    double sptt = 0;
+    for (r = 0; r < network->batchSize; r++) {
+        if (outOfOrigins(network, r) == TRUE) break;
+        originNode = origin2node(network, r);
+        c = origin2class(network, r);
+        if (c != lastClass) {
+            changeFixedCosts(network, c);
+        }
+        scanBushes(r, network, bushes, parameters, NO_LONGEST_PATH);
+        BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
+                            bushes->SPcost, bushes->bushOrder[r]);
+        for (j = 0; j < network->numZones; j++) {
+            sptt += network->demand[r][j] * bushes->SPcost[j];
+        }
+        lastClass = c;
+    }
+    return sptt;
+}
+
+double bushTSTT(network_type *network, bushes_type *bushes) {
+    int r, ij, c, lastClass = IS_MISSING;
+    double tstt = 0;
+    for (r = 0; r < network->batchSize; r++) {
+        if (outOfOrigins(network, r) == TRUE) break;
+        c = origin2class(network, r);
+        if (c != lastClass) {
+            changeFixedCosts(network, c);
+        }
+        calculateBushFlows(r, network, bushes);
+        for (ij = 0; ij < network->numArcs; ij++) {
+            tstt += bushes->flow[ij] * network->arcs[ij].cost;
+        }
+        lastClass = c;
+    }
+    return tstt;
+}
+
+double bushRelativeGap(network_type *network, bushes_type *bushes,
+                     algorithmBParameters_type *parameters) {
+    
+    double sptt = bushSPTT(network, bushes, parameters);
+    double tstt = network->numBatches == 1 ?
+                                         TSTT(network) :
+                                         bushTSTT(network, bushes);
+    displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
+                          "path TSTT: %f\n", tstt, sptt);
+    /* if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
+                                "denom are %f %f\n", tstt, sptt); */
+    return (tstt / sptt - 1);
+}
+
+double bushAEC(network_type *network, bushes_type *bushes,
+             algorithmBParameters_type *parameters) {
+    double sptt = bushSPTT(network, bushes, parameters);
+    double tstt = TSTT(network);
+    if (tstt < sptt) warning(LOW_NOTIFICATIONS, "ANegative gap.  TSTT and SPTT "
+                                                "are %f %f\n", tstt, sptt);
+    return ((tstt - sptt) / network->totalODFlow);
+}
+
+double bushMEC(network_type *network, bushes_type *bushes,
+             algorithmBParameters_type *parameters) {
+    double mec = 0;
+    int j, r, c, lastClass = IS_MISSING, originNode;
+    for (r = 0; r < network->batchSize; r++) {
+        if (outOfOrigins(network, r) == TRUE) break;
+        originNode = origin2node(network, r);
+        c = origin2class(network, r);
+        if (c != lastClass) {
+            changeFixedCosts(network, c);
+        }
+        scanBushes(r, network, bushes, parameters, LONGEST_USED_PATH);
+        BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
+                            bushes->SPcost, bushes->bushOrder[r]);
+        for (j = 0; j < network->numZones; j++) {
+            mec = max(mec, bushes->LPcost[j] - bushes->SPcost[j]);
+        }
+    }
+    return mec;
+}
+
 
 /*
  * createBushes -- Initialize the bushes data structure for a particular
@@ -266,20 +564,23 @@ bushes_type *createBushes(network_type *network) {
     declareScalar(bushes_type, bushes);
     int i;
 
+    bushes->network = network;
     bushes->LPcost = newVector(network->numNodes, double);
     bushes->SPcost = newVector(network->numNodes, double);
     bushes->flow = newVector(network->numArcs, double);
     bushes->nodeFlow = newVector(network->numNodes, double);
-    bushes->pred = newMatrix(network->numZones, network->numNodes, int);
-    bushes->bushOrder = newMatrix(network->numZones, network->numNodes, int);
-    bushes->lastMerge = newVector(network->numZones, int);
-    bushes->numMerges = newVector(network->numZones, int);
-    bushes->merges = newVector(network->numZones, merge_type**);
+    bushes->pred = newMatrix(network->batchSize, network->numNodes, int);
+    bushes->bushOrder = newMatrix(network->batchSize, network->numNodes, int);
+    bushes->lastMerge = newVector(network->batchSize, int);
+    bushes->numMerges = newVector(network->batchSize, int);
+    bushes->merges = newVector(network->batchSize, merge_type**);
+    bushes->updateBush = newVector(network->batchSize, bool);
 
-    for (i = 0; i < network->numZones; i++) {
+    for (i = 0; i < network->batchSize; i++) {
        bushes->numMerges[i] = 0;
+       bushes->merges[i] = newVector(1, merge_type*);
+       bushes->updateBush[i] = TRUE;
     }
-
     return bushes;
 }
 
@@ -294,10 +595,10 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     deleteVector(bushes->SPcost);
     deleteVector(bushes->flow);
     deleteVector(bushes->nodeFlow);
-    deleteMatrix(bushes->pred, network->numZones);
-    deleteMatrix(bushes->bushOrder, network->numZones);
+    deleteMatrix(bushes->pred, network->batchSize);
+    deleteMatrix(bushes->bushOrder, network->batchSize);
     deleteVector(bushes->lastMerge);
-    for (i = 0; i < network->numZones; i++) {
+    for (i = 0; i < network->batchSize; i++) {
         for (m = 0; m < bushes->numMerges[i]; m++) {
             deleteMerge(bushes->merges[i][m]);
         }
@@ -305,14 +606,14 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     }
     deleteVector(bushes->numMerges);
     deleteVector(bushes->merges);
-   
+    deleteVector(bushes->updateBush);
     deleteScalar(bushes);
 }
 
 
 /*
  * initializeBushesB -- set up initial bushes at the beginning of the algorithm
- * (as distinct from createBushesB, which merely allocates memory).  This
+ * (as distinct from createBushes, which merely allocates memory).  This
  * involves the following steps:
     1. Zero out flow on all links, set travel times to free-flow
     2. Cycle through bushes, call getInitialBush.
@@ -326,28 +627,19 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
 */
 void initializeBushesB(network_type *network, bushes_type *bushes,
                        algorithmBParameters_type *parameters) {
-    int i, ij;
+    int c, origin, lastClass = IS_MISSING;
 
-    for (ij = 0; ij < network->numArcs; ij++) {
-        network->arcs[ij].flow = 0;
-        network->arcs[ij].cost = network->arcs[ij].freeFlowTime;
-    }
-
-    for (i = 0; i < network->numZones; i++) {
-        /* createInitialBush also sets preds, bushOrder */
-        parameters->createInitialBush(i, network, bushes, parameters); 
-        calculateBushFlows(i, network, bushes);
-        for (ij = 0; ij < network->numArcs; ij++) {
-            network->arcs[ij].flow += bushes->flow[ij];
-            network->arcs[ij].cost =
-                network->arcs[ij].calculateCost(&network->arcs[ij]);
+    for (origin = 0; origin < network->batchSize; origin++) {
+        if (outOfOrigins(network, origin) == TRUE) break;
+        c = origin2class(network, origin);
+        if (c != lastClass) {
+            changeFixedCosts(network, c);
         }
+        /* createInitialBush also sets preds, bushOrder */
+        parameters->createInitialBush(origin, network, bushes, parameters); 
+        calculateBushFlows(origin, network, bushes);
     }
 
-    for (ij = 0; ij < network->numArcs; ij++) {
-        network->arcs[ij].der =
-            network->arcs[ij].calculateDer(&network->arcs[ij]);
-    }
 }
 
 /*
@@ -357,7 +649,7 @@ void initializeBushesB(network_type *network, bushes_type *bushes,
  * will be calculated regardless of whether there is flow on them.
 */
 void scanBushes(int origin, network_type *network, bushes_type *bushes,
-                algorithmBParameters_type *parameters, bool longestUsed) {
+                algorithmBParameters_type *parameters, scan_type LPrule) {
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
@@ -370,14 +662,16 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
     /* Ensure costs are up to date */
     if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
-    bushes->SPcost[origin] = 0;
-    bushes->LPcost[origin] = 0;
+    bushes->SPcost[origin2node(network, origin)] = 0;
+    bushes->LPcost[origin2node(network, origin)] = 0;
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
         /* Iterate over incoming links */
+        //displayMessage(DEBUG, "Scanning node %d:%d (%d)\n", origin, i, curnode);
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
             merge = bushes->merges[origin][m];
+            /* Find shortest incoming link */
             for (curarc = 0; curarc < merge->numApproaches; curarc++) {
                 hi = merge->approach[curarc];
                 h = network->arcs[hi].tail;
@@ -386,11 +680,21 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
                     bushes->SPcost[i] = tempcost;
                     merge->SPlink = curarc;
                 }
-                tempcost = bushes->LPcost[h] + network->arcs[hi].cost;      
+            }
+            /* Find longest (need to separate out depending on LPrule) */
+            if (LPrule == NO_LONGEST_PATH) continue;
+            for (curarc = 0; curarc < merge->numApproaches; curarc++) {
+                hi = merge->approach[curarc];
+                h = network->arcs[hi].tail;
+                tempcost = bushes->LPcost[h] + network->arcs[hi].cost;     
                 if (tempcost > bushes->LPcost[i]
-                     && (longestUsed == FALSE ||
-                         merge->approachFlow[curarc] > parameters->minLinkFlow)
-                   ) {
+                  && (LPrule == LONGEST_BUSH_PATH
+                    || (LPrule == LONGEST_USED_PATH
+                      && merge->approachFlow[curarc] > parameters->minLinkFlow)
+                    || (LPrule == LONGEST_USED_OR_SP
+                      &&(merge->approachFlow[curarc] > parameters->minLinkFlow
+                      || merge->SPlink == curarc)))) {
+                    
                     bushes->LPcost[i] = tempcost;
                     merge->LPlink = curarc;
                 }
@@ -401,7 +705,8 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
             bushes->LPcost[i] = bushes->LPcost[h] + network->arcs[hi].cost;
             bushes->SPcost[i] = bushes->SPcost[h] + network->arcs[hi].cost;
         }
-   }
+    }
+
 
 }
 
@@ -421,14 +726,19 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
    
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    scanBushes(origin, network, bushes, parameters, TRUE);
+    scanBushes(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
     calculateBushFlows(origin, network, bushes);
-   
+  
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
         /* Mark links with near-zero contribution for removal by setting to
          * exactly zero */
-        if (bushes->flow[ij] < parameters->minLinkFlow) bushes->flow[ij] = 0;
+        if (bushes->flow[ij] < parameters->minLinkFlow) {
+            if (isInBush(origin, ij, network, bushes) == TRUE)
+                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
+                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
+            bushes->flow[ij] = 0;
+        }
         if (bushes->flow[ij] > 0) continue; /* Link is already in the bush, no
                                                need to add it again */
         /* See if the link provides a shortcut using the strict criterion */
@@ -438,7 +748,7 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
             continue; /* No path to extend */
         if (bushes->SPcost[i] + network->arcs[ij].cost < bushes->SPcost[j]
             && bushes->LPcost[i] < bushes->LPcost[j]
-            && (network->arcs[ij].tail == origin
+            && (network->arcs[ij].tail == origin2node(network, origin)
                 || network->arcs[ij].tail >= network->firstThroughNode)) 
         {
             bushes->flow[ij] = NEW_LINK;
@@ -446,7 +756,8 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
         /* Never delete shortest path tree... should be OK with floating point
          * comparison since this is how SPcost is calculated */
         } else if (bushes->SPcost[i]+network->arcs[ij].cost==bushes->SPcost[j] 
-                   && bushes->flow[ij] == 0) {
+                   && bushes->flow[ij] == 0
+                   && isInBush(origin, ij, network, bushes) == TRUE) {
             bushes->flow[ij] = NEW_LINK;
         }
     }
@@ -459,7 +770,7 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
             if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
                 continue; /* No path to extend */
             if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
-                && (network->arcs[ij].tail == origin
+                && (network->arcs[ij].tail == origin2node(network, origin)
                     || network->arcs[ij].tail >= network->firstThroughNode))
             {
                 bushes->flow[ij] = NEW_LINK;
@@ -495,7 +806,7 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
    
     /* Create necessary merges */
     for (i = 0; i < network->numNodes; i++) {
-        if (i == origin) continue;
+        if (i == origin2node(network, origin)) continue;
         numApproaches = 0;
         for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                 curArc = curArc->next) {
@@ -573,7 +884,7 @@ void findDivergenceNodes(int origin, network_type *network,
             continue;
         }
         while (found_diverge == FALSE) {
-            if (SPnode != origin) {
+            if (SPnode != origin2node(network, origin)) {
                 if (isMergeNode(origin, SPnode, bushes) == FALSE) {
                     SPnode = network->arcs[bushes->pred[origin][SPnode]].tail;
                 } else {
@@ -587,7 +898,7 @@ void findDivergenceNodes(int origin, network_type *network,
                 }
                 mark[SPnode] = i;
             }
-            if (LPnode != origin) {
+            if (LPnode != origin2node(network, origin)) {
                 if (isMergeNode(origin, LPnode, bushes) == FALSE) {
                     LPnode = network->arcs[bushes->pred[origin][LPnode]].tail;
                 } else {
@@ -615,14 +926,14 @@ void findDivergenceNodes(int origin, network_type *network,
  * functions that do the actual work.
  * - calculateBushFlows gives current flows (remember, these are not stored
  *   persistently).
- * - rescanAndCheck both updates longest/shortest path labels, but also checks
+ * - rescanAndCheck both updates longtest/shortest path labels, but also checks
  *   whether these are different enough to actually do anything -- depending
  *   on parameters we can skip bushes which are closer to equilibrium, to 
  *   spend more time on bushes further away.
  * - updateFlowPass then does the actual flow shifting, inside of a loop in
  *   case we want to do multiple shifts per origin.
  */
-void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
+bool updateFlowsB(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters) {
     int i;
  
@@ -630,39 +941,61 @@ void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
     calculateBushFlows(origin, network, bushes);
 
     /* Update longest/shortest paths, check whether there is work to do */
-    if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) return;
+    if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) {
+        bushes->updateBush[origin] = FALSE;
+        displayMessage(DEBUG, "bailing out\n");
+        return FALSE;
+    }
 
     /* Now do (possibly multiple) shifts per origin */
     for (i = 0; i < parameters->shiftReps; i++) {
         updateFlowPass(origin, network, bushes, parameters);
+        parameters->numFlowShifts++;
         /* Uncomment next line for extra validation checking */
         /* checkFlows(network, bushes); */
         if (parameters->rescanAfterShift == TRUE
                 && i + 1 < parameters->shiftReps) {
             if (rescanAndCheck(origin, network, bushes, parameters) == FALSE)
-                return;
+                return TRUE;
         }
     }
-
+    
+    return TRUE;
 }
 
 /*
  * rescanAndCheck -- calls functions updating the longest/shortest path labels
- * on the bush, along with divergence nodes; and then checks whether the bush
+ * on the bush, aint with divergence nodes; and then checks whether the bush
  * is close enough to equilibrium to skip for now (in which case the function
  * returns FALSE).  If we need to shift flows, it returns TRUE.
  */
 bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters) {
-    int i;
+    int i, j, ij;
     double maxgap = 0;
+    double bushSPTT = 0, bushExcess = 0;
 
-    scanBushes(origin, network, bushes, parameters, TRUE);
+    scanBushes(origin, network, bushes, parameters, LONGEST_USED_PATH);
     findDivergenceNodes(origin, network, bushes);
-    for (i = 0; i < network->numNodes; i++) {
+    for (i = 0; i < network->numZones; i++) {
+        bushSPTT += network->demand[origin][i] * bushes->SPcost[i];
         maxgap = max(maxgap, fabs(bushes->LPcost[i] -bushes->SPcost[i]));
     }
+    for (; i < network->numNodes; i++) {
+        maxgap = max(maxgap, fabs(bushes->LPcost[i] -bushes->SPcost[i]));
+    }
+    for (ij = 0; ij < network->numArcs; ij++) {
+        i = network->arcs[ij].tail;
+        j = network->arcs[ij].head;
+        bushExcess += bushes->flow[ij] * (network->arcs[ij].cost +
+                        bushes->SPcost[i] - bushes->SPcost[j]);
+    }
+    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
+                    bushExcess / bushSPTT);
+    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+                    maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
+    if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 
     return TRUE;
 }
@@ -678,7 +1011,7 @@ void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++)
-        bushes->nodeFlow[i] = network->OD[origin][i].demand;
+        bushes->nodeFlow[i] = network->demand[origin][i];
 
     for (; i < network->numNodes; i++) bushes->nodeFlow[i] = 0;
 
@@ -719,7 +1052,7 @@ void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++)
-        bushes->nodeFlow[i] = network->OD[origin][i].demand;
+        bushes->nodeFlow[i] = network->demand[origin][i];
     for (; i < network->numNodes; i++)
         bushes->nodeFlow[i] = 0;
     for (ij = 0; ij < network->numArcs; ij++)
@@ -797,16 +1130,52 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
 
 }
 
+/* 
+ * rectifyBushFlows -- identical to calculateBushFlows but rectifying each
+ * merge along the way.  Especially useful when warm-starting or initializing
+ * one class with another's OD matrix... it will keep the same proportions
+ * but with new demand.
+ */
+void rectifyBushFlows(int origin,network_type *network,bushes_type *bushes) {
+    int i, j, ij, m, node;
+    merge_type *merge;
+
+    /* Initialize node flows with OD matrix */
+    for (i = 0; i < network->numZones; i++)
+        bushes->nodeFlow[i] = network->demand[origin][i];
+    for (; i < network->numNodes; i++)
+        bushes->nodeFlow[i] = 0;
+    for (ij = 0; ij < network->numArcs; ij++)
+        bushes->flow[ij] = 0;
+
+    /* Descending pass for flow calculations  */
+    for (node = network->numNodes - 1; node > 0; node--) {
+        j = bushes->bushOrder[origin][node];
+        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+            pushBackFlowSimple(j, origin, network, bushes);
+        } else {
+            m = pred2merge(bushes->pred[origin][j]);
+            merge = bushes->merges[origin][m];
+            rectifyMerge(j, merge, bushes);
+            pushBackFlowMerge(merge, network, bushes);
+        }
+    }
+
+}
+
+
 /*
  * newtonFlowShift -- For a given merge node, use Newton's method to shift flow
- * from the longer segment to the shorter one.
+ * from the inter segment to the shorter one.
  */
 void newtonFlowShift(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters) {
     double flow1, flow2, cost1, cost2, der1, der2, shift;
-    int i, hi, m;
+    int i, hi, m, c;
     merge_type *segmentMerge;
+
+    c = origin2class(network, origin);
 
     /* Calculate information for longest path segment */
     i = j;
@@ -864,6 +1233,7 @@ void newtonFlowShift(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
         }
         bushes->flow[hi] -= shift;
+        network->arcs[hi].classFlow[c] -= shift;
         parameters->linkShiftB(hi, -shift, network);
         i = network->arcs[hi].tail;      
     }
@@ -878,6 +1248,7 @@ void newtonFlowShift(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->SPlink] += shift;         
         }
         bushes->flow[hi] += shift;
+        network->arcs[hi].classFlow[c] += shift;
         parameters->linkShiftB(hi, shift, network);
         i = network->arcs[hi].tail;      
     }
@@ -899,7 +1270,8 @@ void checkFlows(network_type *network, bushes_type *bushes) {
         flowCheck[ij] = 0;
     }
    
-    for (r = 0; r < network->numZones; r++) {
+    for (r = 0; r < network->batchSize; r++) {
+        if (outOfOrigins(network, r) == TRUE) break;
         calculateBushFlows(r, network, bushes);
         /* First check bush flow consistency */
         for (ij = 0; ij < network->numArcs; ij++) {
@@ -917,7 +1289,7 @@ void checkFlows(network_type *network, bushes_type *bushes) {
             }
         }
         for (i = 0; i < network->numNodes; i++) {
-            if (i == r) continue;
+            if (i == origin2node(network, r)) continue;
             balance = 0;
             for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                     curArc = curArc->next) {
@@ -927,7 +1299,7 @@ void checkFlows(network_type *network, bushes_type *bushes) {
                     curArc = curArc->next) {
                 balance -= bushes->flow[ptr2arc(network, curArc->arc)];
             }         
-            if (i < network->numZones) balance -= network->OD[r][i].demand;
+            if (i < network->numZones) balance -= network->demand[r][i];
             if (fabs(balance) > FLOW_TOLERANCE) {
                 for (kl = 0; kl < network->numArcs; kl++) {            
                     displayMessage(DEBUG, "(%ld,%ld) %f\n",
@@ -946,7 +1318,7 @@ void checkFlows(network_type *network, bushes_type *bushes) {
     /* Then check overall link flow consistency */
     for (ij = 0; ij < network->numArcs; ij++) {
         if (fabs(flowCheck[ij] - network->arcs[ij].flow) > FLOW_TOLERANCE) {
-            fatalError("Flow validation failed: link (%ld,%ld) has aggregate"
+            fatalError("Flow validation failed: link (%ld,%ld) has aggregate "
                        "flow %f, but %f when disaggregated.",
                        network->arcs[ij].tail + 1,
                        network->arcs[ij].head + 1,
@@ -1042,10 +1414,10 @@ mergeDLLelt *insertMergeDLL(mergeDLL *list, merge_type *merge, int i,
     if (after != NULL) {
         newNode->prev = after;
         newNode->next = after->next;
-    if (list->tail != after)
-        newNode->next->prev = newNode;
-    else
-        list->tail = newNode;
+        if (list->tail != after)
+            newNode->next->prev = newNode;
+        else
+            list->tail = newNode;
         after->next = newNode;
     } else {
         newNode->prev = NULL;
@@ -1093,4 +1465,139 @@ void displayMergeDLL(int minVerbosity, mergeDLL *list) {
         curnode = (*curnode).next;
     }
     displayMessage(minVerbosity, "End of the list: %p\n", (void *)list->tail);
+}
+
+
+void writeBushes(network_type *network, bushes_type *bushes, char *filename) {
+    int m, origin, check;
+    merge_type *merge;
+    FILE *batchFile = openFile(filename, "wb");
+        
+    /* Write batch size as header */
+    check = network->batchSize;
+    fwrite(&check, sizeof(check), 1, batchFile);
+    
+    /* Now write each origin in turn */
+    for (origin = 0; origin < network->batchSize; origin++) {
+        if (outOfOrigins(network, origin) == TRUE) break;
+
+        /* First write the origin ID as a check */
+        check = origin + network->batchSize * network->curBatch;
+        fwrite(&check, sizeof(check), 1, batchFile);
+        
+        /* Now write last merge and number of merges*/
+        fwrite(&bushes->lastMerge[origin], sizeof(bushes->lastMerge[0]),
+               1, batchFile);
+        fwrite(&bushes->numMerges[origin], sizeof(bushes->numMerges[0]),
+               1, batchFile);
+
+        /* Now write the topological order */
+        fwrite(bushes->bushOrder[origin], sizeof(bushes->bushOrder[origin][0]),
+               network->numNodes, batchFile);
+        
+        /* Now write the predecessors */
+        fwrite(bushes->pred[origin], sizeof(bushes->pred[origin][0]),
+               network->numNodes, batchFile);
+               
+        /* Finally write the merge information */
+        for (m = 0; m < bushes->numMerges[origin]; m++) {
+            merge = bushes->merges[origin][m];        
+            fwrite(&merge->numApproaches, sizeof(merge->numApproaches),
+                   1, batchFile);
+            fwrite(merge->approach, sizeof(merge->approach[0]),
+                   merge->numApproaches, batchFile);
+            fwrite(merge->approachFlow, sizeof(merge->approachFlow[0]),
+                   merge->numApproaches, batchFile);                   
+            fwrite(&merge->SPlink, sizeof(merge->SPlink), 1, batchFile);
+            fwrite(&merge->LPlink, sizeof(merge->LPlink), 1, batchFile);            
+            fwrite(&merge->divergenceNode, sizeof(merge->divergenceNode),
+                   1, batchFile);  
+        }
+    }
+    
+    fclose(batchFile);
+}
+
+void readBushes(network_type *network, bushes_type **bushes, char *filename) {
+    int m, origin, check, numApproaches;
+    merge_type *merge;
+    FILE *batchFile = openFile(filename, "rb");
+    
+    /* First do a check */
+    my_fread(&check, sizeof(check), 1, batchFile);
+    if (check != network->batchSize) {
+        fatalError("File %s has the wrong batch size for this network.",
+                   filename);
+    }
+    
+    /* First clear out all existing bush data */
+    deleteBushes(network, *bushes);
+    *bushes = createBushes(network);
+    
+    /* Now read each origin in turn */
+    for (origin = 0; origin < network->batchSize; origin++) {
+        if (outOfOrigins(network, origin) == TRUE) break;
+        /* First read the origin ID and check */
+        my_fread(&check, sizeof(check), 1, batchFile);
+        if (check != origin + network->batchSize * network->curBatch) {
+            fatalError("Reading wrong origin from file %s.", filename);
+        }        
+        
+        /* Now read last merge and number of merges*/
+        my_fread(&(*bushes)->lastMerge[origin],sizeof((*bushes)->lastMerge[0]),
+               1, batchFile);
+        my_fread(&(*bushes)->numMerges[origin],sizeof((*bushes)->numMerges[0]),
+               1, batchFile);
+
+        /* Now read the topological order */
+        my_fread((*bushes)->bushOrder[origin],
+               sizeof((*bushes)->bushOrder[origin][0]),
+               network->numNodes, batchFile);
+        
+        /* Now read the predecessors */
+        my_fread((*bushes)->pred[origin], sizeof((*bushes)->pred[origin][0]),
+               network->numNodes, batchFile);
+               
+        /* Finally read the merge information */
+        deleteVector((*bushes)->merges[origin]);
+        (*bushes)->merges[origin] = newVector((*bushes)->numMerges[origin],
+                                           merge_type *);
+        for (m = 0; m < (*bushes)->numMerges[origin]; m++) {
+            my_fread(&numApproaches, sizeof(numApproaches), 1, batchFile);
+            merge = createMerge(numApproaches); 
+            my_fread(merge->approach, sizeof(merge->approach[0]),
+                   merge->numApproaches, batchFile);
+            my_fread(merge->approachFlow, sizeof(merge->approachFlow[0]),
+                   merge->numApproaches, batchFile);                   
+            my_fread(&merge->SPlink, sizeof(merge->SPlink), 1, batchFile);
+            my_fread(&merge->LPlink, sizeof(merge->LPlink), 1, batchFile);
+            my_fread(&merge->divergenceNode, sizeof(int),
+                   1, batchFile);  
+            (*bushes)->merges[origin][m] = merge;        
+        }
+    }
+            
+    fclose(batchFile);
+}
+
+/*
+ * Reads a binary OD matrix into the network, for network->curBatch
+ */
+void readBinaryMatrix(network_type *network,
+                      algorithmBParameters_type *parameters) {
+    int check, r;
+    char filename[STRING_SIZE];
+    FILE* matrixFile;
+
+    sprintf(filename, "%s%d.bin", parameters->matrixStem, network->curBatch);
+    matrixFile = openFile(filename, "rb");
+    my_fread(&check, sizeof(check), 1, matrixFile);
+    if (check != network->curBatch) fatalError("Reading wrong binary matrix.");
+
+    for (r = 0; r < network->batchSize; r++) {
+        my_fread(network->demand[r], sizeof(network->demand[r][0]),
+                  network->numZones, matrixFile);
+    }
+
+    fclose(matrixFile);
 }
