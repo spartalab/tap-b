@@ -26,7 +26,7 @@ typedef struct linkedListElt_s {
 typedef struct {
     linkedListElt *head;
     linkedListElt *tail;
-    long size;
+    int size;
 } linkedList;
 
 linkedList *createLinkedList();
@@ -47,7 +47,7 @@ typedef struct doublyLinkedListElt_s {
 typedef struct {
     doublyLinkedListElt *head;
     doublyLinkedListElt *tail;
-    long size;
+    int size;
 } doublyLinkedList;
 
 doublyLinkedList *createDoublyLinkedList();
@@ -79,19 +79,19 @@ typedef enum {
 } queueDiscipline;
 
 typedef struct {
-    long* node;
+    int* node;
     char* history;
-    long readptr;
-    long writeptr;
-    long size;
-    long curelts;
+    int readptr;
+    int writeptr;
+    int size;
+    int curelts;
 } queue_type;
 
-queue_type createQueue(long size, long eltsize);
+queue_type createQueue(int size, long eltsize);
 void deleteQueue(queue_type *queue);
-void enQueue(queue_type *queue, long elt);
-void frontQueue(queue_type *queue, long elt);
-long deQueue(queue_type *queue);
+void enQueue(queue_type *queue, int elt);
+void frontQueue(queue_type *queue, int elt);
+int deQueue(queue_type *queue);
 void displayQueue(int minVerbosity, queue_type *queue);
 
 /******************
@@ -135,13 +135,13 @@ void displayHeap(int minVerbosity, heap_type *heap);
                                    counts for memory leak checking */
 
 void *allocateScalar(size_t size);
-void *allocateVector(long u, size_t size);
-void **allocateMatrix(long u1, long u2, size_t size);
-void ***allocate3DArray(long u1, long u2, long u3, size_t size);
+void *allocateVector(int u, size_t size);
+void **allocateMatrix(int u1, long u2, size_t size);
+void ***allocate3DArray(int u1, long u2, long u3, size_t size);
 void killScalar(void *scalar);
 void killVector(void *vector);
-void killMatrix(void **matrix, long u1);
-void kill3DArray(void ***array, long u1, long u2);
+void killMatrix(void **matrix, int u1);
+void kill3DArray(void ***array, int u1, long u2);
 
 #define newScalar(y)            (y *)allocateScalar(sizeof(y))
 #define newVector(u,y)          (y *)allocateVector(u,sizeof(y))
@@ -159,8 +159,8 @@ void kill3DArray(void ***array, long u1, long u2);
 #define delete3DArray(y,u1,u2)    kill3DArray((void ***)y,u1,u2)
 
 #ifdef MEMCHECK
-long memcheck_numScalars, memcheck_numVectors, memcheck_numMatrices;
-long memcheck_num3DArrays;
+int memcheck_numScalars, memcheck_numVectors, memcheck_numMatrices;
+int memcheck_num3DArrays;
 #endif
 
 #endif
