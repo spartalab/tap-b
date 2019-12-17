@@ -40,10 +40,10 @@ int main(int argc, char* argv[]) {
     #ifdef DEBUG_MODE
         debugFile = openFile("full_log.txt", "w");
     #endif
- 
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
     main_TNTP(argc, argv);
+    
     //main_NCTCOG(argc, argv);                    
 
     #ifdef DEBUG_MODE
@@ -66,7 +66,7 @@ void main_TNTP(int argc, char* argv[]) {
         displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
         numOfThreads = getNumCores();
     } else {
-        numOfThreads = atoi(argv[3]);
+        numOfThreads = atoi(argv[argc - 1]);
     }
 #else
     if (argc != 3)
@@ -81,8 +81,7 @@ void main_TNTP(int argc, char* argv[]) {
         fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
     }
 #endif
-
-    readOBANetwork(network, argv[1], argv + 2, argc - 2, &Bparameters); 
+    readOBANetwork(network, argv[1], argv + 2, argc - 3, &Bparameters); 
     
     /* Default: one batch */
     setBatches(network, network->numOrigins);
