@@ -6,3 +6,4 @@ cmake-build-debug/
 full_log.txt
 net/Sydney*
 results/
+flows.txt
