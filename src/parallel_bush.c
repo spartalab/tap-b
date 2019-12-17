@@ -210,7 +210,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
  * - updateFlowPass then does the actual flow shifting, inside of a loop in
  *   case we want to do multiple shifts per origin.
  */
-void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
+bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters) {
     int i;
 
@@ -218,7 +218,7 @@ void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
     calculateBushFlows_par(origin, network, bushes);
 
     /* Update longest/shortest paths, check whether there is work to do */
-    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) return;
+    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) return FALSE;
 
     /* Now do (possibly multiple) shifts per origin */
     for (i = 0; i < parameters->shiftReps; i++) {
@@ -228,9 +228,11 @@ void updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
         if (parameters->rescanAfterShift == TRUE
             && i + 1 < parameters->shiftReps) {
             if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE)
-                return;
+                return TRUE;
         }
     }
+
+    return TRUE;
 
 }
 
@@ -266,7 +268,7 @@ void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++)
-        bushes->nodeFlow_par[origin][i] = network->OD[origin][i].demand;
+        bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
 
     for (; i < network->numNodes; i++) bushes->nodeFlow_par[origin][i] = 0;
 
@@ -307,7 +309,7 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
 
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++) {
-        bushes->nodeFlow_par[origin][i] = network->OD[origin][i].demand;
+        bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
     }
     for (; i < network->numNodes; i++) {
         bushes->nodeFlow_par[origin][i] = 0;
@@ -527,7 +529,7 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
                  curArc = curArc->next) {
                 balance -= bushes->flow_par[t_id][ptr2arc(network, curArc->arc)];
             }
-            if (i < network->numZones) balance -= network->OD[r][i].demand;
+            if (i < network->numZones) balance -= network->demand[r][i];
             if (fabs(balance) > FLOW_TOLERANCE) {
                 for (kl = 0; kl < network->numArcs; kl++) {
                     displayMessage(DEBUG, "(%ld,%ld) %f\n",

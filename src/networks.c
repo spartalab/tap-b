@@ -32,13 +32,16 @@ in reverse order of being added to the list), and DEQUE (double-ended queue;
 nodes generally go to the end of the queue, as in FIFO, but if a node has been
 scanned before it is added to the front end as in LIFO).
 */
-void BellmanFord(long origin, double *label, long *backnode, network_type
-        *network, queueDiscipline q) { long j, curnode; arcListElt *i; double
-    tempLabel;
+void BellmanFord(int origin, double *label, int *backnode, network_type
+        *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *i;
+    double tempLabel;
+
    /* My implementation of a queue uses a "circular" array to store elements;
       queue is empty iff the "read" and "write" pointers are identical.  See
-      datastructures.c for more details. */ queue_type SEL =
-    createQueue(network->numNodes, network->numNodes);
+      datastructures.c for more details. */
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
 
     /* Initialize */
     for (j = 0; j < network->numNodes; j++) {
@@ -84,16 +87,19 @@ void BellmanFord(long origin, double *label, long *backnode, network_type
     deleteQueue(&SEL);
 }
 
+
 /*
 arcBellmanFord is virtually identical to BellmanFord, except that it returns
 pointers to the previous *link* in the shortest paths, rather than the index of
 the previous *node*.  (backarc is an array of pointers to links).  For
 explanations of other arguments, see description of BellmanFord.
 */
-void arcBellmanFord(long origin, double *label, arc_type **backarc,
-        network_type *network, queueDiscipline q) { long j, curnode; arcListElt
-    *i; double tempLabel; queue_type SEL = createQueue(network->numNodes,
-            network->numNodes);
+void arcBellmanFord(int origin, double *label, arc_type **backarc,
+        network_type *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *i;
+    double tempLabel;
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
 
     for (j = 0; j < network->numNodes; j++) {
         label[j] = INFINITY;
@@ -144,10 +150,12 @@ description of BellmanFord.
 TODO: Combine all of your SP variants into one function with appropriate
 parameters.
 */
-void arcIndexBellmanFord(long origin, double *label, int *backarc, network_type
-        *network, queueDiscipline q) { long j, curnode; arcListElt *ij; double
-    tempLabel; queue_type SEL = createQueue(network->numNodes,
-            network->numNodes);
+void arcIndexBellmanFord(int origin, double *label, int *backarc, network_type
+        *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *ij;
+    double tempLabel;
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
 
     for (j = 0; j < network->numNodes; j++) {
         label[j] = INFINITY;
@@ -188,7 +196,99 @@ void arcIndexBellmanFord(long origin, double *label, int *backarc, network_type
 
 }
 
+/* 
+ * This is yet another BellmanFord variant with these key differences:
+ *  1. No backlabels are calculated or returned; only link cost labels.
+ *  2. Initial guesses can be provided in labelGuess; if these are
+ *     overestimates of the true SP labels and correspond to some path, this
+ *     can speed up convergence with no loss of accuracy.  Set this to NULL
+ *     if you do not have such guesses available.
+ *
+ *     If these guesses are provided, the algorithm starts by scanning over
+ *     all links to identify those with negative reduced cost, and initializing
+ *     SEL with their head nodes.
+ *  3. In the latter case, you may wish to specify an order for scanning the
+ *     nodes (e.g., if there is a bush and you wish to scan topologically-
+ *     earlier nodes first).  Set this to NULL if you do not have such an
+ *     ordering available.
+ */
 
+void BellmanFord_NoLabel(int origin, double *label, network_type *network,
+                         queueDiscipline q, double *labelGuess, int *order) {
+    int ij, j, curnode, tail, head;
+    arcListElt *i;
+    double tempLabel;
+    
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
+
+    /* Initialize */
+    if (labelGuess == NULL) {
+        for (j = 0; j < network->numNodes; j++) {
+            label[j] = INFINITY;
+        }
+        label[origin] = 0;
+        enQueue(&SEL, origin);
+    } else {
+        for (j = 0; j < network->numNodes; j++) {
+            label[j] = labelGuess[j];
+        }
+        if (order == NULL) {
+            for (ij = 0; ij < network->numArcs; ij++) {
+                tail = network->arcs[ij].tail;
+                head = network->arcs[ij].head;
+                if (tail < network->firstThroughNode) continue;
+                if (label[tail] + network->arcs[ij].cost < label[head]) {
+                    enQueue(&SEL,tail);
+                }
+            }
+        } else {
+            for (j = 0; j < network->numNodes; j++) {
+                if (order[j] < network->firstThroughNode) continue;
+                for (i = network->nodes[order[j]].forwardStar.head; i != NULL;
+                     i = i->next) {
+                    if (label[order[j]] + i->arc->cost < label[i->arc->head]) {
+                        enQueue(&SEL,order[j]);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+   /* Iterate */
+    while (SEL.readptr != SEL.writeptr) {  
+    /* See comment above about read and write pointers */
+        curnode = deQueue(&SEL);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL;
+                i = i->next) {
+            tempLabel = label[curnode] + i->arc->cost;
+            j = i->arc->head;
+            if (tempLabel < label[j]) { /* Found a better path to node j */
+                label[j] = tempLabel;
+                if (j >= network->firstThroughNode) { 
+                /* Ensure we do not use centroids/centroid connectors as
+                 * "shortcuts" */
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:  frontQueue(&SEL, j); break;
+                        default: fatalError("bellmanFord: Unsupported queue "
+                                            "structure");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Clean up */
+    deleteQueue(&SEL);
+}
 
 /*
 heapDijsktra is an implementation of Dijkstra's algorithm using a binary heap.
@@ -197,12 +297,12 @@ This is a one-to-all shortest path algorithm, starting at 'origin'.  *label and
  completion.  *network is a pointer to the underlying network data structure,
  passing by reference is faster.
 */
-void heapDijkstra(long origin, double *label, long *backnode, network_type
+void heapDijkstra(int origin, double *label, int *backnode, network_type
         *network) {
 
-    long j;
+    int j;
     arcListElt *i;
-    long curnode;
+    int curnode;
 
    /* Initialize heap */
     double tempLabel;
@@ -239,19 +339,33 @@ void heapDijkstra(long origin, double *label, long *backnode, network_type
     }
 
    /* Now copy labels to return, and clean up memory */
-    memcpy(label, dijkstraHeap->valueFn, sizeof(double) * 
-            (network->numNodes));
+    memcpy(label, dijkstraHeap->valueFn, sizeof(double) * network->numNodes);
     deleteHeap(dijkstraHeap);
 }
 
 
 /*
-finalizeNetwork: After adding the links and nodes to the network struct, this
-function generates the forward and reverse star lists, and also calculates
-fixed costs for each link (which only need to be done this one time, rather
-than at each call to linkCost).
+changeFixedCosts: Updates the network costs for the new specified toll and 
+distance factors.
+
 */
-void finalizeNetwork(network_type *network) { long i;
+void changeFixedCosts(network_type *network, int class) {
+    int ij;
+    double oldCost;
+
+    for (ij = 0; ij < network->numArcs; ij++) {
+        oldCost = network->arcs[ij].fixedCost;
+        network->arcs[ij].fixedCost = network->arcs[ij].classCost[class];
+        network->arcs[ij].cost += (network->arcs[ij].fixedCost - oldCost);
+    }
+}
+
+/*
+finalizeNetwork: After adding the links and nodes to the network struct, this
+function generates the forward and reverse star lists. 
+*/
+void finalizeNetwork(network_type *network) {
+    int i, c;
 
     for (i = 0; i < network->numNodes; i++) {
         initializeArcList(&(network->nodes[i].forwardStar));
@@ -264,11 +378,20 @@ void finalizeNetwork(network_type *network) { long i;
         insertArcList(&(network->nodes[network->arcs[i].head].reverseStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].head].reverseStar.tail);
-      network->arcs[i].fixedCost = 
-          network->arcs[i].length * network->distanceFactor + 
-          network->arcs[i].toll * network->tollFactor;
+        network->arcs[i].cost = network->arcs[i].freeFlowTime;
+        network->arcs[i].fixedCost = 0;
+        network->arcs[i].flow = 0;
+        for (c = 0; c < network->numClasses; c++) {
+            network->arcs[i].classFlow[c] = 0;
+            network->arcs[i].classCost[c] =
+                network->arcs[i].length * network->distanceFactor[c] 
+                + network->arcs[i].classToll[c] * network->tollFactor[c];
+        }
     }
+ 
+    
 }
+
 
 /*
 search: Given an initial node (the origin argument), performs a search to
@@ -281,8 +404,8 @@ the previous/next node on the path from/to origin (depending on d); if
 backnode[i] is the symbolic constant NO_PATH_EXISTS then node i is not
 connected.  The order array indicates the order in which nodes are found.
 */
-void search(long origin, long* order, long *backnode, network_type *network,
-        queueDiscipline q, direction_type d) { long i, j = NO_PATH_EXISTS,
+void search(int origin, int* order, int *backnode, network_type *network,
+        queueDiscipline q, direction_type d) { int i, j = NO_PATH_EXISTS,
     next; arcListElt *curarc;
 
     /* Initialize; any node for which backnode[i] remains at NO_PATH_EXISTS is 
@@ -350,10 +473,10 @@ Argument *network is a pointer to the network struct, arguments *sequence and
  function (index -> node) which is helpful if you want to iterate over the
  nodes in order.
 */
-void topologicalOrder(network_type *network, long* sequence, long* order) {
-    long i, j, cur, next; arcListElt *ij;
+void topologicalOrder(network_type *network, int* sequence, int* order) {
+    int i, j, cur, next; arcListElt *ij;
 
-    declareVector(long, indegree, network->numNodes);
+    declareVector(int, indegree, network->numNodes);
     for (i = 0; i < network->numNodes; i++) {
        indegree[i] = 0;
        order[i] = NO_PATH_EXISTS;
@@ -401,8 +524,8 @@ an array of 'nodes' according to the array of 'costs' (typically distances from
 the origin)
 */
 #define MAX_QUICKSORT_LEVELS 1000
-void quicksortDestinations(long *nodes, double *costs, int elements) {
-    long piv;
+void quicksortDestinations(int *nodes, double *costs, int elements) {
+    int piv;
     int beg[MAX_QUICKSORT_LEVELS], end[MAX_QUICKSORT_LEVELS], i, L, R ;
     for (i = 0; i < elements; i++) nodes[i] = i;
     i = 0;
@@ -428,10 +551,66 @@ void quicksortDestinations(long *nodes, double *costs, int elements) {
 
 /*
 ptr2arc converts a pointer to an arc to the index number for that arc; to do
-this, the network struct needs to be passed along with the arc pointer.
+this, the network struct needs to be passed aint with the arc pointer.
 */
-int ptr2arc(network_type *network, arc_type *arcptr) { return (int) (arcptr -
-        network->arcs); }
+int ptr2arc(network_type *network, arc_type *arcptr) {
+    return (int) (arcptr - network->arcs);
+}
+
+/*
+The following three functions do multiclass arithmetic, mapping to and from
+a physical origin node/class and the corresponding pseudo-origin ID.  Also 
+takes care of batching in the process.
+*/
+int origin2node(network_type *network, int origin) {
+    return (origin + network->batchSize * network->curBatch)
+             % network->numZones;
+}
+
+int origin2class(network_type *network, int origin) {
+    return (origin + network->batchSize * network->curBatch)
+             / network->numZones;
+}
+
+/*
+Warning: This function does not check whether the given origin and class
+fall into the current batch.  Run checkifcurrent to check that if you want.
+*/
+int nodeclass2origin(network_type *network, int originNode, int class) {
+    return (class * network->numZones + originNode) % network->batchSize;
+}
+
+bool checkIfCurrentNodeClass(network_type *network, int originNode, int class) {
+    return checkIfCurrentOrigin(network, class*network->numZones + originNode);
+}
+
+bool checkIfCurrentOrigin(network_type *network, int origin) {
+    return origin / network->batchSize == network->curBatch ? TRUE : FALSE;
+}
+
+bool outOfOrigins(network_type *network, int origin) {
+    return origin2class(network, origin) >= network->numClasses ? TRUE : FALSE;
+}
+
+/* 
+setWeights takes a class number as input, and fills out the relevant time,
+toll, and distance factors.  A bit of trickery is needed if there are time-
+insensitive classes (indicated by negative toll and distance factors).
+*/
+
+void setWeights(network_type *network, int class, double *timeFactor, 
+                double *tollFactor, double *distanceFactor) {
+    if (network->tollFactor[class] < 0 || network->distanceFactor[class] < 0) {
+        *timeFactor = 0;
+        *tollFactor = network->tollFactor[class] < 0 ? 1 : 0;
+        *distanceFactor = tollFactor == 0 ? 1 : 0;
+    } else {
+        *timeFactor = 1;
+        *tollFactor = network->tollFactor[class];
+        *distanceFactor = network->distanceFactor[class];
+    }
+}
+
 
 ////////////////////////////////////
 // Custom data structures for TAP //
@@ -443,7 +622,7 @@ used to control whether anything needs to be printed.
 */
 
 void displayNetwork(int minVerbosity, network_type *network) {
-    long i;
+    int i;
     displayMessage(minVerbosity, "Network has %d nodes and %d arcs\n", 
             network->numNodes, network->numArcs);
     displayMessage(minVerbosity, "Arc data: ID, tail, head, flow, cost, der "
@@ -466,10 +645,17 @@ void deleteNetwork(network_type *network) {
       clearArcList(&(network->nodes[i].forwardStar));
       clearArcList(&(network->nodes[i].reverseStar));
    }
+   for (i = 0; i < network->numArcs; i++) {
+       deleteVector(network->arcs[i].classFlow);
+       deleteVector(network->arcs[i].classCost);
+       deleteVector(network->arcs[i].classToll);
+   }
 
-   deleteMatrix(network->OD, network->numZones);
+   deleteMatrix(network->demand, network->numZones);
    deleteVector(network->nodes);
    deleteVector(network->arcs);
+   deleteVector(network->tollFactor);
+   deleteVector(network->distanceFactor);
    deleteScalar(network);
 }
 
@@ -547,7 +733,7 @@ void displayArcList(arcList *list) {
     arcListElt *curnode = list->head;
     printf("Start of the list: %p\n", (void *)list->head);
     while (curnode != NULL) {
-        printf("%p (%ld,%ld) %p %p\n", (void *)curnode, curnode->arc->tail, 
+        printf("%p (%d,%d) %p %p\n", (void *)curnode, curnode->arc->tail, 
                 curnode->arc->head, (void *)curnode->prev, 
                 (void *)curnode->next);
         curnode = (*curnode).next;

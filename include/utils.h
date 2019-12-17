@@ -69,11 +69,13 @@ int verbosity;
 
 
 #ifdef MEMCHECK
-extern long memcheck_numScalars, memcheck_numVectors, memcheck_numMatrices;
+extern int memcheck_numScalars, memcheck_numVectors, memcheck_numMatrices;
 #endif
 
 void waitForKey();
 void SWAP(void *a, void *b, int size);
+FILE *openFile(const char *filename, const char *access);
+void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 double updateElapsedTime(clock_t startTime, double *elapsedTime);
 
 /*********************
