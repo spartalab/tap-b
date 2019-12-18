@@ -285,6 +285,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         args[j].network = network;
         args[j].parameters = parameters;
         args[j].bushes = bushes;
+        args[j].update_flows_ret = FALSE;
     }
 
     threadpool thpool = thpool_init(parameters->numThreads);
@@ -330,31 +331,32 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
     for (i = 0; i < parameters->innerIterations; i++) {
         doneAny = FALSE;
             
-#if PARALLELISM
-        struct thread_args args[network->batchSize];
-        for (int j = 0; j < network->batchSize; ++j) {
-            args[j].id = j;
-            args[j].network = network;
-            args[j].parameters = parameters;
-            args[j].bushes = bushes;
-        }
+// #if PARALLELISM
+//         struct thread_args args[network->batchSize];
+//         for (int j = 0; j < network->batchSize; ++j) {
+//             args[j].id = j;
+//             args[j].network = network;
+//             args[j].parameters = parameters;
+//             args[j].bushes = bushes;
+//             args[j].update_flows_ret = FALSE;
+//         }
     
-        threadpool thpool = thpool_init(parameters->numThreads);
-        for (int j = 0; j < network->batchSize; ++j) {
-            if (outOfOrigins(network, j) == TRUE) break;
-            if (bushes->updateBush[j] == FALSE) continue;
-            c = origin2class(network, j);
-            if (c != *lastClass) {
-                changeFixedCosts(network, c);
-            }
-            thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
-        }
-        thpool_wait(thpool);
+//         threadpool thpool = thpool_init(parameters->numThreads);
+//         for (int j = 0; j < network->batchSize; ++j) {
+//             if (outOfOrigins(network, j) == TRUE) break;
+//             if (bushes->updateBush[j] == FALSE) continue;
+//             c = origin2class(network, j);
+//             if (c != *lastClass) {
+//                 changeFixedCosts(network, c);
+//             }
+//             thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+//         }
+//         thpool_wait(thpool);
 
-        for (int j = 0; j < network->batchSize; ++j) {
-            doneAny |= args[j].update_flows_ret;
-        }
-#else
+//         for (int j = 0; j < network->batchSize; ++j) {
+//             doneAny |= args[j].update_flows_ret;
+//         }
+// #else
         for (origin = 0; origin < network->batchSize; origin++) {
             if (outOfOrigins(network, origin) == TRUE) break;
             if (bushes->updateBush[origin] == FALSE) continue;
@@ -365,7 +367,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
             doneAny |= updateFlowsB(origin,network,bushes,parameters);
             *lastClass = c;
         }
-#endif
+//#endif
         if (doneAny == FALSE) break;
     }
 }
