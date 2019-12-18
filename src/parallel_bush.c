@@ -21,8 +21,8 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
     /* Ensure costs are up to date */
     if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
-    bushes->SPcost_par[origin][origin] = 0;
-    bushes->LPcost_par[origin][origin] = 0;
+    bushes->SPcost_par[origin][origin2node(network, origin)] = 0;
+    bushes->LPcost_par[origin][origin2node(network, origin)] = 0;
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
         /* Iterate over incoming links */
@@ -147,7 +147,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
 
     /* Create necessary merges */
     for (i = 0; i < network->numNodes; i++) {
-        if (i == origin) continue;
+        if (i == origin2node(network, origin)) continue;
         numApproaches = 0;
         for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
              curArc = curArc->next) {
