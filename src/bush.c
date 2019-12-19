@@ -5,9 +5,9 @@
  * See comments on bush.h for descriptions of the data structures used for
  * bushes.
  */
-
-#include <parallel_bush.h>
 #include "bush.h"
+#include <time.h>
+
 #if PARALLELISM
     #include "thpool.h"
     #include <pthread.h> 
@@ -60,6 +60,7 @@ thpool = thpool_init(parameters->numThreads);
     /* Allocate memory for bushes */
     int batch, iteration = 0, lastClass = IS_MISSING;
     bushes_type *bushes = createBushes(network);
+    struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
 
     double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
@@ -71,6 +72,7 @@ thpool = thpool_init(parameters->numThreads);
         ((double)(clock() - stopTime)) / CLOCKS_PER_SEC);
     displayMessage(DEBUG, "Initial Beckmann: %f\n", BeckmannFunction(network));
 
+    
     /* Iterate */
     parameters->innerIterations = 1;
     while (elapsedTime < parameters->maxTime
@@ -78,7 +80,7 @@ thpool = thpool_init(parameters->numThreads);
              && (iteration == 0 || gap > parameters->convergenceGap)) {
         iteration++;
         gap = 0; /* Will accumulate total gap across batches for averaging */
-
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
@@ -88,7 +90,8 @@ thpool = thpool_init(parameters->numThreads);
             storeBatch(batch, network, bushes, parameters);
 
             /* Check gap and report progress. */
-            elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
+            clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
             batchGap = bushRelativeGap(network, bushes, parameters);
             gap += batchGap;
