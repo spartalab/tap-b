@@ -354,9 +354,11 @@ void changeFixedCosts(network_type *network, int class) {
     double oldCost;
 
     for (ij = 0; ij < network->numArcs; ij++) {
+        pthread_mutex_lock(&network->arc_muts[ij]);
         oldCost = network->arcs[ij].fixedCost;
         network->arcs[ij].fixedCost = network->arcs[ij].classCost[class];
         network->arcs[ij].cost += (network->arcs[ij].fixedCost - oldCost);
+        pthread_mutex_unlock(&network->arc_muts[ij]);
     }
 }
 

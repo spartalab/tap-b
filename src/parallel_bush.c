@@ -1,4 +1,5 @@
 #include "parallel_bush.h"
+pthread_mutex_t* lock;
 
 /*
  * scanBushes_par -- simultaneously find shortest and longest paths for a given
@@ -83,8 +84,9 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    scanBushes_par(origin, network, bushes, parameters, TRUE);
+    scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_PATH);
     calculateBushFlows_par(origin, network, bushes);
+
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
         /* Mark links with near-zero contribution for removal by setting to
@@ -230,22 +232,26 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
 bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters) {
     int i;
-    pthread_mutex_t* lock;
 
     /* Recompute bush flows for this origin */
     calculateBushFlows_par(origin, network, bushes);
 
+
     /* Update longest/shortest paths, check whether there is work to do */
-    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) return FALSE;
+    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) {
+        bushes->updateBush[origin] = FALSE;
+        displayMessage(DEBUG, "bailing out\n");
+        return FALSE;
+    };
 
     /* Now do (possibly multiple) shifts per origin */
     for (i = 0; i < parameters->shiftReps; i++) {
         updateFlowPass_par(origin, network, bushes, parameters);
 
         // Too lazy to make this atomic rn
-        pthread_mutex_lock(&lock);
+//        pthread_mutex_lock(&lock);
         parameters->numFlowShifts++;
-        pthread_mutex_unlock(&lock);
+//        pthread_mutex_unlock(&lock);
 
         /* Uncomment next line for extra validation checking */
 //        checkFlows_par(network, bushes, t_id);
@@ -268,15 +274,31 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
  */
 bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters) {
-    int i;
+    int i, j, ij;
     double maxgap = 0;
+    double bushSPTT = 0, bushExcess = 0;
 
-    scanBushes_par(origin, network, bushes, parameters, TRUE);
+    scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_PATH);
     findDivergenceNodes(origin, network, bushes);
-    for (i = 0; i < network->numNodes; i++) {
+    for (i = 0; i < network->numZones; i++) {
+        bushSPTT += network->demand[origin][i] * bushes->SPcost_par[origin][i];
         maxgap = max(maxgap, fabs(bushes->LPcost_par[origin][i] -bushes->SPcost_par[origin][i]));
     }
+    for (; i < network->numNodes; i++) {
+        maxgap = max(maxgap, fabs(bushes->LPcost_par[origin][i] -bushes->SPcost_par[origin][i]));
+    }
+    for (ij = 0; ij < network->numArcs; ij++) {
+        i = network->arcs[ij].tail;
+        j = network->arcs[ij].head;
+        bushExcess += bushes->flow_par[origin][ij] * (network->arcs[ij].cost +
+                                          bushes->SPcost_par[origin][i] - bushes->SPcost_par[origin][j]);
+    }
+    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
+                   bushExcess / bushSPTT);
+    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+                   maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
+    if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 
     return TRUE;
 }
@@ -290,11 +312,13 @@ void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
     int i, j, m, node;
     merge_type *merge;
 
+
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++)
         bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
 
     for (; i < network->numNodes; i++) bushes->nodeFlow_par[origin][i] = 0;
+
 
     /* Descending pass for flow shifts */
     for (node = network->numNodes - 1; node > 0; node--) {
@@ -428,8 +452,11 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters) {
     double flow1, flow2, cost1, cost2, der1, der2, shift;
-    int i, hi, m;
+    int i, hi, m, c;
     merge_type *segmentMerge;
+
+
+    c = origin2class(network, origin);
 
     /* Calculate information for longest path segment */
     i = j;
@@ -487,7 +514,7 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
         }
         bushes->flow_par[origin][hi] -= shift;
-        exactCostUpdate_par(hi, -shift, network);
+        exactCostUpdate_par(hi, -shift, network, c);
         i = network->arcs[hi].tail;
     }
     i = j;
@@ -501,7 +528,7 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
         }
         bushes->flow_par[origin][hi] += shift;
-        exactCostUpdate_par(hi, shift, network);
+        exactCostUpdate_par(hi, shift, network,c);
 
 //        parameters->linkShiftB(hi, shift, network);
         i = network->arcs[hi].tail;
@@ -583,11 +610,18 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
     deleteVector(flowCheck);
 }
 
-void exactCostUpdate_par(int ij, double shift, network_type *network) {
+void exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
     pthread_mutex_lock(&network->arc_muts[ij]);
+    network->arcs[ij].classFlow[class] += shift;
     network->arcs[ij].flow += shift;
     network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
     pthread_mutex_unlock(&network->arc_muts[ij]);
+}
+
+void classUpdate_par(int hi, int class, double shift,  network_type *network) {
+    pthread_mutex_lock(&network->arc_muts[hi]);
+    network->arcs[hi].classFlow[class] -= shift;
+    pthread_mutex_lock(&network->arc_muts[hi]);
 }
 
