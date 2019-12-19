@@ -292,20 +292,20 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
-//        c = origin2class(network, j);
-//        if (c != *lastClass) {
-//            changeFixedCosts(network, c);
-//        }
+        c = origin2class(network, j);
+        if (c != *lastClass) {
+            changeFixedCosts(network, c);
+        }
         thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
     }
     thpool_wait(thpool);
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
-//        c = origin2class(network, j);
-//        if (c != *lastClass) {
-//            changeFixedCosts(network, c);
-//        }
+        c = origin2class(network, j);
+        if (c != *lastClass) {
+            changeFixedCosts(network, c);
+        }
         thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
     }
     thpool_wait(thpool);
@@ -356,7 +356,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
          for (int j = 0; j < network->batchSize; ++j) {
              doneAny |= args[j].update_flows_ret;
          }
- #else
+#else
         for (origin = 0; origin < network->batchSize; origin++) {
             if (outOfOrigins(network, origin) == TRUE) break;
             if (bushes->updateBush[origin] == FALSE) continue;
