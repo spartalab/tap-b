@@ -30,7 +30,7 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
 
 /* Parallelized counter part of bush manipulation */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
-                    algorithmBParameters_type *parameters, bool longestUsed);
+                    algorithmBParameters_type *parameters, scan_type LPrule);
 void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes);
 bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
                         algorithmBParameters_type *parameters);

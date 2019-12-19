@@ -7,7 +7,7 @@
  * will be calculated regardless of whether there is flow on them.
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
-                    algorithmBParameters_type *parameters, bool longestUsed) {
+                    algorithmBParameters_type *parameters, scan_type LPrule) {
 //    displayMessage(FULL_NOTIFICATIONS, "Top of scan %d\n", t_id);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
@@ -21,8 +21,8 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
     /* Ensure costs are up to date */
     if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
-    bushes->SPcost_par[origin][origin2node(network, origin)] = 0;
-    bushes->LPcost_par[origin][origin2node(network, origin)] = 0;
+    bushes->SPcost_par[origin2node(network, origin)][origin2node(network, origin)] = 0;
+    bushes->LPcost_par[origin2node(network, origin)][origin2node(network, origin)] = 0;
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
         /* Iterate over incoming links */
@@ -37,11 +37,22 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     bushes->SPcost_par[origin][i] = tempcost;
                     merge->SPlink = curarc;
                 }
-                tempcost = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
+            }
+
+            /* Find longest (need to separate out depending on LPrule) */
+            if (LPrule == NO_LONGEST_PATH) continue;
+            for (curarc = 0; curarc < merge->numApproaches; curarc++) {
+                hi = merge->approach[curarc];
+                h = network->arcs[hi].tail;
+                tempcost = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;     
                 if (tempcost > bushes->LPcost_par[origin][i]
-                    && (longestUsed == FALSE ||
-                        merge->approachFlow[curarc] > parameters->minLinkFlow)
-                        ) {
+                  && (LPrule == LONGEST_BUSH_PATH
+                    || (LPrule == LONGEST_USED_PATH
+                      && merge->approachFlow[curarc] > parameters->minLinkFlow)
+                    || (LPrule == LONGEST_USED_OR_SP
+                      &&(merge->approachFlow[curarc] > parameters->minLinkFlow
+                      || merge->SPlink == curarc)))) {
+                    
                     bushes->LPcost_par[origin][i] = tempcost;
                     merge->LPlink = curarc;
                 }
@@ -78,7 +89,12 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
     for (ij = 0; ij < network->numArcs; ij++) {
         /* Mark links with near-zero contribution for removal by setting to
          * exactly zero */
-        if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) bushes->flow_par[origin][ij] = 0;
+        if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) {
+            if (isInBush(origin, ij, network, bushes) == TRUE)
+                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
+                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
+            bushes->flow_par[origin][ij] = 0;
+        }
         if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
                                                need to add it again */
         /* See if the link provides a shortcut using the strict criterion */
@@ -88,7 +104,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
             continue; /* No path to extend */
         if (bushes->SPcost_par[origin][i] + network->arcs[ij].cost < bushes->SPcost_par[origin][j]
             && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
-            && (network->arcs[ij].tail == origin
+            && (network->arcs[ij].tail == origin2node(network, origin)
                 || network->arcs[ij].tail >= network->firstThroughNode))
         {
             bushes->flow_par[origin][ij] = NEW_LINK;
@@ -96,7 +112,8 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
             /* Never delete shortest path tree... should be OK with floating point
              * comparison since this is how SPcost is calculated */
         } else if (bushes->SPcost_par[origin][i]+network->arcs[ij].cost==bushes->SPcost_par[origin][j]
-                   && bushes->flow_par[origin][ij] == 0) {
+                   && bushes->flow_par[origin][ij] == 0
+                   && isInBush(origin, ij, network, bushes) == TRUE) {
             bushes->flow_par[origin][ij] = NEW_LINK;
         }
     }
@@ -109,7 +126,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
             if (bushes->LPcost_par[origin][i]==-INFINITY && bushes->LPcost_par[origin][j]>-INFINITY)
                 continue; /* No path to extend */
             if (bushes->flow_par[origin][ij] == 0 && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
-                && (network->arcs[ij].tail == origin
+                && (network->arcs[ij].tail == origin2node(network, origin)
                     || network->arcs[ij].tail >= network->firstThroughNode))
             {
                 bushes->flow_par[origin][ij] = NEW_LINK;
@@ -213,6 +230,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
 bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters) {
     int i;
+    pthread_mutex_t* lock;
 
     /* Recompute bush flows for this origin */
     calculateBushFlows_par(origin, network, bushes);
@@ -223,6 +241,12 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
     /* Now do (possibly multiple) shifts per origin */
     for (i = 0; i < parameters->shiftReps; i++) {
         updateFlowPass_par(origin, network, bushes, parameters);
+
+        // Too lazy to make this atomic rn
+        pthread_mutex_lock(&lock);
+        parameters->numFlowShifts++;
+        pthread_mutex_unlock(&lock);
+
         /* Uncomment next line for extra validation checking */
 //        checkFlows_par(network, bushes, t_id);
         if (parameters->rescanAfterShift == TRUE
