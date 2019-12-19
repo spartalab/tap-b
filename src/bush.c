@@ -41,6 +41,7 @@ void updateFlowsPool(void* pVoid) {
     algorithmBParameters_type *parameters = args->parameters;
     args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
 }
+threadpool thpool;
 #endif
 
 /*
@@ -51,6 +52,7 @@ void updateFlowsPool(void* pVoid) {
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
 pthread_mutex_init(&shift_lock, NULL);
+thpool = thpool_init(parameters->numThreads);
 #endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
@@ -291,7 +293,6 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         args[j].update_flows_ret = FALSE;
     }
 
-    threadpool thpool = thpool_init(parameters->numThreads);
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
@@ -344,7 +345,6 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
              args[j].update_flows_ret = FALSE;
          }
     
-         threadpool thpool = thpool_init(parameters->numThreads);
          for (int j = 0; j < network->batchSize; ++j) {
              if (outOfOrigins(network, j) == TRUE) break;
              if (bushes->updateBush[j] == FALSE) continue;
