@@ -6,6 +6,7 @@
  * bushes.
  */
 
+#include <parallel_bush.h>
 #include "bush.h"
 #if PARALLELISM
     #include "thpool.h"
@@ -48,7 +49,9 @@ void updateFlowsPool(void* pVoid) {
  * parameters. 
  */
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
-
+#if PARALLELISM
+pthread_mutex_init(&shift_lock, NULL);
+#endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
 

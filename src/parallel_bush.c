@@ -1,5 +1,4 @@
 #include "parallel_bush.h"
-pthread_mutex_t* lock;
 
 /*
  * scanBushes_par -- simultaneously find shortest and longest paths for a given
@@ -249,9 +248,9 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
         updateFlowPass_par(origin, network, bushes, parameters);
 
         // Too lazy to make this atomic rn
-//        pthread_mutex_lock(&lock);
+        pthread_mutex_lock(&shift_lock);
         parameters->numFlowShifts++;
-//        pthread_mutex_unlock(&lock);
+        pthread_mutex_unlock(&shift_lock);
 
         /* Uncomment next line for extra validation checking */
 //        checkFlows_par(network, bushes, t_id);

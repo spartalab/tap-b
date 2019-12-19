@@ -20,6 +20,7 @@
 #include "datastructures.h"
 #include "utils.h"
 #include "bush.h"
+pthread_mutex_t shift_lock;
 
 /* Parallized main Algorithm B helper functions */
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
