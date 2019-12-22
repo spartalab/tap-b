@@ -284,9 +284,10 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
 
 void updateBatchBushes(network_type *network, bushes_type *bushes,
                        int *lastClass, algorithmBParameters_type *parameters) {
-    int origin, c;                       
+                          
     
 #if PARALLELISM
+    int c; 
     struct thread_args args[network->batchSize];
     for (int j = 0; j < network->batchSize; ++j) {
         args[j].id = j;
@@ -314,9 +315,11 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
             changeFixedCosts(network, c);
         }
         thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        *lastClass = c;
     }
     thpool_wait(thpool);
 #else
+    int origin, c;
     for (origin = 0; origin < network->batchSize; origin++) {
         if (outOfOrigins(network, origin) == TRUE) break;
         bushes->updateBush[origin] = TRUE;
@@ -457,7 +460,7 @@ void genericTopologicalOrder(int origin, network_type *network,
     for (i = 0; i < network->numNodes; i++) {
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
-            /*displayMessage(DEBUG, "Node %d is merge node %d\n", i, m);*/
+            //displayMessage(LOW_NOTIFICATIONS, "Node %d is merge node %d\n", i, m);
             indegree[i] = bushes->merges[origin][m]->numApproaches;
         }
     }
@@ -484,6 +487,8 @@ void genericTopologicalOrder(int origin, network_type *network,
         }
     }
     if (next < network->numNodes) {
+        displayMessage(LOW_NOTIFICATIONS, "next: %d, network->numNodes: %d\n", 
+                           next, network->numNodes);
         fatalError("Graph given to bushTopologicalOrder contains a cycle.");
     }
     bushes->lastMerge[origin] = highestMerge;

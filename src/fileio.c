@@ -496,6 +496,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
     network->demand = newMatrix(network->numOrigins, network->numZones,double);
     network->tollFactor = newVector(network->numClasses, double);
     network->distanceFactor = newVector(network->numClasses, double);
+    network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
 
     /* Default batching for network reading; can adjust later */
     network->batchSize = network->numOrigins;
