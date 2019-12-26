@@ -305,8 +305,10 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
             changeFixedCosts(network, c);
         }
         thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        //updateBushB(j, network, bushes, parameters);
     }
     thpool_wait(thpool);
+
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
