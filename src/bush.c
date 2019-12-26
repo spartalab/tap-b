@@ -338,7 +338,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
 
 void updateBatchFlows(network_type *network, bushes_type *bushes,
                       int *lastClass, algorithmBParameters_type *parameters) {
-    int i, origin, c;                       
+    int i, c;                       
     bool doneAny;
     for (i = 0; i < parameters->innerIterations; i++) {
         doneAny = FALSE;
@@ -368,6 +368,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
              doneAny |= args[j].update_flows_ret;
          }
 #else
+        int origin;
         for (origin = 0; origin < network->batchSize; origin++) {
             if (outOfOrigins(network, origin) == TRUE) break;
             if (bushes->updateBush[origin] == FALSE) continue;
@@ -1139,7 +1140,7 @@ void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
             m = pred2merge(bushes->pred[origin][j]);
             merge = bushes->merges[origin][m];
             if (merge->LPlink == merge->SPlink
-                || fabs(bushes->LPcost[j] - bushes->SPcost[j]
+                || (fabs(bushes->LPcost[j] - bushes->SPcost[j])
                         < parameters->minCostDifference)
                 || bushes->nodeFlow[j] < parameters->minLinkFlowShift
                 || merge->LPlink == NO_PATH_EXISTS)
