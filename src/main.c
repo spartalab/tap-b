@@ -80,7 +80,11 @@ void main_TNTP(int argc, char* argv[]) {
     if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
         fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
     }
-    readOBANetwork(network, argv[1], argv + 2, argc - 3, &Bparameters); 
+    if (argc != 4) {
+        readOBANetwork(network, argv[1], argv + 2, argc - 2, &Bparameters);
+    } else {
+        readOBANetwork(network, argv[1], argv + 2, argc - 3, &Bparameters);
+    }
 #else
     readOBANetwork(network, argv[1], argv + 2, argc - 2, &Bparameters); 
 #endif
