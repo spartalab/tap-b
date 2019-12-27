@@ -74,6 +74,7 @@ $(OBJDIR)/%.o: $(TESTDIR)/%.c
 # ---------- clean/clear
 .PHONY: clean clear
 clean clear:
+	@$(RM) -r .depend
 	@$(RM) $(OBJECTS)
 
 .PHONY: remove
