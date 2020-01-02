@@ -93,6 +93,7 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
         *CD, char *minDelay, char *uPar, char *operCost, char *daToll, char
         *srToll, char *medToll, char *heavyToll, char *exclude);
 void readNCTCOGTrips(network_type *network, char *tripFileName, int *table);
+void streamNCTCOGTrips(network_type *network, int *table);
 void assignDemand(network_type *network, int originNode, int destinationNode,
                   int class, char *demandValue);
 
