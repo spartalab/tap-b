@@ -291,13 +291,13 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     int r, s;
     char initial[6];
     char buffer[88];
-    while ((n = read(1, initial, 6)) == 0);
+    while ((n = read(STDIN_FILENO, initial, 6)) == 0);
     if (n < 0) {
         fatalError("Issue reading from stdin");
     } else if (strcmp(initial, "Start") != 0) {
         fatalError("Invalid starting message from data");
     }
-    while (read(1, buffer, 88) > 0) { /* Break in middle when out of lines */
+    while (read(STDIN_FILENO, buffer, 88) > 0) { /* Break in middle when out of lines */
         r = convert(atoi(buffer), table, NCTCOG_MAX_NODE_ID);
         s = convert(atoi(buffer + 4), table, NCTCOG_MAX_NODE_ID);
         assignDemand(network, r, s, SOLO_35, buffer + 8);
