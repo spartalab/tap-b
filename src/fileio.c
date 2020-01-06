@@ -299,19 +299,19 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     } else {
         displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     }
-    while (read(STDIN_FILENO, buffer, 88) > 0) { /* Break in middle when out of lines */
+    while (read(STDIN_FILENO, buffer, 48) > 0) { /* Break in middle when out of lines */
         r = convert(atoi(buffer), table, NCTCOG_MAX_NODE_ID);
         s = convert(atoi(buffer + 4), table, NCTCOG_MAX_NODE_ID);
         assignDemand(network, r, s, SOLO_35, buffer + 8);
-        assignDemand(network, r, s, SOLO_90, buffer + 16);
-        assignDemand(network, r, s, HOV_35, buffer + 24);
-        assignDemand(network, r, s, HOV_90, buffer + 32);
-        assignDemand(network, r, s, SOLO_17, buffer + 40);
-        assignDemand(network, r, s, SOLO_45, buffer + 48);
-        assignDemand(network, r, s, HOV_17, buffer + 56);
-        assignDemand(network, r, s, HOV_45, buffer + 64);
-        assignDemand(network, r, s, MED_TRUCKS, buffer + 72);
-        assignDemand(network, r, s, HVY_TRUCKS, buffer + 80);
+        assignDemand(network, r, s, SOLO_90, buffer + 12);
+        assignDemand(network, r, s, HOV_35, buffer + 16);
+        assignDemand(network, r, s, HOV_90, buffer + 20);
+        assignDemand(network, r, s, SOLO_17, buffer + 24);
+        assignDemand(network, r, s, SOLO_45, buffer + 28);
+        assignDemand(network, r, s, HOV_17, buffer + 32);
+        assignDemand(network, r, s, HOV_45, buffer + 36);
+        assignDemand(network, r, s, MED_TRUCKS, buffer + 40);
+        assignDemand(network, r, s, HVY_TRUCKS, buffer + 44);
     } ;
 }
 
