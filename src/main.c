@@ -108,8 +108,8 @@ void main_TNTP(int argc, char* argv[]) {
 void main_NCTCOG(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
-    
-    if (argc != 3)
+    displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
+    if (argc != 4)
         fatalError("Must specify three arguments for NCTCOG:\n\n"
                    "networkfile triptable convertertable\n\n"
                    "-network file has link data\n"
@@ -119,6 +119,7 @@ void main_NCTCOG(int argc, char* argv[]) {
     
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
     
     /* Uncomment the following line to read archived binary OD matrices */

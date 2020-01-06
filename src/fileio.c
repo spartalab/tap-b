@@ -296,6 +296,8 @@ void streamNCTCOGTrips(network_type *network, int *table) {
         fatalError("Issue reading from stdin");
     } else if (strcmp(initial, "Start") != 0) {
         fatalError("Invalid starting message from data");
+    } else {
+        displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     }
     while (read(STDIN_FILENO, buffer, 88) > 0) { /* Break in middle when out of lines */
         r = convert(atoi(buffer), table, NCTCOG_MAX_NODE_ID);
