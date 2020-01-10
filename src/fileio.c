@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdio.h>
 #include "fileio.h"
 
 ///////////////////////////
@@ -290,7 +291,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     ssize_t n;
     int r, s;
     char initial[6];
-    char buffer[88];
+    char buffer[48];
     while ((n = read(STDIN_FILENO, initial, 6)) == 0);
     if (n < 0) {
         fatalError("Issue reading from stdin");
@@ -299,7 +300,12 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     } else {
         displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     }
+    sleep(5);
+    displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     while (read(STDIN_FILENO, buffer, 48) > 0) { /* Break in middle when out of lines */
+        displayMessage(FULL_NOTIFICATIONS, "Printing before initial conversion\n");
+        displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %d, SOLO_90: %d\n",
+                        buffer, buffer+4, buffer + 8, buffer + 12);
         r = convert(atoi(buffer), table, NCTCOG_MAX_NODE_ID);
         s = convert(atoi(buffer + 4), table, NCTCOG_MAX_NODE_ID);
         assignDemand(network, r, s, SOLO_35, buffer + 8);
@@ -313,6 +319,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
         assignDemand(network, r, s, MED_TRUCKS, buffer + 40);
         assignDemand(network, r, s, HVY_TRUCKS, buffer + 44);
     } ;
+    displayMessage(FULL_NOTIFICATIONS, "Finished reading OD from buffer\n");
 }
 
 void assignDemand(network_type *network, int originNode, int destinationNode,
