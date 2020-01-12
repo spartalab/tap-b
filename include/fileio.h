@@ -96,7 +96,8 @@ void readNCTCOGTrips(network_type *network, char *tripFileName, int *table);
 void streamNCTCOGTrips(network_type *network, int *table);
 void assignDemand(network_type *network, int originNode, int destinationNode,
                   int class, char *demandValue);
-
+void assignStreamedDemand(network_type *network, int originNode, int destinationNode,
+                          int class, float *demandValue);
 void readOBANetwork(network_type *network, char *linkFileName,
                     char **tripFileName, int numClasses,
                     algorithmBParameters_type *parameters);

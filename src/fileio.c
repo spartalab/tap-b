@@ -290,35 +290,44 @@ void readNCTCOGTrips(network_type *network, char *tripFileName, int *table) {
 void streamNCTCOGTrips(network_type *network, int *table) {
     ssize_t n;
     int r, s;
-    char initial[6];
+//    char initial[6];
     char buffer[48];
-    while ((n = read(STDIN_FILENO, initial, 6)) == 0);
-    if (n < 0) {
-        fatalError("Issue reading from stdin");
-    } else if (strcmp(initial, "Start") != 0) {
-        fatalError("Invalid starting message from data");
-    } else {
+//    while ((n = read(STDIN_FILENO, initial, 6)) == 0);
+//    if (n < 0) {
+//        fatalError("Issue reading from stdin");
+//    } else if (strcmp(initial, "Start") != 0) {
+//        fatalError("Invalid starting message from data");
+//    } else {
         displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
-    }
-    sleep(5);
+//    }
+//    sleep(5);
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
-    while (read(STDIN_FILENO, buffer, 48) > 0) { /* Break in middle when out of lines */
+    do {
+        n = read(STDIN_FILENO, buffer, 48);  /* Break in middle when out of lines */
+        if (n < 0) {
+            fatalError("Issue reading from stdin");
+        } else if (strcmp(buffer, "Sto") == 0) {
+            break;
+        } else if (n == 0){
+            continue;
+        }
         displayMessage(FULL_NOTIFICATIONS, "Printing before initial conversion\n");
-        displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %d, SOLO_90: %d\n",
-                        buffer, buffer+4, buffer + 8, buffer + 12);
-        r = convert(atoi(buffer), table, NCTCOG_MAX_NODE_ID);
-        s = convert(atoi(buffer + 4), table, NCTCOG_MAX_NODE_ID);
-        assignDemand(network, r, s, SOLO_35, buffer + 8);
-        assignDemand(network, r, s, SOLO_90, buffer + 12);
-        assignDemand(network, r, s, HOV_35, buffer + 16);
-        assignDemand(network, r, s, HOV_90, buffer + 20);
-        assignDemand(network, r, s, SOLO_17, buffer + 24);
-        assignDemand(network, r, s, SOLO_45, buffer + 28);
-        assignDemand(network, r, s, HOV_17, buffer + 32);
-        assignDemand(network, r, s, HOV_45, buffer + 36);
-        assignDemand(network, r, s, MED_TRUCKS, buffer + 40);
-        assignDemand(network, r, s, HVY_TRUCKS, buffer + 44);
-    } ;
+        displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %f, SOLO_90: %f\n",
+                *((int *) buffer), *((int *) buffer + 4), *((float *) buffer + 8), *((float *)  buffer + 12));
+        r = convert(*((int *) buffer), table, NCTCOG_MAX_NODE_ID);
+        s = convert(*((int *) buffer + 4), table, NCTCOG_MAX_NODE_ID);
+        assignStreamedDemand(network, r, s, SOLO_35, (float *) buffer + 8);
+        assignStreamedDemand(network, r, s, SOLO_90, (float *)  buffer + 12);
+        assignStreamedDemand(network, r, s, HOV_35, (float *) buffer + 16);
+        assignStreamedDemand(network, r, s, HOV_90, (float *) buffer + 20);
+        assignStreamedDemand(network, r, s, SOLO_17, (float *) buffer + 24);
+        assignStreamedDemand(network, r, s, SOLO_45, (float *) buffer + 28);
+        assignStreamedDemand(network, r, s, HOV_17, (float *) buffer + 32);
+        assignStreamedDemand(network, r, s, HOV_45, (float *) buffer + 36);
+        assignStreamedDemand(network, r, s, MED_TRUCKS, (float *) buffer + 40);
+        assignStreamedDemand(network, r, s, HVY_TRUCKS, (float *) buffer + 44);
+
+        }while(1);
     displayMessage(FULL_NOTIFICATIONS, "Finished reading OD from buffer\n");
 }
 
@@ -328,6 +337,11 @@ void assignDemand(network_type *network, int originNode, int destinationNode,
     network->demand[origin][destinationNode] = atof(demandValue);
 }
 
+void assignStreamedDemand(network_type *network, int originNode, int destinationNode,
+                  int class, float *demandValue) {
+    int origin = nodeclass2origin(network, originNode, class);
+    network->demand[origin][destinationNode] = *demandValue;
+}
 
 void readSDBNetwork(network_type *network, char *filename, double defaultAlpha,
         double defaultBeta) {
