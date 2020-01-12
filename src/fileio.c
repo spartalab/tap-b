@@ -292,12 +292,12 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     ssize_t off = 0;
     int r, s;
 //    char initial[6];
-    char *buffer = (char *) calloc(48, sizeof(char));
-
+    // char *buffer = (char *) calloc(48, sizeof(char));
+    float buffer[12];
     displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     do {
-        n = read(STDIN_FILENO, buffer + off, 48 - off);  /* Break in middle when out of lines */
+        n = read(STDIN_FILENO, ((void*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
         off += n;
         if (n < 0) {
             fatalError("Issue reading from stdin");
@@ -309,24 +309,24 @@ void streamNCTCOGTrips(network_type *network, int *table) {
         off = 0;
         displayMessage(FULL_NOTIFICATIONS, "Printing before initial conversion\n");
         displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %f, SOLO_90: %f HOV_35: %f, HOV_90: %f, SOLO_17: %f, SOLO_45: %f, HOV_17: %f, HOV_45: %f, MED_TRUCKS: %f, HVY_TRUCKS: %f\n ",
-                *((int *) buffer), *((int *) buffer + 1),
-                *((float *) buffer + 2), *((float *)  buffer + 3),
-                *((float *) buffer + 4), *((float *)  buffer + 5),
-                *((float *) buffer + 6), *((float *)  buffer + 7),
-                *((float *) buffer + 8), *((float *)  buffer + 9),
-                *((float *) buffer + 10), *((float *)  buffer + 11));
-        r = convert(*((int *) buffer), table, NCTCOG_MAX_NODE_ID);
-        s = convert(*((int *) buffer + 1), table, NCTCOG_MAX_NODE_ID);
-        assignStreamedDemand(network, r, s, SOLO_35, *((float *) buffer + 2));
-        assignStreamedDemand(network, r, s, SOLO_90, *((float *) buffer + 3));
-        assignStreamedDemand(network, r, s, HOV_35, *((float *) buffer + 4));
-        assignStreamedDemand(network, r, s, HOV_90, *((float *) buffer + 5));
-        assignStreamedDemand(network, r, s, SOLO_17, *((float *) buffer + 6));
-        assignStreamedDemand(network, r, s, SOLO_45, *((float *) buffer + 7));
-        assignStreamedDemand(network, r, s, HOV_17, *((float *) buffer + 8));
-        assignStreamedDemand(network, r, s, HOV_45, *((float *) buffer + 9));
-        assignStreamedDemand(network, r, s, MED_TRUCKS, *((float *) buffer + 10));
-        assignStreamedDemand(network, r, s, HVY_TRUCKS, *((float *) buffer + 11));
+                (int)buffer[0], (int) buffer[1],
+                buffer[2], buffer[3],
+                buffer[4], buffer[5],
+                buffer[6], buffer[7],
+                buffer[8], buffer[9],
+                buffer[10], buffer[11]);
+        r = convert((int)buffer[0], table, NCTCOG_MAX_NODE_ID);
+        s = convert((int)buffer[1], table, NCTCOG_MAX_NODE_ID);
+        assignStreamedDemand(network, r, s, SOLO_35, buffer[2]);
+        assignStreamedDemand(network, r, s, SOLO_90, buffer[3]);
+        assignStreamedDemand(network, r, s, HOV_35, buffer[4]);
+        assignStreamedDemand(network, r, s, HOV_90, buffer[5]);
+        assignStreamedDemand(network, r, s, SOLO_17, buffer[6]);
+        assignStreamedDemand(network, r, s, SOLO_45, buffer[7]);
+        assignStreamedDemand(network, r, s, HOV_17, buffer[8]);
+        assignStreamedDemand(network, r, s, HOV_45, buffer[9]);
+        assignStreamedDemand(network, r, s, MED_TRUCKS, buffer[10]);
+        assignStreamedDemand(network, r, s, HVY_TRUCKS, buffer[11]);
         displayMessage(FULL_NOTIFICATIONS, "Added demand\n");
         } while(1);
     displayMessage(FULL_NOTIFICATIONS, "Finished reading OD from buffer\n");
