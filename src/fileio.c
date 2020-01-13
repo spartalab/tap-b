@@ -29,6 +29,8 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     network->batchSize = network->numZones;
     network->nodes = newVector(network->numNodes, node_type);
     network->arcs = newVector(network->numArcs, arc_type);
+    network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
+
     if (tripFileName == NULL) { /* Warm-start = compact matrix */
         network->demand = newMatrix(network->numZones, network->numZones,
                                     double);
@@ -78,11 +80,12 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
 
     /* If trip file was read, write the batch OD matrices so we don't have
      * to do so again */
-    if (tripFileName != NULL) {
-        writeBinaryMatrices(network);
-        deleteMatrix(network->demand, network->numOrigins);
-        network->demand=newMatrix(network->batchSize,network->numZones,double);
-    }
+//    if (tripFileName != NULL) {
+//        writeBinaryMatrices(network);
+//        deleteMatrix(network->demand, network->numOrigins);
+//        network->demand=newMatrix(network->batchSize,network->numZones,double);
+//    }
+    displayMessage(FULL_NOTIFICATIONS, "Finished reading NCTCOG Network and trips\n");
 }
 
 /*
