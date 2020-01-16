@@ -98,6 +98,7 @@ void main_TNTP(int argc, char* argv[]) {
    Bparameters.maxTime = 10000;
    Bparameters.warmStart = FALSE;
    Bparameters.gapFunction = RELATIVE_GAP_1;
+   Bparameters.calculateBeckmann = TRUE; /* Expensive with conic functions */
 
    AlgorithmB(network, &Bparameters);
    writeNetworkFlows(network, Bparameters.flowsFile);
