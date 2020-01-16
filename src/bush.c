@@ -70,7 +70,6 @@ thpool = thpool_init(parameters->numThreads);
     initializeAlgorithmB(network, bushes, parameters);
     displayMessage(LOW_NOTIFICATIONS, "Initialization done in %.3f s.\n",
         ((double)(clock() - stopTime)) / CLOCKS_PER_SEC);
-    displayMessage(DEBUG, "Initial Beckmann: %f\n", BeckmannFunction(network));
     if(parameters->calculateBeckmann == TRUE)
         displayMessage(DEBUG, "Initial Beckmann: %f\n", BeckmannFunction(network));
 
