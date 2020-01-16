@@ -171,7 +171,6 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     snprintf(parameters.flowsFile, sizeof(parameters.flowsFile), "flows.txt");
 
     parameters.warmStart = FALSE;
-    parameters.calculateBeckmann = TRUE;
 
     parameters.SPQueueDiscipline = DEQUE;
     
