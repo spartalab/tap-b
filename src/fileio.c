@@ -104,7 +104,7 @@ void writeBinaryMatrices(network_type *network) {
         for (r = 0; r < network->batchSize; r++) {
             if (outOfOrigins(network, r) == TRUE) break;
             origin = r + batch * network->batchSize;
-            fwrite(network->demand[origin], sizeof(network->demand[origin][0]),
+            fwrite(&network->demand[origin], sizeof(network->demand[origin][0]),
                    network->numZones, matrixFile);
         }
         fclose(matrixFile);
