@@ -527,7 +527,9 @@ void makeStronglyConnectedNetwork(network_type *network) {
         clearArcList(&(network->nodes[j].forwardStar));
         clearArcList(&(network->nodes[j].reverseStar));
     }
+    displayMessage(FULL_NOTIFICATIONS, "Finalizing network setup\n");
     finalizeNetwork(network);
+    displayMessage(FULL_NOTIFICATIONS, "Finalized network setup\n");
 
    /* Clean up and return */
     deleteVector(order);

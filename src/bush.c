@@ -59,6 +59,7 @@ thpool = thpool_init(parameters->numThreads);
 
     /* Allocate memory for bushes */
     int batch, iteration = 0, lastClass = IS_MISSING;
+    displayMessage(FULL_NOTIFICATIONS, "Creating Initial bushes\n");
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
@@ -187,7 +188,7 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
 
     int batch, c, ij, origin;
     char batchFileName[STRING_SIZE];    
-    
+    displayMessage(FULL_NOTIFICATIONS, "Initializing Algorithm B\n");
     /* 1. Initialize flows to zero and costs to free-flow */
     for (ij = 0; ij < network->numArcs; ij++) {
         network->arcs[ij].flow = 0;
@@ -196,7 +197,7 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
             network->arcs[ij].classFlow[c] = 0;
         }
     }
-    
+    displayMessage(FULL_NOTIFICATIONS, "Initialed flows\n");
     /* 2. Now create bushes, either reading from a file (if warmStart parameter
           is TRUE); or creating entirely from scratch (default); or by
           creating one set of bushes from scratch and reusing for other classes
@@ -220,11 +221,13 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
 
         /* Form bush structure: either read from file or recreate */
         if (parameters->warmStart == TRUE) { /* Read file and rectify */
+            displayMessage(FULL_NOTIFICATIONS, "Reading batch %d\n", batch);
             readBushes(network, &bushes, batchFileName);
             displayMessage(FULL_NOTIFICATIONS, "Read batch %d\n", batch);
         } else { /* No warm start, have to re-initialize */
             /* Do we have to create a bush from scratch, or can we reuse
              * the first? */
+            displayMessage(FULL_NOTIFICATIONS, "Creating batch %d\n", batch);
             if (batch == 0 || parameters->reuseFirstBush == FALSE) {
                 initializeBushesB(network, bushes, parameters);
             }
@@ -397,7 +400,7 @@ void initialBushShortestPath(int origin, network_type *network,
     int ij, originNode = origin2node(network, origin);
     arcIndexBellmanFord(originNode, bushes->SPcost, bushes->pred[origin],
                         network, parameters->SPQueueDiscipline);
-    
+//    displayMessage(FULL_NOTIFICATIONS, "Finished shortest path bush preds %d\n", origin);
     for (ij = 0; ij < network->numNodes; ij++) {
         if (ij != originNode && bushes->pred[origin][ij] == IS_MISSING) {
             if (verbosity >= DEBUG) {
@@ -450,9 +453,8 @@ void genericTopologicalOrder(int origin, network_type *network,
                              algorithmBParameters_type *parameters) {
     arcListElt *curArc;
     int i, j, m,  next, highestMerge = 0;
-    
+//    displayMessage(FULL_NOTIFICATIONS, "Starting topo order with indegree vector\n");
     declareVector(int, indegree, network->numNodes);
-
     for (i = 0; i < network->numNodes; i++) {
         indegree[i] = 1; /* By default non-origin nodes are assumed to have 1
                             incoming link; merges and origin handled below */
@@ -469,6 +471,7 @@ void genericTopologicalOrder(int origin, network_type *network,
     }
     indegree[origin2node(network, origin)] = 0;
 
+//    displayMessage(FULL_NOTIFICATIONS, "Making topo order q\n");
     queue_type LIST = createQueue(network->numNodes, network->numNodes);
     next = 0;
     for (i = 0; i < network->numNodes; i++)
@@ -496,9 +499,11 @@ void genericTopologicalOrder(int origin, network_type *network,
     }
     bushes->lastMerge[origin] = highestMerge;
 
+//    displayMessage(FULL_NOTIFICATIONS, "Deleting topo order q\n");
     deleteQueue(&LIST);
     deleteVector(indegree);
-    
+//    displayMessage(FULL_NOTIFICATIONS, "Deleted topo order q\n");
+
     /* Suppress warnings -- parameters is not used in this implementation */
     if (0) displayMessage(FULL_DEBUG, "%p", parameters);
 }
@@ -748,11 +753,14 @@ void initializeBushesB(network_type *network, bushes_type *bushes,
     for (origin = 0; origin < network->batchSize; origin++) {
         if (outOfOrigins(network, origin) == TRUE) break;
         c = origin2class(network, origin);
+//        displayMessage(FULL_NOTIFICATIONS, "Working on origin %d with class %d\n", origin, c);
         if (c != lastClass) {
             changeFixedCosts(network, c);
         }
+        lastClass = c;
         /* createInitialBush also sets preds, bushOrder */
-        parameters->createInitialBush(origin, network, bushes, parameters); 
+        parameters->createInitialBush(origin, network, bushes, parameters);
+//        displayMessage(FULL_NOTIFICATIONS, "Created Initial bush %d\n", origin);
         calculateBushFlows(origin, network, bushes);
     }
 
@@ -1709,11 +1717,10 @@ void readBinaryMatrix(network_type *network,
     matrixFile = openFile(filename, "rb");
     my_fread(&check, sizeof(check), 1, matrixFile);
     if (check != network->curBatch) fatalError("Reading wrong binary matrix.");
-
+    displayMessage(FULL_NOTIFICATIONS, "Reading binary matrix\n");
     for (r = 0; r < network->batchSize; r++) {
         my_fread(network->demand[r], sizeof(network->demand[r][0]),
                   network->numZones, matrixFile);
     }
-
     fclose(matrixFile);
 }

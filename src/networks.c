@@ -156,6 +156,7 @@ void arcIndexBellmanFord(int origin, double *label, int *backarc, network_type
     arcListElt *ij;
     double tempLabel;
     queue_type SEL = createQueue(network->numNodes, network->numNodes);
+//    displayMessage(FULL_NOTIFICATIONS, "Made queue for origin %d\n", origin);
 
     for (j = 0; j < network->numNodes; j++) {
         label[j] = INFINITY;
@@ -191,6 +192,7 @@ void arcIndexBellmanFord(int origin, double *label, int *backarc, network_type
             }
         }
     }
+//    displayMessage(FULL_NOTIFICATIONS, "Freeing queue for origin %d\n", origin);
 
     deleteQueue(&SEL);
 
@@ -374,6 +376,7 @@ void finalizeNetwork(network_type *network) {
         initializeArcList(&(network->nodes[i].reverseStar));
     }
     for (i = 0; i < network->numArcs; i++) {
+        pthread_mutex_init(&network->arc_muts[i], NULL);
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);

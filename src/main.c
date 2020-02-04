@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-    // main_TNTP(argc, argv);
+//     main_TNTP(argc, argv);
     
-    main_NCTCOG(argc, argv);                    
+    main_NCTCOG(argc, argv);
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
@@ -154,7 +154,9 @@ void setBatches(network_type *network, int batchSize) {
     network->numBatches = (network->numOrigins - 1) / batchSize + 1;
     network->curBatch = 0;
 
-    writeBinaryMatrices(network);    
+    writeBinaryMatrices(network);
+    deleteMatrix(network->demand, network->numOrigins);
+    network->demand=newMatrix(network->batchSize,network->numZones,double);
 }
 
 /*

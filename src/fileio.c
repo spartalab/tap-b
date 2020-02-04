@@ -104,7 +104,7 @@ void writeBinaryMatrices(network_type *network) {
         for (r = 0; r < network->batchSize; r++) {
             if (outOfOrigins(network, r) == TRUE) break;
             origin = r + batch * network->batchSize;
-            fwrite(&network->demand[origin], sizeof(network->demand[origin][0]),
+            fwrite(network->demand[origin], sizeof(network->demand[origin][0]),
                    network->numZones, matrixFile);
         }
         fclose(matrixFile);
@@ -570,7 +570,6 @@ void readOBANetwork(network_type *network, char *linkFileName,
 
     /* Read link data */
     for (i = 0; i < network->numArcs; i++) {
-        pthread_mutex_init(&network->arc_muts[i], NULL);
         if (fgets(fullLine, STRING_SIZE, linkFile) == NULL)
             fatalError("Link file %s ended (or other I/O error) before link "
                     "data complete.", linkFileName);
