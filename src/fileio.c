@@ -105,7 +105,7 @@ void writeBinaryMatrices(network_type *network) {
             if (outOfOrigins(network, r) == TRUE) break;
             origin = r + batch * network->batchSize;
             fwrite(network->demand[origin], sizeof(network->demand[origin][0]),
-                   network->numZones, matrixFile);
+                   network->batchSize, matrixFile);
         }
         fclose(matrixFile);
     }
@@ -345,7 +345,7 @@ void assignDemand(network_type *network, int originNode, int destinationNode,
 
 void assignStreamedDemand(network_type *network, int originNode, int destinationNode,
                   int class, float demandValue) {
-    int origin = nodeclass2origin(network, originNode, class);
+    int origin = originNode + class * network->batchSize;
     network->demand[origin][destinationNode] = demandValue;
 }
 
