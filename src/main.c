@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-//     main_TNTP(argc, argv);
+     main_TNTP(argc, argv);
     
-    main_NCTCOG(argc, argv);
+//    main_NCTCOG(argc, argv);
 
     #ifdef DEBUG_MODE
         fclose(debugFile);

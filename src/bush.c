@@ -637,6 +637,12 @@ double bushRelativeGap(network_type *network, bushes_type *bushes,
                           "path TSTT: %f\n", tstt, sptt);
     /* if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
                                 "denom are %f %f\n", tstt, sptt); */
+    if (sptt == 0 && tstt == 0) {
+        warning(LOW_NOTIFICATIONS, "No flow or demand on bush\n");
+        return 0;
+    } else if(sptt == 0) {
+        warning(LOW_NOTIFICATIONS, "SPTT is zero\n");
+    }
     return (tstt / sptt - 1);
 }
 
@@ -646,6 +652,10 @@ double bushAEC(network_type *network, bushes_type *bushes,
     double tstt = TSTT(network);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "ANegative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
+    if (network->totalODFlow == 0) {
+        warning(LOW_NOTIFICATIONS, "No flow or demand on bush\n");
+        return 0;
+    }
     return ((tstt - sptt) / network->totalODFlow);
 }
 

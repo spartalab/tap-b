@@ -381,6 +381,10 @@ double averageExcessCost(network_type *network) {
     double tstt = TSTT(network);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and SPTT "
                                                 "are %f %f\n", tstt, sptt);
+    if (network->totalODFlow == 0) {
+        warning(LOW_NOTIFICATIONS, "No flow or demand on network\n");
+        return 0;
+    }
     return ((tstt - sptt) / network->totalODFlow);
 }
 
@@ -394,6 +398,12 @@ double relativeGap1(network_type *network) {
                           "path TSTT: %f\n", tstt, sptt);
     if (tstt < sptt) warning(LOW_NOTIFICATIONS, "Negative gap.  TSTT and "
                                               "denom are %f %f\n", tstt, sptt);
+    if (sptt == 0 && tstt == 0) {
+        warning(LOW_NOTIFICATIONS, "No flow or demand on network\n");
+        return  0;
+    } else if(sptt == 0) {
+        warning(LOW_NOTIFICATIONS, "SPTT is zero\n");
+    }
     return (tstt / sptt - 1);
 }
 
@@ -419,6 +429,9 @@ double relativeGap2(network_type *network) {
                                                    tstt);
     displayMessage(DEBUG, "Current relative gap:\nCurrent TSTT: %f\nShortest "
             "path TSTT: %f\n", tstt, sptt);
+    if(network->beckmannLB == 0) {
+        warning(LOW_NOTIFICATIONS, "BeckmannLB is zero\n");
+    }
     return (network->beckmann / network->beckmannLB - 1);
 }
 
