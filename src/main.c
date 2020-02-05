@@ -155,8 +155,10 @@ void setBatches(network_type *network, int batchSize) {
     network->curBatch = 0;
 
     writeBinaryMatrices(network);
-    deleteMatrix(network->demand, network->numOrigins);
-    network->demand=newMatrix(network->batchSize,network->numZones,double);
+    if(network-> numBatches > 1) {
+        deleteMatrix(network->demand, network->numOrigins);
+        network->demand = newMatrix(network->batchSize, network->numZones, double);
+    }
 }
 
 /*
