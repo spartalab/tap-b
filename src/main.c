@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-     main_TNTP(argc, argv);
+//     main_TNTP(argc, argv);
     
-//    main_NCTCOG(argc, argv);
+    main_NCTCOG(argc, argv);
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
@@ -108,30 +108,61 @@ void main_TNTP(int argc, char* argv[]) {
 void main_NCTCOG(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
+
+
+
+#if PARALLELISM
+   int numOfThreads = 0;
+   if (argc != 5) {
+       displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
+       displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
+       numOfThreads = getNumCores();
+   } else {
+       displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
+       numOfThreads = atoi(argv[argc - 1]);
+   }
+#else
     displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
     if (argc != 4)
         fatalError("Must specify three arguments for NCTCOG:\n\n"
-                   "networkfile triptable convertertable\n\n"
-                   "-network file has link data\n"
-                   "-triptable has the OD matrix in CSV form\n"
-                   "-convertertable translates wrap IDs to TAP-B\n");
-        
-    
+                       "networkfile triptable convertertable\n\n"
+                       "-network file has link data\n"
+                       "-triptable has the OD matrix in CSV form\n"
+                       "-convertertable translates wrap IDs to TAP-B\n");
+
+#endif
+
+#if PARALLELISM
+    Bparameters.numThreads = numOfThreads;
+   if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
+       fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
+   }
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
     displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
-    
+
     /* Uncomment the following line to read archived binary OD matrices */
     /* readNCTCOGNetwork(network, argv[1], NULL, argv[3]); */
+
+#else
+    /* Uncomment the following line to read demand file afresh (rather than
+     * from the pre-read binary matrices */
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
+    readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
+
+    /* Uncomment the following line to read archived binary OD matrices */
+    /* readNCTCOGNetwork(network, argv[1], NULL, argv[3]); */
+#endif
     
     /* Default batching for NCTCOG: one per *class* */
     setBatches(network, network->numZones);        
     
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-    Bparameters.convergenceGap = 1e-14; 
-    Bparameters.maxIterations = 5; 
-    Bparameters.maxTime = 3600;
+    Bparameters.convergenceGap = 1e-5;
+    Bparameters.maxIterations = 5000;
+    Bparameters.maxTime = 3600 * 24 * 7;
     
     Bparameters.warmStart = FALSE;
     Bparameters.calculateBeckmann = FALSE; /* Expensive with conic functions */
