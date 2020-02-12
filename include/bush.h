@@ -280,7 +280,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
                        int *lastClass, algorithmBParameters_type *parameters);
 void updateBatchFlows(network_type *network, bushes_type *bushes,
                       int *lastClass, algorithmBParameters_type *parameters);
-void loadBatch(int batch, network_type *network, bushes_type *bushes,
+void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters);
 void storeBatch(int batch, network_type *network, bushes_type *bushes,
                algorithmBParameters_type *parameters);                                         

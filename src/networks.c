@@ -582,7 +582,7 @@ Warning: This function does not check whether the given origin and class
 fall into the current batch.  Run checkifcurrent to check that if you want.
 */
 int nodeclass2origin(network_type *network, int originNode, int class) {
-    return (class * network->numZones + originNode) % network->batchSize;
+    return (class * network->numZones + originNode);
 }
 
 bool checkIfCurrentNodeClass(network_type *network, int originNode, int class) {
@@ -656,9 +656,10 @@ void deleteNetwork(network_type *network) {
        deleteVector(network->arcs[i].classToll);
    }
 
-   deleteMatrix(network->demand, network->numZones);
+   deleteMatrix(network->demand, network->batchSize);
    deleteVector(network->nodes);
    deleteVector(network->arcs);
+   deleteVector(network->arc_muts);
    deleteVector(network->tollFactor);
    deleteVector(network->distanceFactor);
    deleteScalar(network);

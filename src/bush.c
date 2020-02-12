@@ -86,7 +86,7 @@ thpool = thpool_init(parameters->numThreads);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
-            loadBatch(batch, network, bushes, parameters);
+            loadBatch(batch, network, &bushes, parameters);
             updateBatchBushes(network, bushes, &lastClass, parameters);
             updateBatchFlows(network, bushes, &lastClass, parameters);
             storeBatch(batch, network, bushes, parameters);
@@ -259,7 +259,7 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
     }    
 }
 
-void loadBatch(int batch, network_type *network, bushes_type *bushes,
+void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters) {
     char batchFileName[STRING_SIZE];
     
@@ -268,7 +268,7 @@ void loadBatch(int batch, network_type *network, bushes_type *bushes,
     if (network->numBatches > 1) {
         /* Even if storeBushes == TRUE, if there is only one batch
          * there is no point in reading it again */
-        readBushes(network, &bushes, batchFileName);
+        readBushes(network, bushes, batchFileName);
     }
     if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
         readBinaryMatrix(network, parameters);
@@ -308,7 +308,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
             changeFixedCosts(network, c);
         }
         thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
-        //updateBushB(j, network, bushes, parameters);
+        *lastClass = c;
     }
     thpool_wait(thpool);
 
@@ -702,10 +702,10 @@ bushes_type *createBushes(network_type *network) {
     bushes->updateBush = newVector(network->batchSize, bool);
 
 #if PARALLELISM
-    bushes->LPcost_par = newMatrix(network->numNodes, network->numNodes,double);
-    bushes->SPcost_par = newMatrix(network->numNodes, network->numNodes,double);
-    bushes->flow_par = newMatrix(network->numNodes, network->numArcs,double);
-    bushes->nodeFlow_par = newMatrix(network->numNodes, network->numNodes,double);
+    bushes->LPcost_par = newMatrix(network->batchSize, network->numNodes,double);
+    bushes->SPcost_par = newMatrix(network->batchSize, network->numNodes,double);
+    bushes->flow_par = newMatrix(network->batchSize, network->numArcs,double);
+    bushes->nodeFlow_par = newMatrix(network->batchSize, network->numNodes,double);
 #endif
     for (i = 0; i < network->batchSize; i++) {
        bushes->numMerges[i] = 0;
@@ -1727,10 +1727,11 @@ void readBinaryMatrix(network_type *network,
     matrixFile = openFile(filename, "rb");
     my_fread(&check, sizeof(check), 1, matrixFile);
     if (check != network->curBatch) fatalError("Reading wrong binary matrix.");
-    displayMessage(FULL_NOTIFICATIONS, "Reading binary matrix\n");
+//    displayMessage(FULL_NOTIFICATIONS, "Reading binary matrix %d\n", check);
     for (r = 0; r < network->batchSize; r++) {
         my_fread(network->demand[r], sizeof(network->demand[r][0]),
                   network->numZones, matrixFile);
     }
+//    displayMessage(FULL_NOTIFICATIONS, "finished reading binary matrix %d\n", check);
     fclose(matrixFile);
 }

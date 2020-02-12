@@ -30,7 +30,7 @@ FILE *openFile(const char *filename, const char *access) {
 
 void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     unsigned int result = fread(ptr, size, nmemb, stream);
-    if (result != nmemb) fatalError("Error reading from file.\n");
+    if (result != nmemb) fatalError("Error reading from file. Expecting %d bytes, read %d bytes\n", nmemb, result);
 }
 
 /*
