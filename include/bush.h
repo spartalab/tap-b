@@ -274,7 +274,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters);
 algorithmBParameters_type initializeAlgorithmBParameters();
 
 /* Main Algorithm B helper functions */
-void initializeAlgorithmB(network_type *network, bushes_type *bushes,
+void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters);
 void updateBatchBushes(network_type *network, bushes_type *bushes,
                        int *lastClass, algorithmBParameters_type *parameters);

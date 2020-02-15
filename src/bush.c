@@ -68,7 +68,7 @@ thpool = thpool_init(parameters->numThreads);
 
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
-    initializeAlgorithmB(network, bushes, parameters);
+    initializeAlgorithmB(network, &bushes, parameters);
     displayMessage(LOW_NOTIFICATIONS, "Initialization done in %.3f s.\n",
         ((double)(clock() - stopTime)) / CLOCKS_PER_SEC);
     if(parameters->calculateBeckmann == TRUE)
@@ -183,7 +183,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     return parameters;
 }
 
-void initializeAlgorithmB(network_type *network, bushes_type *bushes,
+void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters) {
 
     int batch, c, ij, origin;
@@ -222,14 +222,14 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
         /* Form bush structure: either read from file or recreate */
         if (parameters->warmStart == TRUE) { /* Read file and rectify */
             displayMessage(FULL_NOTIFICATIONS, "Reading batch %d\n", batch);
-            readBushes(network, &bushes, batchFileName);
+            readBushes(network, bushes, batchFileName);
             displayMessage(FULL_NOTIFICATIONS, "Read batch %d\n", batch);
         } else { /* No warm start, have to re-initialize */
             /* Do we have to create a bush from scratch, or can we reuse
              * the first? */
             displayMessage(FULL_NOTIFICATIONS, "Creating batch %d\n", batch);
             if (batch == 0 || parameters->reuseFirstBush == FALSE) {
-                initializeBushesB(network, bushes, parameters);
+                initializeBushesB(network, *bushes, parameters);
             }
             displayMessage(FULL_NOTIFICATIONS, "Created batch %d\n", batch);
         }
@@ -239,18 +239,18 @@ void initializeAlgorithmB(network_type *network, bushes_type *bushes,
          *  2. To get the initial arc flows correct
          */
         for (origin = 0; origin < network->batchSize; origin++) {
-            rectifyBushFlows(origin, network, bushes); 
+            rectifyBushFlows(origin, network, *bushes);
             c = origin2class(network, origin);
             for (ij = 0; ij < network->numArcs; ij++) {
-                network->arcs[ij].flow += bushes->flow[ij];
-                network->arcs[ij].classFlow[c] += bushes->flow[ij];
+                network->arcs[ij].flow += (*bushes)->flow[ij];
+                network->arcs[ij].classFlow[c] += (*bushes)->flow[ij];
                 network->arcs[ij].cost =
                     network->arcs[ij].calculateCost(&network->arcs[ij]);
             }
         }
         sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
         if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
-            writeBushes(network, bushes, batchFileName);
+            writeBushes(network, *bushes, batchFileName);
         }
     }
     for (ij = 0; ij < network->numArcs; ij++) {

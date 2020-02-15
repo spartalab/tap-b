@@ -96,7 +96,8 @@ void main_TNTP(int argc, char* argv[]) {
    Bparameters.convergenceGap = 1e-14;
    Bparameters.maxIterations = 200;
    Bparameters.maxTime = 10000;
-   Bparameters.warmStart = FALSE;
+   // Bparameters.storeBushes = TRUE; // Uncomment if you want to save bushes for future warm start use
+   Bparameters.warmStart = FALSE; //Set to true if you want to warm start. Batch size must be set to the size used when first storing the bush
    Bparameters.gapFunction = RELATIVE_GAP_1;
    Bparameters.calculateBeckmann = TRUE; /* Expensive with conic functions */
 
@@ -182,6 +183,9 @@ As a result, we write the binary matrices HERE.
 */
 void setBatches(network_type *network, int batchSize) {
     network->batchSize = batchSize;
+    if (network->numOrigins%batchSize != 0) {
+        fatalError("Number of Origins must be divisible by the batch size");
+    }
     network->numBatches = (network->numOrigins - 1) / batchSize + 1;
     network->curBatch = 0;
 
