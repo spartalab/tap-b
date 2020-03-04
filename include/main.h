@@ -16,7 +16,7 @@
 #define DEBUG_MODE
 
 void inferNCTCOGNetwork(network_type *network);
-void setBatches(network_type *network, int batchSize);
+void setBatches(network_type *network, int batchSize, bool warmStart);
 
 void main_TNTP(int argc, char* argv[]);
 void main_NCTCOG(int argc, char* argv[]);

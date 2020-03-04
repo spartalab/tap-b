@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-     main_TNTP(argc, argv);
+     //main_TNTP(argc, argv);
     
-//    main_NCTCOG(argc, argv);
+   main_NCTCOG(argc, argv);
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
@@ -90,7 +90,7 @@ void main_TNTP(int argc, char* argv[]) {
 #endif
 
    /* Default: one batch */
-   setBatches(network, network->numOrigins);
+   setBatches(network, network->numOrigins, argv[2] == NULL);
 
    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
    Bparameters.convergenceGap = 1e-14;
@@ -141,7 +141,12 @@ void main_NCTCOG(int argc, char* argv[]) {
    }
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
-    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...%s\n", argv[2]);
+    if (strcmp("", argv[2]) == 0) {
+      argv[2] = NULL;
+      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+
+    }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
 
     /* Uncomment the following line to read archived binary OD matrices */
@@ -151,6 +156,11 @@ void main_NCTCOG(int argc, char* argv[]) {
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
     displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
+    if (strcmp("", argv[2]) == 0) {
+      argv[2] = NULL;
+      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+
+    }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
 
     /* Uncomment the following line to read archived binary OD matrices */
@@ -158,10 +168,12 @@ void main_NCTCOG(int argc, char* argv[]) {
 #endif
     
     /* Default batching for NCTCOG: one per *class* */
-    setBatches(network, network->numZones);        
+
+    setBatches(network, network->numZones, argv[2] == NULL);
+
     
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-    Bparameters.convergenceGap = 1e-5;
+    Bparameters.convergenceGap = 1e-8;
     Bparameters.maxIterations = 5000;
     Bparameters.maxTime = 3600 * 24 * 7;
     
@@ -181,7 +193,7 @@ unpredictable things may happen.
 
 As a result, we write the binary matrices HERE.  
 */
-void setBatches(network_type *network, int batchSize) {
+void setBatches(network_type *network, int batchSize, bool warmStart) {
     network->batchSize = batchSize;
     if (network->numOrigins%batchSize != 0) {
         fatalError("Number of Origins must be divisible by the batch size");
@@ -189,11 +201,15 @@ void setBatches(network_type *network, int batchSize) {
     network->numBatches = (network->numOrigins - 1) / batchSize + 1;
     network->curBatch = 0;
 
-    writeBinaryMatrices(network);
-    if(network-> numBatches > 1) {
+    if(!warmStart)
+      writeBinaryMatrices(network);
+
+    if(network-> numBatches > 1 && !warmStart) {
+
         deleteMatrix(network->demand, network->numOrigins);
         network->demand = newMatrix(network->batchSize, network->numZones, double);
     }
+
 }
 
 /*

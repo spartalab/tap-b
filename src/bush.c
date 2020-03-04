@@ -86,16 +86,24 @@ thpool = thpool_init(parameters->numThreads);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
+            displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
             loadBatch(batch, network, &bushes, parameters);
+            displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
             updateBatchBushes(network, bushes, &lastClass, parameters);
+            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
             updateBatchFlows(network, bushes, &lastClass, parameters);
+            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
             storeBatch(batch, network, bushes, parameters);
+            displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
 
             /* Check gap and report progress. */
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
+            displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
+
             batchGap = bushRelativeGap(network, bushes, parameters);
+            displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
             gap += batchGap;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
@@ -214,10 +222,12 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
         network->curBatch = batch;
         sprintf(batchFileName, "%s%d.bin", parameters->batchStem,
                 network->curBatch);
+
         if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
+                displayMessage(FULL_NOTIFICATIONS, "Reading matrix %d\n", network->curBatch);
             readBinaryMatrix(network, parameters);
         }
-        displayMessage(FULL_NOTIFICATIONS, "Read matrix\n");
+        displayMessage(FULL_NOTIFICATIONS, "Read matrix %d\n", network->curBatch);
 
         /* Form bush structure: either read from file or recreate */
         if (parameters->warmStart == TRUE) { /* Read file and rectify */

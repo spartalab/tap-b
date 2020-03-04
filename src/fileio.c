@@ -67,13 +67,14 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     readConverterFile(converterFileName, NCTCOG2SDB, network->numNodes,
                       sizeof(NCTCOG2SDB)/sizeof(NCTCOG2SDB[0]), FALSE);
     readNCTCOGLinks(network, networkFileName, NCTCOG2SDB);
-    if (strcmp("STREAM", tripFileName) == 0) {
+    if (tripFileName != NULL && strcmp("STREAM", tripFileName) == 0) {
         streamNCTCOGTrips(network, NCTCOG2SDB);
     } else if (tripFileName != NULL) {
         /* If you give a NULL tripFileName, we assume a warm start and skip
          * this file. */
         readNCTCOGTrips(network, tripFileName, NCTCOG2SDB);
     }
+
     finalizeNetwork(network);
 
 
