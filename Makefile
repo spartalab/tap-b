@@ -42,6 +42,10 @@ $(BINDIR)/$(PROJECT): $(OBJECTS)
 parallel: CFLAGS += -DPARALLELISM=1
 parallel: $(BINDIR)/$(PROJECT)
 
+# ------- parallel debug: build the main project ------
+.PHONY: parallel-d
+parallel-d: CFLAGS += -DPARALLELISM=1 -g
+parallel-d: $(BINDIR)/$(PROJECT)
 
 # ---------- release target: extra optimization ----
 

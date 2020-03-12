@@ -534,7 +534,7 @@ void makeStronglyConnectedNetwork(network_type *network) {
     for(i = 0; i < network->numArcs; i++) {
         pthread_mutex_destroy(&network->arc_muts[i]);
     }
-
+    deleteVector(network->arc_muts);
     network->numArcs += newArcs;
     network->arcs = newArcVector;
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);

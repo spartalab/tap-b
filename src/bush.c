@@ -748,6 +748,13 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     deleteVector(bushes->numMerges);
     deleteVector(bushes->merges);
     deleteVector(bushes->updateBush);
+#if PARALLELISM
+    deleteMatrix(bushes->LPcost_par, network->batchSize);
+    deleteMatrix(bushes->SPcost_par, network->batchSize);
+    deleteMatrix(bushes->flow_par, network->batchSize);
+    deleteMatrix(bushes->nodeFlow_par, network->batchSize);
+#endif
+
     deleteScalar(bushes);
 }
 

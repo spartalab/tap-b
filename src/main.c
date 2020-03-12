@@ -196,7 +196,7 @@ As a result, we write the binary matrices HERE.
 void setBatches(network_type *network, int batchSize, bool warmStart) {
     network->batchSize = batchSize;
     if (network->numOrigins%batchSize != 0) {
-        fatalError("Number of Origins must be divisible by the batch size");
+        fatalError("Number of Origins (%d) must be divisible by the batch size(%d)\n", network->numOrigins, batchSize);
     }
     network->numBatches = (network->numOrigins - 1) / batchSize + 1;
     network->curBatch = 0;
