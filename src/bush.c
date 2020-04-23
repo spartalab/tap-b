@@ -51,8 +51,8 @@ threadpool thpool;
  */
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
-pthread_mutex_init(&shift_lock, NULL);
-thpool = thpool_init(parameters->numThreads);
+    pthread_mutex_init(&shift_lock, NULL);
+    thpool = thpool_init(parameters->numThreads);
 #endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
@@ -86,16 +86,25 @@ thpool = thpool_init(parameters->numThreads);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
+#endif
             loadBatch(batch, network, &bushes, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
+#endif
             updateBatchBushes(network, bushes, &lastClass, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
+#endif
             updateBatchFlows(network, bushes, &lastClass, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
+#endif
             storeBatch(batch, network, bushes, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
-
+#endif
             /* Check gap and report progress. */
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */

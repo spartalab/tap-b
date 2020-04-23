@@ -47,6 +47,16 @@ parallel: $(BINDIR)/$(PROJECT)
 parallel-d: CFLAGS += -DPARALLELISM=1 -g
 parallel-d: $(BINDIR)/$(PROJECT)
 
+# ------- nctcog: build the main project ------
+.PHONY: nctcog
+nctcog: CFLAGS += -DNCTCOG_ENABLED=1
+nctcog: $(BINDIR)/$(PROJECT)
+
+# ------- nctcog-par: build the main project ------
+.PHONY: nctcog-par
+nctcog-par: CFLAGS += -DPARALLELISM=1 -DNCTCOG_ENABLED=1
+nctcog-par: $(BINDIR)/$(PROJECT)
+
 # ---------- release target: extra optimization ----
 
 .PHONY: release

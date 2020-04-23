@@ -42,9 +42,11 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-     //main_TNTP(argc, argv);
-    
-   main_NCTCOG(argc, argv);
+#if NCTCOG_ENABLED
+    main_NCTCOG(argc, argv);
+#else
+     main_TNTP(argc, argv);
+#endif
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
@@ -106,11 +108,10 @@ void main_TNTP(int argc, char* argv[]) {
    deleteNetwork(network);
 }
 
+#if NCTCOG_ENABLED
 void main_NCTCOG(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
-
-
 
 #if PARALLELISM
    int numOfThreads = 0;
@@ -166,32 +167,33 @@ void main_NCTCOG(int argc, char* argv[]) {
     /* Uncomment the following line to read archived binary OD matrices */
     /* readNCTCOGNetwork(network, argv[1], NULL, argv[3]); */
 #endif
-    
+
     /* Default batching for NCTCOG: one per *class* */
 
     setBatches(network, network->numZones, argv[2] == NULL);
 
-    
+
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
     Bparameters.convergenceGap = 1e-8;
     Bparameters.maxIterations = 5000;
     Bparameters.maxTime = 3600 * 24 * 7;
-    
+
     Bparameters.warmStart = FALSE;
     Bparameters.calculateBeckmann = FALSE; /* Expensive with conic functions */
     Bparameters.gapFunction = RELATIVE_GAP_1;
-    
+
     AlgorithmB(network, &Bparameters);
     writeNetworkFlows(network, Bparameters.flowsFile);
-    deleteNetwork(network);     
+    deleteNetwork(network);
 }
+#endif
 
 /*
 setBatches: Re-partitions the network into origin batches of the given
 size.  This should NEVER be called during the middle of a run, or
-unpredictable things may happen. 
+unpredictable things may happen.
 
-As a result, we write the binary matrices HERE.  
+As a result, we write the binary matrices HERE.
 */
 void setBatches(network_type *network, int batchSize, bool warmStart) {
     network->batchSize = batchSize;
@@ -224,6 +226,7 @@ void setBatches(network_type *network, int batchSize, bool warmStart) {
  *
  * We assume that the NCTCOG network was read in SDB format, not TNTP.
  */
+#if NCTCOG_ENABLED
 #define NCTCOG_CLASSES 10
 #define MAX_VOT 1.0
 void inferNCTCOGNetwork(network_type *network) {
@@ -246,7 +249,7 @@ void inferNCTCOGNetwork(network_type *network) {
     }
     free(network->demand);
     network->demand = newDemand;
-    
+
     /* 3. Set class VOTs */
     network->tollFactor = newVector(NCTCOG_CLASSES, double);
     network->distanceFactor = newVector(NCTCOG_CLASSES, double);
@@ -265,6 +268,5 @@ void inferNCTCOGNetwork(network_type *network) {
             network->arcs[ij].classFlow[c] = 0;
         }
     }
-
-
 }
+#endif
