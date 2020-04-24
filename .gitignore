@@ -11,3 +11,5 @@ matrix0.bin
 .DS_Store
 batch*
 matrix*
+*.condor
+*.log
