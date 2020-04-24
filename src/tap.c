@@ -535,9 +535,11 @@ void makeStronglyConnectedNetwork(network_type *network) {
         pthread_mutex_destroy(&network->arc_muts[i]);
     }
     deleteVector(network->arc_muts);
+    deleteVector(network->arc_mutattrs);
     network->numArcs += newArcs;
     network->arcs = newArcVector;
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
+    network->arc_mutattrs = newVector(network->numArcs, pthread_mutexattr_t);
    /* Regenerate forward/reverse star lists */
     for (j = 0; j < network->numNodes; j++) {
         clearArcList(&(network->nodes[j].forwardStar));

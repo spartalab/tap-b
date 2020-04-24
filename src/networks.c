@@ -376,7 +376,9 @@ void finalizeNetwork(network_type *network) {
         initializeArcList(&(network->nodes[i].reverseStar));
     }
     for (i = 0; i < network->numArcs; i++) {
-        pthread_mutex_init(&network->arc_muts[i], NULL);
+        pthread_mutexattr_init(&network->arc_mutattrs[i]);
+        pthread_mutexattr_settype(&network->arc_mutattrs[i], PTHREAD_MUTEX_ERRORCHECK);
+        pthread_mutex_init(&network->arc_muts[i], &network->arc_mutattrs[i]);
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);
@@ -660,6 +662,7 @@ void deleteNetwork(network_type *network) {
    deleteVector(network->nodes);
    deleteVector(network->arcs);
    deleteVector(network->arc_muts);
+   deleteVector(network->arc_mutattrs);
    deleteVector(network->tollFactor);
    deleteVector(network->distanceFactor);
    deleteScalar(network);

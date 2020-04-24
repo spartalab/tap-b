@@ -456,6 +456,40 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
 
 
     c = origin2class(network, origin);
+    bool* links = newVector(network->numArcs, bool);
+    for (int k = 0; k < network->numArcs; ++k) {
+        links[k] = FALSE;
+    }
+    i = j;
+    while (i != merge->divergenceNode) {
+        if (isMergeNode(origin, i, bushes) == FALSE) {
+            hi = bushes->pred[origin][i];
+        } else {
+            m = pred2merge(bushes->pred[origin][i]);
+            segmentMerge = bushes->merges[origin][m];
+            hi = segmentMerge->approach[segmentMerge->LPlink];
+        }
+        links[hi] = TRUE;
+        i = network->arcs[hi].tail;
+    }
+    i = j;
+    while (i != merge->divergenceNode) {
+        if (isMergeNode(origin, i, bushes) == FALSE) {
+            hi = bushes->pred[origin][i];
+        } else {
+            m = pred2merge(bushes->pred[origin][i]);
+            segmentMerge = bushes->merges[origin][m];
+            hi = segmentMerge->approach[segmentMerge->SPlink];
+        }
+        links[hi] = TRUE;
+        i = network->arcs[hi].tail;
+    }
+
+    for (int k = 0; k < network->numArcs; ++k) {
+        if(links[k] == TRUE) {
+            pthread_mutex_lock(&network->arc_muts[k]);
+        }
+    }
 
     /* Calculate information for longest path segment */
     i = j;
@@ -512,8 +546,8 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             hi = segmentMerge->approach[segmentMerge->LPlink];
             segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
         }
-        bushes->flow_par[origin][hi] -= shift;
         exactCostUpdate_par(hi, -shift, network, c);
+        bushes->flow_par[origin][hi] -= shift;
         i = network->arcs[hi].tail;
     }
     i = j;
@@ -526,13 +560,16 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
             hi = segmentMerge->approach[segmentMerge->SPlink];
             segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
         }
+        exactCostUpdate_par(hi, shift, network, c);
         bushes->flow_par[origin][hi] += shift;
-        exactCostUpdate_par(hi, shift, network,c);
-
-//        parameters->linkShiftB(hi, shift, network);
         i = network->arcs[hi].tail;
     }
-
+    for (int k = 0; k < network->numArcs; ++k) {
+        if(links[k] == TRUE) {
+            pthread_mutex_unlock(&network->arc_muts[k]);
+        }
+    }
+    deleteVector(links);
 }
 
 /*
@@ -610,12 +647,10 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
 }
 
 void exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
-    pthread_mutex_lock(&network->arc_muts[ij]);
     network->arcs[ij].classFlow[class] += shift;
     network->arcs[ij].flow += shift;
     network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
-    pthread_mutex_unlock(&network->arc_muts[ij]);
 }
 
 void classUpdate_par(int hi, int class, double shift,  network_type *network) {
