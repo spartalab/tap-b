@@ -471,7 +471,7 @@ void genericTopologicalOrder(int origin, network_type *network,
                              bushes_type *bushes,
                              algorithmBParameters_type *parameters) {
     arcListElt *curArc;
-    int i, j, m,  next, highestMerge = 0;
+    int i, j, k, m,  next, highestMerge = 0;
 //    displayMessage(FULL_NOTIFICATIONS, "Starting topo order with indegree vector\n");
     declareVector(int, indegree, network->numNodes);
     for (i = 0; i < network->numNodes; i++) {
@@ -496,24 +496,41 @@ void genericTopologicalOrder(int origin, network_type *network,
     for (i = 0; i < network->numNodes; i++)
         if (indegree[i] == 0)
             enQueue(&LIST, i);
-    while (LIST.curelts > 0) {
-        i = deQueue(&LIST);
-        bushes->bushOrder[origin][next] = i;
-        if (isMergeNode(origin, i, bushes) == TRUE) highestMerge = next;
-        next++;
-        for (curArc = network->nodes[i].forwardStar.head; curArc != NULL;
-                curArc = curArc->next) {
-            if (isInBush(origin, ptr2arc(network, curArc->arc), network,
-                         bushes) == TRUE) {
-                j = curArc->arc->head;
-                indegree[j]--;
-                if (indegree[j] == 0) enQueue(&LIST, j);
-            }
+        while (LIST.curelts > 0) {
+            k = deQueue(&LIST);
+            bushes->bushOrder[origin][next] = k;
+            if (isMergeNode(origin, k, bushes) == TRUE) highestMerge = next;
+            next++;
+            for (curArc = network->nodes[k].forwardStar.head; curArc != NULL;
+                    curArc = curArc->next) {
+                if (isInBush(origin, ptr2arc(network, curArc->arc), network,
+                             bushes) == TRUE) {
+                    j = curArc->arc->head;
+                    indegree[j]--;
+                    if (indegree[j] == 0) enQueue(&LIST, j);
+                }
         }
     }
     if (next < network->numNodes) {
         displayMessage(LOW_NOTIFICATIONS, "next: %d, network->numNodes: %d\n", 
                            next, network->numNodes);
+        for (i = 0; i < network->numNodes; i++) {
+            displayMessage(LOW_NOTIFICATIONS, "%d: %d, %d %d %d\n",
+                           i, bushes->bushOrder[origin][i], indegree[i], origin2node(network, origin), isMergeNode(origin, i, bushes));
+            if (indegree[i] > 0) {
+                for (curArc = network->nodes[i].forwardStar.head; curArc != NULL;
+                     curArc = curArc->next) {
+                    int hi = ptr2arc(network, curArc->arc);
+                    if (isInBush(origin, ptr2arc(network, curArc->arc), network,
+                                 bushes) == TRUE) {
+                        displayMessage(LOW_NOTIFICATIONS, "Flow on incoming link in bush %f ", i, bushes->flow_par[origin][hi]);
+                    } else {
+                        displayMessage(LOW_NOTIFICATIONS, "Flow on incoming link not in bush %f ", i, bushes->flow_par[origin][hi]);
+                    }
+                }
+                displayMessage(LOW_NOTIFICATIONS,"\n");
+            }
+        }
         fatalError("Graph given to bushTopologicalOrder contains a cycle.");
     }
     bushes->lastMerge[origin] = highestMerge;
@@ -584,7 +601,8 @@ int merge2pred(int m) {
  * this requires examining the predecessor of link (i,j)'s head.
  */
 bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
-    int backarc, j = network->arcs[ij].head, m;
+    int backarc, m;
+    int j = network->arcs[ij].head;
     merge_type *merge;
     if (isMergeNode(origin, j, bushes) == FALSE) {
         return (bushes->pred[origin][j] == ij) ? TRUE : FALSE;

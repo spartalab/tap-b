@@ -118,22 +118,22 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
             bushes->flow_par[origin][ij] = NEW_LINK;
         }
     }
-
-    /* If strict criterion fails, try a looser one */
-    if (newArcs == 0) {
-        for (ij = 0; ij < network->numArcs; ij++) {
-            i = network->arcs[ij].tail;
-            j = network->arcs[ij].head;
-            if (bushes->LPcost_par[origin][i]==-INFINITY && bushes->LPcost_par[origin][j]>-INFINITY)
-                continue; /* No path to extend */
-            if (bushes->flow_par[origin][ij] == 0 && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
-                && (network->arcs[ij].tail == origin2node(network, origin)
-                    || network->arcs[ij].tail >= network->firstThroughNode))
-            {
-                bushes->flow_par[origin][ij] = NEW_LINK;
-            }
-        }
-    }
+//
+//    /* If strict criterion fails, try a looser one */
+//    if (newArcs == 0) {
+//        for (ij = 0; ij < network->numArcs; ij++) {
+//            i = network->arcs[ij].tail;
+//            j = network->arcs[ij].head;
+//            if (bushes->LPcost_par[origin][i]==-INFINITY && bushes->LPcost_par[origin][j]>-INFINITY)
+//                continue; /* No path to extend */
+//            if (bushes->flow_par[origin][ij] == 0 && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
+//                && (network->arcs[ij].tail == origin2node(network, origin)
+//                    || network->arcs[ij].tail >= network->firstThroughNode))
+//            {
+//                bushes->flow_par[origin][ij] = NEW_LINK;
+//            }
+//        }
+//    }
 
     /* Finally update bush data structures: delete/add merges, find a new
      * topological order, rectify approach proportions */
