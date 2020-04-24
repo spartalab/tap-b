@@ -377,7 +377,7 @@ void finalizeNetwork(network_type *network) {
     }
     for (i = 0; i < network->numArcs; i++) {
         pthread_mutexattr_init(&network->arc_mutattrs[i]);
-        pthread_mutexattr_settype(&network->arc_mutattrs[i], PTHREAD_MUTEX_ERRORCHECK);
+        pthread_mutexattr_settype(&network->arc_mutattrs[i], PTHREAD_MUTEX_NORMAL);
         pthread_mutex_init(&network->arc_muts[i], &network->arc_mutattrs[i]);
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
