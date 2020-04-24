@@ -1,4 +1,29 @@
 #include "bush.h"
+#include <pthread.h> /*used in other parts of the assignment */
+#define NUM_THREADS 1
+
+//Struct for thread arguments
+struct thread_args {
+    int id;
+    int start;
+    int num_points;
+    bushes_type *bushes;
+    network_type *network;
+    algorithmBParameters_type *parameters;
+};
+
+void updateBushes(void* pVoid) {
+    auto args = (thread_args *) pVoid;
+    int start = args->start;
+    int num = args->num_points;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    for (; start < start + num && start < network->numZones; start++) {
+        updateBushB(start, network, bushes, parameters);
+        updateFlowsB(origin, network, bushes, parameters);
+    }
+}
 
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
@@ -19,13 +44,34 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 	do {
 	   iteration++;
 
-      /* Update bushes */
-		for (origin = 0; origin < network->numZones; origin++) {
-			updateBushB(origin, network, bushes, parameters);
-   		updateFlowsB(origin, network, bushes, parameters);			
-		}
+        pthread_t handles[NUM_THREADS];
+        thread_args args[NUM_THREADS];
+        int pointsPerThread = network->numZones/NUM_THREADS;
 
-      /* Shift flows */
+        for (int j = 0; j < NUM_THREADS; ++j) {
+            args[j].id = j;
+            args[j].start = pointsPerThread * j * step;
+            args[j].num =  pointsPerThread;
+            args[j].network = network;
+            args[j].parameters = parameters;
+            args[j].bushes = bushes;
+        }
+
+        for (int j = 0; j < NUM_THREADS; ++j) {
+            pthread_create(&handles[j], NULL, (void* (*)(void*)) updateBushes, &args[j]);
+        }
+
+        for(int i = 0; i < NUM_THREADS; i++) {
+            pthread_join(handles[i], NULL);
+        }
+
+      /* Update bushes */ //Parallelize by doing all updates and then all flows
+//		for (origin = 0; origin < network->numZones; origin++) {
+//			updateBushB(origin, network, bushes, parameters);
+//   		updateFlowsB(origin, network, bushes, parameters);
+//		}
+
+      /* Shift flows */ //Parallelize
 		for (i = 0; i < parameters->innerIterations; i++) {
 			for (origin = 0; origin < network->numZones; origin++) {
 				updateFlowsB(origin, network, bushes, parameters);

@@ -1,0 +1,19 @@
+####################################
+#
+# CE392C Condor File for TAP-B
+# Simple condor job description file
+#
+####################################
+
++Group = "UNDER"
++Project = "SCIENTIFIC_COMPUTING"
++ProjectDescription = "solving traffic assignment with different threads."
+
+universe = vanilla
+
+executable = /usr/local/bin/python
+arguments = /u/vkarthik/Documents/tap-b/script.py
+Log = tap-b.log
+
+Queue
+

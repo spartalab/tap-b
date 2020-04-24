@@ -17,15 +17,15 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 RM = rm -f
 
 CC = gcc
-CFLAGS = -std=c99 -Wall $(INCLUDEFLAG) $(DEPFLAGS)
-CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses
-CFLAGS += -Wpedantic -Warray-bounds 
-CFLAGS += -fmax-errors=10
+CFLAGS = -std=c99 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
+CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
+CFLAGS += -Wpedantic -Warray-bounds
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O3
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
 LINKER = gcc
-LFLAGS = -Wall -lm $(INCLUDEFLAG)
+LFLAGS = -Wall -pthread -lm $(INCLUDEFLAG)
+MACFLAGS = -Wall -lm $(INCLUDEFLAG)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 
@@ -35,8 +35,28 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 all: $(BINDIR)/$(PROJECT)
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
-	$(LINKER) $^ $(LFLAGS) -o $@ 
-	
+	$(LINKER) $^ $(LFLAGS) -o $@
+
+# ------- parallel target: build the main project ------
+.PHONY: parallel
+parallel: CFLAGS += -DPARALLELISM=1
+parallel: $(BINDIR)/$(PROJECT)
+
+# ------- parallel debug: build the main project ------
+.PHONY: parallel-d
+parallel-d: CFLAGS += -DPARALLELISM=1 -g
+parallel-d: $(BINDIR)/$(PROJECT)
+
+# ------- nctcog: build the main project ------
+.PHONY: nctcog
+nctcog: CFLAGS += -DNCTCOG_ENABLED=1
+nctcog: $(BINDIR)/$(PROJECT)
+
+# ------- nctcog-par: build the main project ------
+.PHONY: nctcog-par
+nctcog-par: CFLAGS += -DPARALLELISM=1 -DNCTCOG_ENABLED=1
+nctcog-par: $(BINDIR)/$(PROJECT)
+
 # ---------- release target: extra optimization ----
 
 .PHONY: release
@@ -68,6 +88,7 @@ $(OBJDIR)/%.o: $(TESTDIR)/%.c
 # ---------- clean/clear
 .PHONY: clean clear
 clean clear:
+	@$(RM) -r .depend
 	@$(RM) $(OBJECTS)
 
 .PHONY: remove

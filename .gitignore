@@ -1,0 +1,13 @@
+.idea/
+obj/
+.depend/
+bin/
+cmake-build-debug/
+full_log.txt
+net/Sydney*
+results/
+flows.txt
+matrix0.bin
+.DS_Store
+batch*
+matrix*

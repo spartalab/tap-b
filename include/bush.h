@@ -40,6 +40,7 @@
 #include "utils.h"
 
 #define NEW_LINK -1
+//#define PARALLELISM 1
 
 /*
  * merge_type: Extra data for merge nodes
@@ -112,11 +113,20 @@ typedef struct bushes_type {
    double   *SPcost; /* [node] */
    double   *flow; /* [link] */
    double   *nodeFlow; /* [node] */
+   bool     *updateBush; /* [origin]... process or skip this origin? */
    int      **bushOrder; /* [origin][nodeOrder] */
    int      **pred; /* [origin][node] */
    int      *lastMerge; /* [origin] */
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
+   double   **LPcost_par; /* [thread][node] */
+   double   **SPcost_par; /* [thread][node] */
+   double   **flow_par; /* [thread][node] */
+   double   **nodeFlow_par; /* [thread][node] */
+   double   **nodeFlowshift_par; /* [origin][shift] */
+
+
+   network_type *network; /* Points back to the corresponding network */
 } bushes_type;
 
 /*
@@ -133,7 +143,7 @@ typedef struct bushes_type {
  *  maxTime -- algorithm terminates after this many seconds of run time.
  *             Default value is INFINITY (i.e., no termination based on time.)
  *  maxIterations -- algorithm stops after this many iterations.  Default value
- *                   is LONG_MAX (i.e., no termination based on iterartions.)
+ *                   is int_MAX (i.e., no termination based on iterartions.)
  *
  * Algorithm parameters:
  *  innerIterations -- How many times to shift flow on bushes before updating
@@ -188,42 +198,109 @@ typedef struct bushes_type {
  *                cost).  If you switch to one of these methods, be sure that
  *                link costs are eventually updated somewhere.
  *
+ *  storeMatrices -- boolean.  If TRUE, OD matrices when read are converted
+ *                       to binary form (see matrixStem below).  Otherwise,
+ *                       the entire OD matrix is retained in memory.  Default
+ *                       behavior is FALSE.  Binary matrices are always used if
+ *                       if numBatches > 1 (overriding this parameter).
+ *  storeBushes -- Force writing of intermediate bushes at each iteration.  
+ *                 Default behavior is FALSE.  Intermediate bushes are always
+ *                 written if numBatches > 1 (overriding this parameter).
+ *  reuseFirstBush -- Faster initialization by copying first bush structure for
+ *                    other batches.  This only works if the origins in each
+ *                    batch coincide (e.g., if each batch represents one user
+ *                    class.  Default behavior is FALSE.  Be careful with using
+ *                    this setting, the code does not (yet) check that the
+ *                    origins actually do coincide, and strange behavior will
+ *                    result if they do not.  
+ *
+ *
+ *  includeGapTime -- include gap calculation time in run times?  Default TRUE
+ *
+ *  batchStem -- prefix for files storing batches of bushes in binary format.
+ *               Default = "batch", so files are batch0.bin, batch1.bin, etc.
+ *  matrixStem -- prefix for files storing binary OD matrices for each batch.
+ *                Default = "matrix", so files are matrix0.bin, etc.
+ *  flowsFile -- name for file to write flows, default is "flows.txt"
  */
 typedef struct algorithmBParameters_type{
    gap_type gapFunction;
    double   convergenceGap;
    double   maxTime;
-   long     maxIterations;
+   int      maxIterations;
    int      innerIterations;
    int      shiftReps;
    bool     rescanAfterShift;
+   double   demandMultiplier;
    double   thresholdGap;
+   double   thresholdAEC;
    double   minCostDifference;
    double   minLinkFlowShift;
    double   minLinkFlow;
    double   minDerivative;
    double   newtonStep;
    int      numNewtonShifts;
+   int      numFlowShifts; /* Counter to measure algorithm performance */
+   bool     warmStart;
+   bool     calculateBeckmann;
    queueDiscipline SPQueueDiscipline;
    void     (*createInitialBush)(int, network_type *, bushes_type *,
                                  struct algorithmBParameters_type *);
    void     (*topologicalOrder)(int, network_type *, bushes_type *,
                                 struct algorithmBParameters_type *);
    void     (*linkShiftB)(int, double, network_type *);
+
+#if PARALLELISM
+   int numThreads;
+#endif
+   bool     storeMatrices;
+   bool     storeBushes;
+   bool     reuseFirstBush;
+   bool     includeGapTime;
+   char     batchStem[STRING_SIZE-20]; /* Leave space for index */
+   char     matrixStem[STRING_SIZE-20];
+   char     flowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
+typedef enum scan_type {
+    LONGEST_BUSH_PATH,
+    LONGEST_USED_PATH,
+    LONGEST_USED_OR_SP,
+    NO_LONGEST_PATH
+} scan_type;
 
 /* Master routine and parameters */
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters);
 algorithmBParameters_type initializeAlgorithmBParameters();
 
 /* Main Algorithm B helper functions */
+void initializeAlgorithmB(network_type *network, bushes_type **bushes,
+                          algorithmBParameters_type *parameters);
+void updateBatchBushes(network_type *network, bushes_type *bushes,
+                       int *lastClass, algorithmBParameters_type *parameters);
+void updateBatchFlows(network_type *network, bushes_type *bushes,
+                      int *lastClass, algorithmBParameters_type *parameters);
+void loadBatch(int batch, network_type *network, bushes_type **bushes,
+               algorithmBParameters_type *parameters);
+void storeBatch(int batch, network_type *network, bushes_type *bushes,
+               algorithmBParameters_type *parameters);                                         
 void initializeBushesB(network_type *network, bushes_type *bushes,
                        struct algorithmBParameters_type *parameters);
 void updateBushB(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters);
-void updateFlowsB(int origin, network_type *network, bushes_type *bushes,
+bool updateFlowsB(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters);
+
+/* Custom gap routines using bushes */
+double bushSPTT(network_type *network, bushes_type *bushes, 
+              algorithmBParameters_type *parameters);
+double bushTSTT(network_type *network, bushes_type *bushes);
+double bushRelativeGap(network_type *network, bushes_type *bushes,
+              algorithmBParameters_type *parameters);
+double bushAEC(network_type *network, bushes_type *bushes,
+              algorithmBParameters_type *parameters);
+double bushMEC(network_type *network, bushes_type *bushes,
+              algorithmBParameters_type *parameters);
 
 /* Basic bush manipulations */
 bushes_type *createBushes(network_type *network);
@@ -240,21 +317,26 @@ void mergeFirstTopologicalOrder(int origin, network_type *network,
                                 bushes_type *bushes,
                                 algorithmBParameters_type *parameters);
 void scanBushes(int origin, network_type *network, bushes_type *bushes,
-                algorithmBParameters_type *parameters, bool longestUsed);
+                algorithmBParameters_type *parameters, scan_type LPrule);
 void reconstructMerges(int origin, network_type *network, bushes_type *bushes);
 void findDivergenceNodes(int origin, network_type *network,
                          bushes_type *bushes);
 bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters);
+
 void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters);
+
 void calculateBushFlows(int origin, network_type *network,
                         bushes_type *bushes);
 void pushBackFlowSimple(int j, int origin, network_type *network,
                         bushes_type *bushes);
+
 void pushBackFlowMerge(merge_type *merge, network_type *network,
                        bushes_type *bushes);
+
 void rectifyMerge(int j, merge_type *merge, bushes_type *bushes);
+void rectifyBushFlows(int origin,network_type *network,bushes_type *bushes);
 void newtonFlowShift(int j, merge_type *merge, int origin,
                      network_type *network, bushes_type *bushes,
                      algorithmBParameters_type *parameters);
@@ -285,7 +367,7 @@ typedef struct mergeDLLelt_s {
 typedef struct {
     mergeDLLelt *head;
     mergeDLLelt *tail;
-    long size;
+    int size;
 } mergeDLL;
 
 mergeDLL *createMergeDLL();
@@ -295,4 +377,9 @@ void deleteMergeDLL(mergeDLL *list);
 void deleteMergeDLLelt(mergeDLL *list, mergeDLLelt *elt);
 void displayMergeDLL(int minVerbosity, mergeDLL *list);
 
+/**** Batching ****/
+void writeBushes(network_type *network, bushes_type *bushes, char *filename);
+void readBushes(network_type *network, bushes_type **bushes, char *filename);
+void readBinaryMatrix(network_type *network,
+                      algorithmBParameters_type *parameters);
 #endif

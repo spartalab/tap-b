@@ -20,6 +20,20 @@ void SWAP(void* a, void* b, int size) {
 }
 
 /*
+Wrapper for fopen 
+*/
+FILE *openFile(const char *filename, const char *access) {
+    FILE *handle = fopen(filename, access);
+    if (handle == NULL) fatalError("File %s not found", filename);
+    return handle;
+}
+
+void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    unsigned int result = fread(ptr, size, nmemb, stream);
+    if (result != nmemb) fatalError("Error reading from file. Expecting %d bytes, read %d bytes\n", nmemb, result);
+}
+
+/*
 updateElapsedTime helps with timing, adding an increment to elapsedTime.  Note
 that this function does not reset startTime (in order to allow for calculations
 to be selectively excluded from timing, e.g. when generating logs or debug
@@ -102,11 +116,13 @@ first.
 void warning(int minVerbosity, const char *format, ...) {
     va_list message;
     if (verbosity < minVerbosity) return;
-    va_start(message, format);
-    printf("Warning: ");
-    vprintf(format, message);
-    va_end(message);
-    fflush(stdout);
+    if (verbosity < DEBUG) {
+        va_start(message, format);
+        printf("Warning: ");
+        vprintf(format, message);
+        va_end(message);
+        fflush(stdout);
+    }
     #ifdef DEBUG_MODE
         va_start(message, format);
         fprintf(debugFile, "Warning: ");
