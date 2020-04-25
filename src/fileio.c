@@ -30,7 +30,6 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     network->nodes = newVector(network->numNodes, node_type);
     network->arcs = newVector(network->numArcs, arc_type);
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
-    network->arc_mutattrs = newVector(network->numArcs, pthread_mutexattr_t);
 
     if (tripFileName == NULL) { /* Warm-start = compact matrix */
         network->demand = newMatrix(network->numZones, network->numZones,
@@ -558,7 +557,6 @@ void readOBANetwork(network_type *network, char *linkFileName,
     network->tollFactor = newVector(network->numClasses, double);
     network->distanceFactor = newVector(network->numClasses, double);
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
-    network->arc_mutattrs = newVector(network->numArcs, pthread_mutexattr_t);
 
     /* Default batching for network reading; can adjust later */
     network->batchSize = network->numOrigins;

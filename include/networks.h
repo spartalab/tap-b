@@ -158,7 +158,6 @@ typedef struct {
     node_type*  nodes;
     arc_type*   arcs;
     pthread_mutex_t* arc_muts;
-    pthread_mutexattr_t* arc_mutattrs;
     double**    demand;
     int    numNodes;
     int    numArcs;
