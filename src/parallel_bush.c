@@ -456,40 +456,40 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
 
 
     c = origin2class(network, origin);
-    bool* links = newVector(network->numArcs, bool);
-    for (int k = 0; k < network->numArcs; ++k) {
-        links[k] = FALSE;
-    }
-    i = j;
-    while (i != merge->divergenceNode) {
-        if (isMergeNode(origin, i, bushes) == FALSE) {
-            hi = bushes->pred[origin][i];
-        } else {
-            m = pred2merge(bushes->pred[origin][i]);
-            segmentMerge = bushes->merges[origin][m];
-            hi = segmentMerge->approach[segmentMerge->LPlink];
-        }
-        links[hi] = TRUE;
-        i = network->arcs[hi].tail;
-    }
-    i = j;
-    while (i != merge->divergenceNode) {
-        if (isMergeNode(origin, i, bushes) == FALSE) {
-            hi = bushes->pred[origin][i];
-        } else {
-            m = pred2merge(bushes->pred[origin][i]);
-            segmentMerge = bushes->merges[origin][m];
-            hi = segmentMerge->approach[segmentMerge->SPlink];
-        }
-        links[hi] = TRUE;
-        i = network->arcs[hi].tail;
-    }
-
-    for (int k = 0; k < network->numArcs; ++k) {
-        if(links[k] == TRUE) {
-            pthread_mutex_lock(&network->arc_muts[k]);
-        }
-    }
+//    bool* links = newVector(network->numArcs, bool);
+//    for (int k = 0; k < network->numArcs; ++k) {
+//        links[k] = FALSE;
+//    }
+//    i = j;
+//    while (i != merge->divergenceNode) {
+//        if (isMergeNode(origin, i, bushes) == FALSE) {
+//            hi = bushes->pred[origin][i];
+//        } else {
+//            m = pred2merge(bushes->pred[origin][i]);
+//            segmentMerge = bushes->merges[origin][m];
+//            hi = segmentMerge->approach[segmentMerge->LPlink];
+//        }
+//        links[hi] = TRUE;
+//        i = network->arcs[hi].tail;
+//    }
+//    i = j;
+//    while (i != merge->divergenceNode) {
+//        if (isMergeNode(origin, i, bushes) == FALSE) {
+//            hi = bushes->pred[origin][i];
+//        } else {
+//            m = pred2merge(bushes->pred[origin][i]);
+//            segmentMerge = bushes->merges[origin][m];
+//            hi = segmentMerge->approach[segmentMerge->SPlink];
+//        }
+//        links[hi] = TRUE;
+//        i = network->arcs[hi].tail;
+//    }
+//
+//    for (int k = 0; k < network->numArcs; ++k) {
+//        if(links[k] == TRUE) {
+//            pthread_mutex_lock(&network->arc_muts[k]);
+//        }
+//    }
 
     /* Calculate information for longest path segment */
     i = j;
@@ -535,41 +535,149 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
     shift = min(shift, flow1);
     shift = max(shift, -flow2);
 
+//    if(shift < 0) {
+//        displayMessage(FULL_NOTIFICATIONS, "Fatal Error %f\n", shift);
+//    }
     /* Now apply shift */
-    i = j;
-    while (i != merge->divergenceNode) {
-        if (isMergeNode(origin, i, bushes) == FALSE) {
-            hi = bushes->pred[origin][i];
-        } else {
-            m = pred2merge(bushes->pred[origin][i]);
-            segmentMerge = bushes->merges[origin][m];
-            hi = segmentMerge->approach[segmentMerge->LPlink];
-            segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
+    if (shift > 0) {
+        i = j;
+        while (i != merge->divergenceNode) {
+            if (isMergeNode(origin, i, bushes) == FALSE) {
+                hi = bushes->pred[origin][i];
+            } else {
+                m = pred2merge(bushes->pred[origin][i]);
+                segmentMerge = bushes->merges[origin][m];
+                hi = segmentMerge->approach[segmentMerge->LPlink];
+                segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
+            }
+            if (!exactCostUpdate_par(hi, -shift, network, c)) {
+//                displayMessage(FULL_NOTIFICATIONS, "Exact update failed\n");
+                shift = -shift;
+                while (i != j) {
+                    if (isMergeNode(origin, i, bushes) == FALSE) {
+                        hi = bushes->pred[origin][i];
+                    } else {
+                        m = pred2merge(bushes->pred[origin][i]);
+                        segmentMerge = bushes->merges[origin][m];
+                        hi = segmentMerge->approach[segmentMerge->SPlink];
+                        segmentMerge->approachFlow[segmentMerge->SPlink] -= shift;
+                    }
+                    exactCostUpdate_par(hi, shift, network, c);
+                    bushes->flow_par[origin][hi] += shift;
+                    i = network->arcs[hi].head;
+                }
+                shift = -shift / 2;
+                continue;
+            }
+//        exactCostUpdate_par(hi, -shift, network, c);
+            bushes->flow_par[origin][hi] -= shift;
+            i = network->arcs[hi].tail;
         }
-        exactCostUpdate_par(hi, -shift, network, c);
-        bushes->flow_par[origin][hi] -= shift;
-        i = network->arcs[hi].tail;
-    }
-    i = j;
-    while (i != merge->divergenceNode) {
-        if (isMergeNode(origin, i, bushes) == FALSE) {
-            hi = bushes->pred[origin][i];
-        } else {
-            m = pred2merge(bushes->pred[origin][i]);
-            segmentMerge = bushes->merges[origin][m];
-            hi = segmentMerge->approach[segmentMerge->SPlink];
-            segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
+        i = j;
+        while (i != merge->divergenceNode) {
+            if (isMergeNode(origin, i, bushes) == FALSE) {
+                hi = bushes->pred[origin][i];
+            } else {
+                m = pred2merge(bushes->pred[origin][i]);
+                segmentMerge = bushes->merges[origin][m];
+                hi = segmentMerge->approach[segmentMerge->SPlink];
+                segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
+            }
+            if (!exactCostUpdate_par(hi, shift, network, c)) {
+//            displayMessage(FULL_NOTIFICATIONS, "Exact2 update failed\n");
+                shift = -shift;
+                while (i != j) {
+                    if (isMergeNode(origin, i, bushes) == FALSE) {
+                        hi = bushes->pred[origin][i];
+                    } else {
+                        m = pred2merge(bushes->pred[origin][i]);
+                        segmentMerge = bushes->merges[origin][m];
+                        hi = segmentMerge->approach[segmentMerge->SPlink];
+                        segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
+                    }
+                    exactCostUpdate_par(hi, shift, network, c);
+                    bushes->flow_par[origin][hi] += shift;
+                    i = network->arcs[hi].head;
+                }
+                continue;
+            }
+//        exactCostUpdate_par(hi, shift, network, c);
+            bushes->flow_par[origin][hi] += shift;
+            i = network->arcs[hi].tail;
         }
-        exactCostUpdate_par(hi, shift, network, c);
-        bushes->flow_par[origin][hi] += shift;
-        i = network->arcs[hi].tail;
-    }
-    for (int k = 0; k < network->numArcs; ++k) {
-        if(links[k] == TRUE) {
-            pthread_mutex_unlock(&network->arc_muts[k]);
+    } else {
+        i = j;
+        while (i != merge->divergenceNode) {
+            if (isMergeNode(origin, i, bushes) == FALSE) {
+                hi = bushes->pred[origin][i];
+            } else {
+                m = pred2merge(bushes->pred[origin][i]);
+                segmentMerge = bushes->merges[origin][m];
+                hi = segmentMerge->approach[segmentMerge->SPlink];
+                segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
+            }
+            if (!exactCostUpdate_par(hi, shift, network, c)) {
+//            displayMessage(FULL_NOTIFICATIONS, "Exact2 update failed\n");
+                shift = -shift;
+                while (i != j) {
+                    if (isMergeNode(origin, i, bushes) == FALSE) {
+                        hi = bushes->pred[origin][i];
+                    } else {
+                        m = pred2merge(bushes->pred[origin][i]);
+                        segmentMerge = bushes->merges[origin][m];
+                        hi = segmentMerge->approach[segmentMerge->SPlink];
+                        segmentMerge->approachFlow[segmentMerge->SPlink] += shift;
+                    }
+                    exactCostUpdate_par(hi, shift, network, c);
+                    bushes->flow_par[origin][hi] += shift;
+                    i = network->arcs[hi].head;
+                }
+                shift /= 2;
+                continue;
+            }
+//        exactCostUpdate_par(hi, shift, network, c);
+            bushes->flow_par[origin][hi] += shift;
+            i = network->arcs[hi].tail;
+        }
+        i = j;
+        while (i != merge->divergenceNode) {
+            if (isMergeNode(origin, i, bushes) == FALSE) {
+                hi = bushes->pred[origin][i];
+            } else {
+                m = pred2merge(bushes->pred[origin][i]);
+                segmentMerge = bushes->merges[origin][m];
+                hi = segmentMerge->approach[segmentMerge->LPlink];
+                segmentMerge->approachFlow[segmentMerge->LPlink] -= shift;
+            }
+            if (!exactCostUpdate_par(hi, -shift, network, c)) {
+//                displayMessage(FULL_NOTIFICATIONS, "Exact update failed\n");
+                shift = -shift;
+                while (i != j) {
+                    if (isMergeNode(origin, i, bushes) == FALSE) {
+                        hi = bushes->pred[origin][i];
+                    } else {
+                        m = pred2merge(bushes->pred[origin][i]);
+                        segmentMerge = bushes->merges[origin][m];
+                        hi = segmentMerge->approach[segmentMerge->SPlink];
+                        segmentMerge->approachFlow[segmentMerge->SPlink] -= shift;
+                    }
+                    exactCostUpdate_par(hi, shift, network, c);
+                    bushes->flow_par[origin][hi] += shift;
+                    i = network->arcs[hi].head;
+                }
+                continue;
+            }
+//        exactCostUpdate_par(hi, -shift, network, c);
+            bushes->flow_par[origin][hi] -= shift;
+            i = network->arcs[hi].tail;
         }
     }
-    deleteVector(links);
+//    for (int k = 0; k < network->numArcs; ++k) {
+//        if(links[k] == TRUE) {
+//            pthread_mutex_unlock(&network->arc_muts[k]);
+//        }
+//    }
+//    deleteVector(links);
 }
 
 /*
@@ -646,11 +754,19 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
     deleteVector(flowCheck);
 }
 
-void exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
+bool exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
+    pthread_mutex_lock(&network->arc_muts[ij]);
+    if (network->arcs[ij].flow + shift < 0) {
+//        displayMessage(FULL_NOTIFICATIONS, "Exact update failed %f %f\n",network->arcs[ij].flow + shift, shift );
+        pthread_mutex_unlock(&network->arc_muts[ij]);
+        return FALSE;
+    }
     network->arcs[ij].classFlow[class] += shift;
     network->arcs[ij].flow += shift;
     network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    pthread_mutex_unlock(&network->arc_muts[ij]);
+    return TRUE;
 }
 
 void classUpdate_par(int hi, int class, double shift,  network_type *network) {

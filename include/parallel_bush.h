@@ -48,7 +48,7 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
                          algorithmBParameters_type *parameters);
 
 /* Parallelized counterpart of utility functions */
-void exactCostUpdate_par(int ij, double shift, network_type *network, int class);
+bool exactCostUpdate_par(int ij, double shift, network_type *network, int class);
 void classUpdate_par(int hi, int class, double shift,  network_type *network);
 void checkFlows_par(network_type *network, bushes_type *bushes, int t_id);
 
