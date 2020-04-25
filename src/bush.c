@@ -109,10 +109,13 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-
+#endif
             batchGap = bushRelativeGap(network, bushes, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
+#endif
             gap += batchGap;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
