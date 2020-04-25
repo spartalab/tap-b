@@ -493,22 +493,21 @@ void genericTopologicalOrder(int origin, network_type *network,
 //    displayMessage(FULL_NOTIFICATIONS, "Making topo order q\n");
     queue_type LIST = createQueue(network->numNodes, network->numNodes);
     next = 0;
-    for (i = 0; i < network->numNodes; i++) {
+    for (i = 0; i < network->numNodes; i++)
         if (indegree[i] == 0)
             enQueue(&LIST, i);
-        while (LIST.curelts > 0) {
-            k = deQueue(&LIST);
-            bushes->bushOrder[origin][next] = k;
-            if (isMergeNode(origin, k, bushes) == TRUE) highestMerge = next;
-            next++;
-            for (curArc = network->nodes[k].forwardStar.head; curArc != NULL;
-                 curArc = curArc->next) {
-                if (isInBush(origin, ptr2arc(network, curArc->arc), network,
-                             bushes) == TRUE) {
-                    j = curArc->arc->head;
-                    indegree[j]--;
-                    if (indegree[j] == 0) enQueue(&LIST, j);
-                }
+    while (LIST.curelts > 0) {
+        k = deQueue(&LIST);
+        bushes->bushOrder[origin][next] = k;
+        if (isMergeNode(origin, k, bushes) == TRUE) highestMerge = next;
+        next++;
+        for (curArc = network->nodes[k].forwardStar.head; curArc != NULL;
+             curArc = curArc->next) {
+            if (isInBush(origin, ptr2arc(network, curArc->arc), network,
+                         bushes) == TRUE) {
+                j = curArc->arc->head;
+                indegree[j]--;
+                if (indegree[j] == 0) enQueue(&LIST, j);
             }
         }
     }
