@@ -295,24 +295,28 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     ssize_t n;
     ssize_t off = 0;
     int r, s;
+    float* temp;
 //    char initial[6];
     // char *buffer = (char *) calloc(48, sizeof(char));
-    float buffer[12];
+    int totalSize = 12*100 * sizeof(float);
+    float buffer[12 * 100];
     displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     int count = 0;
+    bool done = FALSE;
     do {
-        n = read(STDIN_FILENO, ((char*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
-        off += n;
-        if (n < 0) {
-            fatalError("Issue reading from stdin");
-        } else if (strcmp((char *) buffer, "Sto") == 0) {
-            break;
-        } else if (off != 48){
-            continue;
+        off = 0;
+        while(off != totalSize) {
+            n = read(STDIN_FILENO, ((char *) buffer) + off, totalSize - off);  /* Break in middle when out of lines */
+            off += n;
+            if (n < 0) {
+                fatalError("Issue reading from stdin");
+            } else if (strcmp(((char *) buffer) + off - 3, "Sto") == 0) {
+                done = TRUE;
+                break;
+            }
         }
 //        displayMessage(FULL_NOTIFICATIONS, "read the following bytes %d\n", off);
-        off = 0;
 //        displayMessage(FULL_NOTIFICATIONS, "Printing before initial conversion\n");
 //        displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %f, SOLO_90: %f, HOV_35: %f, HOV_90: %f, SOLO_17: %f, SOLO_45: %f, HOV_17: %f, HOV_45: %f, MED_TRUCKS: %f, HVY_TRUCKS: %f\n",
 //                       ((int *)buffer)[0], ((int *) buffer)[1],
@@ -321,20 +325,26 @@ void streamNCTCOGTrips(network_type *network, int *table) {
 //                       ((float *) buffer)[6], ((float *) buffer)[7],
 //                       ((float *) buffer)[8], ((float *) buffer)[9],
 //                       ((float *) buffer)[10], ((float *) buffer)[11]);
-        count += 1;
-        r = convert(((int *)buffer)[0], table, NCTCOG_MAX_NODE_ID);
-        s = convert(((int *)buffer)[1], table, NCTCOG_MAX_NODE_ID);
-        assignStreamedDemand(network, r, s, SOLO_35, ((float *) buffer)[2]);
-        assignStreamedDemand(network, r, s, SOLO_90, ((float *) buffer)[3]);
-        assignStreamedDemand(network, r, s, HOV_35, ((float *) buffer)[4]);
-        assignStreamedDemand(network, r, s, HOV_90, ((float *) buffer)[5]);
-        assignStreamedDemand(network, r, s, SOLO_17, ((float *) buffer)[6]);
-        assignStreamedDemand(network, r, s, SOLO_45, ((float *) buffer)[7]);
-        assignStreamedDemand(network, r, s, HOV_17, ((float *) buffer)[8]);
-        assignStreamedDemand(network, r, s, HOV_45, ((float *) buffer)[9]);
-        assignStreamedDemand(network, r, s, MED_TRUCKS, ((float *) buffer)[10]);
-        assignStreamedDemand(network, r, s, HVY_TRUCKS, ((float *) buffer)[11]);
-        } while(1);
+        temp = buffer;
+        while(off > 3) {
+            count += 1;
+            r = convert(((int *) temp)[0], table, NCTCOG_MAX_NODE_ID);
+            s = convert(((int *) temp)[1], table, NCTCOG_MAX_NODE_ID);
+            assignStreamedDemand(network, r, s, SOLO_35, ((float *) temp)[2]);
+            assignStreamedDemand(network, r, s, SOLO_90, ((float *) temp)[3]);
+            assignStreamedDemand(network, r, s, HOV_35, ((float *) temp)[4]);
+            assignStreamedDemand(network, r, s, HOV_90, ((float *) temp)[5]);
+            assignStreamedDemand(network, r, s, SOLO_17, ((float *) temp)[6]);
+            assignStreamedDemand(network, r, s, SOLO_45, ((float *) temp)[7]);
+            assignStreamedDemand(network, r, s, HOV_17, ((float *) temp)[8]);
+            assignStreamedDemand(network, r, s, HOV_45, ((float *) temp)[9]);
+            assignStreamedDemand(network, r, s, MED_TRUCKS, ((float *) temp)[10]);
+            assignStreamedDemand(network, r, s, HVY_TRUCKS, ((float *) temp)[11]);
+            temp += 12;
+            off -= 48;
+        }
+        if(done) break;
+    } while(1);
     displayMessage(FULL_NOTIFICATIONS, "Finished reading %d OD pairs from buffer\n", count);
 }
 
