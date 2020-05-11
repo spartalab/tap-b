@@ -12,7 +12,6 @@
 #include <math.h>
 #include <string.h>
 #include "datastructures.h"
-#include <pthread.h>
 
 #define NO_PATH_EXISTS -1
 #define ARTIFICIAL 99999 /* Value used for costs, etc. on artificial links
@@ -157,7 +156,6 @@ typedef struct {
 typedef struct {
     node_type*  nodes;
     arc_type*   arcs;
-    pthread_mutex_t* arc_muts;
     double**    demand;
     int    numNodes;
     int    numArcs;
@@ -179,15 +177,11 @@ typedef struct {
 #define END_OF_ORIGINS_SENTINEL -2
 
 
-void BellmanFord(int origin, double *label, int *backnode,
+void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
                  network_type *network, queueDiscipline q);
-void arcBellmanFord(int origin, double *label, arc_type **backarc,
-                    network_type *network, queueDiscipline q);
-void arcIndexBellmanFord(int origin, double *label, int *backarc,
-                         network_type *network, queueDiscipline q);
 void BellmanFord_NoLabel(int origin, double *label, network_type *network,
                          queueDiscipline q, double *labelGuess, int *order);
-void heapDijkstra(int origin, double *label, int *backnode,
+void heapDijkstra(int origin, double *label, arc_type **backarc,
                   network_type *network);
 
 
