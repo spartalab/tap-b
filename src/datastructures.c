@@ -4,8 +4,6 @@
 This file contains implementation for commonly-used data structures, including
 singly and doubly linked lists, binary heaps, queues, as well as memory
 allocation and deallocation.
-
-You probably don't need to dig into this unless you are particularly curious.
 */
 
 /******************
@@ -143,7 +141,7 @@ void displayDoublyLinkedList(int minVerbosity, doublyLinkedList *list) {
  ** Queues **
  ************/
 
-/**** Standard queue with memory ****/
+/**** Standard queue with memory, implemented as a "circular" array ****/
 
 queue_type createQueue(int size, long eltsize) {
     int i;
@@ -164,6 +162,10 @@ queue_type createQueue(int size, long eltsize) {
 void deleteQueue(queue_type *queue) {
     deleteVector(queue->node);
     deleteVector(queue->history);
+}
+
+int queueSize(queue_type *queue) {
+    return queue->curelts;
 }
 
 void enQueue(queue_type *queue, int elt) {
@@ -218,25 +220,70 @@ void displayQueue(int minVerbosity, queue_type *queue) {
 /******************
  ** Binary heaps **
  ******************/
+ 
+/* Implemented using an array; the children of element in position i are in
+   positions 2i and 2i + 1.
+   
+   The heap struct has the following members:
+    -node is the array storing the elements of the tree; anticipating that 
+     these will correspond to IDs of physical nodes in a transportation network,
+     these are assumed to be integers in the range 0 ... eltsize (the second
+     argument to the function creating the heap)
+     
+    -nodeNDX is a "reverse" lookup, returning the position in the node array
+     for a given physical node ID.  The macro constant NOT_IN_HEAP is used if
+     that array is not currently part of the heap.
+     
+    -last indicates the current size of the tree, pointing to the highest
+     index in the node array corresponding to a tree node.  If the tree is
+     empty, last is set to NOT_IN_HEAP.
+     
+    -valueFn stores the value associated with each node in the tree (e.g.,
+     the cost label in a shortest path algorithm.)     
+     
+    -maxsize is the greatest number of elements that can exist in the tree
+     (the amount of memory allocated for the node array)
+     
+    -maxelts is the greatest value that any possible node ID can take
+    
+    -succNDX and predNDX store the indices of each tree element's predecessor
+     and successor, to reduce computation time later on.
+*/
 
 heap_type *createHeap(int heapsize, int eltsize) {
 
     int i;
     declareScalar(heap_type, newHeap);
     newHeap->node = newVector(heapsize, int);
-    newHeap->nodeNDX = newVector(eltsize, int);
+    newHeap->nodeNDX = newVector(eltsize + 1, int);
     newHeap->last = NOT_IN_HEAP;
     newHeap->valueFn = newVector(eltsize, double);
     newHeap->maxsize = heapsize;
     newHeap->maxelts = eltsize;
+    newHeap->succNDX = newVector(heapsize, int);
+    newHeap->predNDX = newVector(heapsize, int);
 
-    for(i = 0; i < eltsize; i++) newHeap->nodeNDX[i] = NOT_IN_HEAP;
+    for(i = 0; i <= eltsize; i++) {
+        newHeap->nodeNDX[i] = NOT_IN_HEAP;
+    }
+    
+    for(i = 0; i < heapsize / 2; i++) {
+        newHeap->succNDX[i] = heapSucc(i);
+        newHeap->predNDX[i] = heapPred(i);
+    }
+    for (; i < heapsize; i++) {
+        newHeap->succNDX[i] = NOT_IN_HEAP;
+        newHeap->predNDX[i] = heapPred(i);    
+    }
+    newHeap->predNDX[0] = NOT_IN_HEAP;
+    
     return newHeap;
 }
 
-void insertHeap(heap_type *heap, int key, int value) {
+void insertHeap(heap_type *heap, int key, double value) {
     int elt = ++(heap->last);
-    if (heap->last >= heap->maxsize) fatalError("Heap not big enough.");
+    /* if (heap->last >= heap->maxsize) fatalError("Heap not big enough.");
+    if (key < 0 || key > heap->maxelts) fatalError("Key out of range."); */
     heap->node[heap->last] = key;
     heap->nodeNDX[key] = heap->last;
     heap->valueFn[key] = value;
@@ -248,49 +295,69 @@ int findMinHeap(heap_type *heap) {
 }
 
 void deleteMinHeap(heap_type *heap) {
-    if (heap->last < 0) fatalError("Negative heap size!");
+    //if (heap->last < 0) fatalError("Negative heap size!");
     heap->nodeNDX[heap->node[heap->last]] = 0;
     heap->nodeNDX[heap->node[0]] = NOT_IN_HEAP;
-    if (heap->last > 0) swap(heap->node[0], heap->node[heap->last]);
+    if (heap->last > 0) { // swap(heap->node[0], heap->node[heap->last]);
+        heap->tmp = heap->node[0];
+        heap->node[0] = heap->node[heap->last];
+        heap->node[heap->last] = heap->tmp;    
+    }
     heap->last--;
-    if (heap->last >= 0) siftDown(heap, 1);
+    if (heap->last >= 0) siftDown(heap, 0);
 }
 
 void deleteHeap(heap_type *heap) {
     deleteVector(heap->node);
     deleteVector(heap->nodeNDX);
     deleteVector(heap->valueFn);
+    deleteVector(heap->succNDX);
+    deleteVector(heap->predNDX);
     deleteScalar(heap);
 }
 
-void decreaseKey(heap_type *heap, int elt, int value) {
+void decreaseKey(heap_type *heap, int elt, double value) {
     heap->valueFn[heap->node[heap->nodeNDX[elt]]] = value;
     siftUp(heap, heap->nodeNDX[elt]);
 }
 
-void increaseKey(heap_type *heap, int elt, int value) {
+void increaseKey(heap_type *heap, int elt, double value) {
     heap->valueFn[heap->node[heap->nodeNDX[elt]]] = value;
     siftDown(heap, heap->nodeNDX[elt]);
 }
 
 void siftUp(heap_type *heap, int elt) {
     while (elt > 0 && heap->valueFn[heap->node[elt]]
-                      < heap->valueFn[heap->node[heapPred(elt)]]) {
-        swap(heap->nodeNDX[heap->node[elt]],
-             heap->nodeNDX[heap->node[heapPred(elt)]]);
-        swap(heap->node[elt], heap->node[heapPred(elt)]);
-        elt = heapPred(elt);
+                      < heap->valueFn[heap->node[heap->predNDX[elt]]]) {
+        //swap(heap->nodeNDX[heap->node[elt]],
+        //     heap->nodeNDX[heap->node[heap->predNDX[elt]]]);
+        heap->tmp = heap->nodeNDX[heap->node[elt]];
+        heap->nodeNDX[heap->node[elt]] =
+                heap->nodeNDX[heap->node[heap->predNDX[elt]]];
+        heap->nodeNDX[heap->node[heap->predNDX[elt]]] = heap->tmp;          
+        //swap(heap->node[elt], heap->node[heap->predNDX[elt]]);
+        heap->tmp = heap->node[elt];
+        heap->node[elt] = heap->node[heap->predNDX[elt]];
+        heap->node[heap->predNDX[elt]] = heap->tmp;
+        
+        elt = heap->predNDX[elt];
     }
 }
 
 void siftDown(heap_type *heap, int elt) {
     int tmp;
-    while (heapSucc(elt) <= heap->last
+    while (heap->succNDX[elt] <= heap->last
            && heap->valueFn[heap->node[elt]]
                 > heap->valueFn[heap->node[minChild(heap, elt)]]) {
         tmp = minChild(heap, elt);
-        swap(heap->nodeNDX[heap->node[elt]], heap->nodeNDX[heap->node[tmp]]);
-        swap(heap->node[elt], heap->node[tmp]);
+        //swap(heap->nodeNDX[heap->node[elt]], heap->nodeNDX[heap->node[tmp]]);
+        heap->tmp = heap->nodeNDX[heap->node[elt]];
+        heap->nodeNDX[heap->node[elt]] = heap->nodeNDX[heap->node[tmp]];
+        heap->nodeNDX[heap->node[tmp]] = heap->tmp;
+        //swap(heap->node[elt], heap->node[tmp]);
+        heap->tmp = heap->node[elt];
+        heap->node[elt] = heap->node[tmp];
+        heap->node[tmp] = heap->tmp;
         elt = tmp;
     }
 }
@@ -304,17 +371,17 @@ int heapSucc(int elt) {
 }
 
 int minChild(heap_type *heap, int elt) {
-    if (heapSucc(elt) == heap->last)
+    if (heap->succNDX[elt] == heap->last)
         return heap->last;
-    if (heap->valueFn[heap->node[heapSucc(elt)]]
-            <= heap->valueFn[heap->node[heapSucc(elt) + 1]])
-        return heapSucc(elt);
-    return heapSucc(elt) + 1;
+    if (heap->valueFn[heap->node[heap->succNDX[elt]]]
+            <= heap->valueFn[heap->node[heap->succNDX[elt] + 1]])
+        return heap->succNDX[elt];
+    return heap->succNDX[elt] + 1;
 }
 
 void heapify(heap_type *heap) {
     int i;
-    for (i = heapPred(heap->last); i >= 0; i--)
+    for (i = heap->predNDX[heap->last]; i >= 0; i--)
         siftDown(heap, i);
 }
 
@@ -343,12 +410,6 @@ void displayHeap(int minVerbosity, heap_type *heap) {
 void *allocateScalar(size_t size) {
     void *scalar = malloc(size);
     if (scalar == NULL) fatalError("Unable to allocate memory for a scalar.");
-    #ifdef MEMCHECK
-    memcheck_numScalars++;
-    if (memcheck_numScalars > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG, "Now have %ld scalars.\n", memcheck_numScalars);
-    }
-    #endif
     return scalar;
 }
 
@@ -356,12 +417,6 @@ void *allocateVector(int u, size_t size) {
     void *vector = malloc(u * size);
     if (vector == NULL)
         fatalError("Unable to allocate memory for vector of size %ld.", u);
-    #ifdef MEMCHECK
-    memcheck_numVectors++;
-    if (memcheck_numVectors > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG, "Now have %ld vectors.\n", memcheck_numVectors);
-    }
-    #endif
     return vector;
 }
 
@@ -376,12 +431,6 @@ void **allocateMatrix(int u1, long u2, size_t size) {
             fatalError("Unable to allocate memory for matrix of size "
                        "%ld x %ld.", u1, u2);
     }
-    #ifdef MEMCHECK
-    memcheck_numMatrices++;
-    if (memcheck_numMatrices > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG,"Now have %ld matrices.\n", memcheck_numMatrices);
-    }
-    #endif
     return matrix;
 }
 
@@ -403,45 +452,21 @@ void ***allocate3DArray(int u1, long u2, long u3, size_t size) {
                            "%ld x %ld x %ld.", u1, u2, u3);
         }
     }
-    #ifdef MEMCHECK
-    memcheck_num3DArrays++;
-    if (memcheck_num3DArrays > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG,"Now have %ld 3D arrays.\n",memcheck_num3DArrays);
-    }
-    #endif
     return matrix;
 }
 
 void killScalar(void *scalar) {
     free(scalar);
-    #ifdef MEMCHECK
-    memcheck_numScalars--;
-    if (memcheck_numScalars > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG, "Now have %ld scalars.\n", memcheck_numScalars);
-    }
-    #endif
 }
 
 void killVector(void *vector) {
     free(vector);
-    #ifdef MEMCHECK
-    memcheck_numVectors--;
-    if (memcheck_numVectors > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG, "Now have %ld vectors.\n", memcheck_numVectors);
-    }
-    #endif
 }
 
 void killMatrix(void **matrix, int u1) {
     int i;
     for (i = 0; i < u1; i++) free(matrix[i]);
     free(matrix);
-    #ifdef MEMCHECK
-    memcheck_numMatrices--;
-    if (memcheck_numMatrices > MEMCHECK_THRESHOLD) {
-        displayMessage(DEBUG,"Now have %ld matrices.\n", memcheck_numMatrices);
-    }
-    #endif
 }
 
 void kill3DArray(void ***array, int u1, long u2) {
@@ -453,10 +478,4 @@ void kill3DArray(void ***array, int u1, long u2) {
         free(array[i]);
     }
     free(array);
-    #ifdef MEMCHECK
-    memcheck_num3DArrays--;
-    if (memcheck_num3DArrays > MEMCHECK_THRESHOLD) { 
-        displayMessage(DEBUG,"Now have %ld 3D arrays.\n",memcheck_num3DArrays);
-    }
-    #endif
 }
