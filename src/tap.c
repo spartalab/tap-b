@@ -170,7 +170,8 @@ double linearBPRder(struct arc_type *arc) {
 
 double linearBPRint(struct arc_type *arc, bool includeFixedCost) {
    return arc->flow * (includeFixedCost == TRUE ? arc->fixedCost : 0
-           + arc->freeFlowTime * (1 + arc->alpha / arc->capacity / 2));
+           + arc->freeFlowTime * (1 + arc->alpha / arc->capacity / 2) 
+                               * arc->flow);
 }
 
 /* quarticBPRcost/der/int -- Faster implementation for 4th-power BPR functions
