@@ -96,15 +96,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     }
 
     while (converged == FALSE) {
-        //printf("Old flows: %f %f %f %f %f\n", network->arcs[0].flow, network->arcs[1].flow, network->arcs[2].flow, network->arcs[3].flow, network->arcs[4].flow); 
-            
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
-        //printf("Direction: %f %f %f %f %f\n", direction[0][0], direction[1][0], direction[2][0], direction[3][0], direction[4][0]); 
-        
         /* This gives us the information needed to report gap and check
          * convergence */
         tstt = TSTT(network);
@@ -370,13 +366,9 @@ void CFWdirection(network_type *network, double **direction,
     double **AON = direction; /* alias to save memory */
     double numer, denom, alpha;
 
-    /* Initialize the "last column" of total flow shifts */
-    for (ij = 0; ij < network->numArcs; ij++) {
-        direction[ij][network->numClasses] = 0;
-    }
-
     /* First find all-or-nothing direction, ignoring irrelevant params  */
     AONdirection(network, AON, NULL, NULL, 0, 0, sptt, parameters);
+    
     if (oldStepSize == 1) return; /* Do pure AON step if last step was full */
     /* ^-- this code is OK since AONdirection and direction point to the same
      * values */
@@ -399,6 +391,10 @@ void CFWdirection(network_type *network, double **direction,
         alpha = 0;
     }
 
+    /* Initialize the "last column" of total flow shifts */
+    for (ij = 0; ij < network->numArcs; ij++) {
+        direction[ij][network->numClasses] = 0;
+    }
     for (c = 0; c < network->numClasses; c++) {
         for (ij = 0; ij < network->numArcs; ij++) {
             direction[ij][c] = alpha * oldDirection[ij][c]
