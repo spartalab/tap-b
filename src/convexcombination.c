@@ -477,10 +477,10 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     /* Find all-to-one shortest paths from origin */
 	switch (parameters->SP_algo) {
 	case HEAP_DIJKSTRA:
-        heapDijkstra(origin, SPLabels, SPTree, network);	
+        heapDijkstraNew(origin, SPLabels, SPTree, network);	
         break;
     case PAPE:
-        BellmanFord(origin, SPLabels, SPTree, NULL, network, DEQUE);    
+        BellmanFordNew(origin, SPLabels, SPTree, NULL, network, DEQUE);    
         break;
     case PAPE_WS:
         fatalError("Warm-started PAPE not available in this implementation of "

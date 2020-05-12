@@ -40,10 +40,9 @@
  *  -network: As before
  *  -q: As before
  */
-
-void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
+void BellmanFordNew(int origin, double *label, arc_type **backarc, int *order,
                  network_type *network, queueDiscipline q) {
-    int j, curnode;
+    int j, curnode, backnode;
     arcListElt *i;
     double tempLabel;
     
@@ -58,14 +57,20 @@ void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
         label[origin] = 0;
         enQueue(&SEL, origin);
     } else { /* label and backnode must represent a valid tree + labels */
-        for (j = 0; j < network->numNodes; j++) {
-            /* Don't use centroid connectors as shortcuts */        
-            if (order[j] < network->firstThroughNode) continue;
-            
-            for (i = network->nodes[order[j]].forwardStar.head; i != NULL;
+        label[origin] = 0;
+        for (j = 1; j < network->numNodes; j++) {
+            /* First calculate label based on old tree */
+            curnode = order[j];
+            backnode = backarc[curnode]->tail;
+            label[curnode] = label[backnode] + backarc[curnode]->cost;
+            /* Now see if any incoming nodes are shortcuts (but not from
+               centroid connectors) */
+            for (i = network->nodes[curnode].reverseStar.head; i != NULL;
                  i = i->next) {
-                if (label[order[j]] + i->arc->cost < label[i->arc->head]) {
-                    enQueue(&SEL,order[j]);
+                backnode = i->arc->tail;                 
+                if (backnode < network->firstThroughNode) continue;                 
+                if (label[backnode] + i->arc->cost < label[curnode]) {
+                    enQueue(&SEL,backnode);
                     break;
                 }
             }
@@ -109,6 +114,244 @@ void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
     deleteQueue(&SEL);
 }
 
+
+void heapDijkstraNew(int origin, double *label, arc_type **backarc, network_type
+        *network) {
+
+    int j;
+    arcListElt *i;
+    int curnode;
+
+   
+    /* Initialize heap */
+    double tempLabel;
+    heap_type *dijkstraHeap = createHeap(network->numNodes, network->numNodes);
+
+    /* Initialize Dijkstra's */
+    for (j = 0; j < network->numNodes; j++) {
+        dijkstraHeap->valueFn[j] = INFINITY; 
+        /* valueFn in the heap stores the cost labels */
+        backarc[j] = NULL;
+    }
+
+    /* Now iterate until the heap is empty */
+    insertHeap(dijkstraHeap, origin, 0);
+    while (dijkstraHeap->last >= 0) {
+        curnode = findMinHeap(dijkstraHeap);
+        deleteMinHeap(dijkstraHeap);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
+                i = i->next) {
+            j = i->arc->head;
+            tempLabel = dijkstraHeap->valueFn[curnode] + i->arc->cost;
+            if (tempLabel < dijkstraHeap->valueFn[j]) {
+                backarc[j] = i->arc;
+                /* Avoid centroid connectors */
+                if (j < network->firstThroughNode) {
+                    dijkstraHeap->valueFn[j] = tempLabel;
+                    continue;
+                }
+
+                if (dijkstraHeap->valueFn[j] == INFINITY)
+                    insertHeap(dijkstraHeap, j, tempLabel);
+                else
+                    decreaseKey(dijkstraHeap, j, tempLabel);
+            }
+        }
+    }
+
+    /* Now copy labels to return, and clean up memory */
+    memcpy(label, dijkstraHeap->valueFn, sizeof(double) * network->numNodes);
+    deleteHeap(dijkstraHeap);
+}
+
+
+
+
+/*
+BellmanFord is the one-to-all shortest path algorithm taught in class, with the
+use of a scan-eligible list to handle cycles in the network.  The label and
+backnode arguments are pointers to arrays which will contain the L and q labels
+upon completion of the algorithm.  origin gives the starting point for these
+paths.  The network structure is passed via reference (pointer) to reduce
+overhead.  Argument q takes one of three values, specifying how the scan
+eligible list is maintained: FIFO (first-in first-out order, so nodes are
+scanned in the order added to the list), LIFO (last-in first-out, nodes scanned
+in reverse order of being added to the list), and DEQUE (double-ended queue;
+nodes generally go to the end of the queue, as in FIFO, but if a node has been
+scanned before it is added to the front end as in LIFO).
+
+TODO: Can eventually deprecate this function (see BellmanFordNew above)
+
+*/
+void BellmanFord(int origin, double *label, int *backnode, network_type
+        *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *i;
+    double tempLabel;
+
+   /* My implementation of a queue uses a "circular" array to store elements;
+      queue is empty iff the "read" and "write" pointers are identical.  See
+      datastructures.c for more details. */
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
+
+    /* Initialize */
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backnode[j] = NO_PATH_EXISTS;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
+
+   /* Iterate */
+    while (SEL.readptr != SEL.writeptr) {  
+    /* See comment above about read and write pointers */
+        curnode = deQueue(&SEL);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL;
+                i = i->next) {
+            tempLabel = label[curnode] + i->arc->cost;
+            j = i->arc->head;
+            if (tempLabel < label[j]) { /* Found a better path to node j */
+                label[j] = tempLabel;
+                backnode[j] = curnode;
+                if (j >= network->firstThroughNode) { 
+                /* Ensure we do not use centroids/centroid connectors as
+                 * "shortcuts" */
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:  frontQueue(&SEL, j); break;
+                        default: fatalError("bellmanFord: Unsupported queue "
+                                            "structure");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Clean up */
+    deleteQueue(&SEL);
+}
+
+
+/*
+arcBellmanFord is virtually identical to BellmanFord, except that it returns
+pointers to the previous *link* in the shortest paths, rather than the index of
+the previous *node*.  (backarc is an array of pointers to links).  For
+explanations of other arguments, see description of BellmanFord.
+
+TODO: Can eventually deprecate this function (see BellmanFordNew above)
+
+*/
+void arcBellmanFord(int origin, double *label, arc_type **backarc,
+        network_type *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *i;
+    double tempLabel;
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
+
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backarc[j] = NULL;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
+
+    while (SEL.readptr != SEL.writeptr) {
+        curnode = deQueue(&SEL);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
+                i = i->next) {
+            tempLabel = label[curnode] + i->arc->cost;
+            j = i->arc->head;
+            if (tempLabel < label[j]) {
+                label[j] = tempLabel;
+                backarc[j] = i->arc;
+                if (j >= network->firstThroughNode) {
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:
+                        default: fatalError("arcBellmanFord: Unsupported "
+                                            "queue structure");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    deleteQueue(&SEL);
+
+}
+
+
+/*
+arcIndexBellmanFord is virtually identical to BellmanFord, except that it
+returns indices of the previous *link* in the shortest paths, rather than the
+index of the previous *node*.  For explanations of other arguments, see
+description of BellmanFord.
+
+TODO: Can eventually deprecate this function (see BellmanFordNew above)
+
+*/
+void arcIndexBellmanFord(int origin, double *label, int *backarc, network_type
+        *network, queueDiscipline q) {
+    int j, curnode;
+    arcListElt *ij;
+    double tempLabel;
+    queue_type SEL = createQueue(network->numNodes, network->numNodes);
+//    displayMessage(FULL_NOTIFICATIONS, "Made queue for origin %d\n", origin);
+
+    for (j = 0; j < network->numNodes; j++) {
+        label[j] = INFINITY;
+        backarc[j] = NO_PATH_EXISTS;
+    }
+    label[origin] = 0;
+    enQueue(&SEL, origin);
+
+    while (SEL.readptr != SEL.writeptr) {
+        curnode = deQueue(&SEL);
+        for (ij = network->nodes[curnode].forwardStar.head; ij != NULL; 
+                ij = ij->next) {
+            tempLabel = label[curnode] + ij->arc->cost;
+            j = ij->arc->head;
+            if (tempLabel < label[j]) {
+                label[j] = tempLabel;
+                backarc[j] = ptr2arc(network, ij->arc);
+                if (j >= network->firstThroughNode) {
+                    switch (q) {
+                        case FIFO:     enQueue(&SEL, j);    break;
+                        case DEQUE:
+                            switch (SEL.history[j]) {
+                                case NEVER_IN_QUEUE: enQueue(&SEL, j); break;
+                                case WAS_IN_QUEUE: frontQueue(&SEL, j); break;
+                            }
+                            break;
+                        case LIFO:
+                        default: fatalError("arcBellmanFord: Unsupported "
+                                            "queue structure");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+//    displayMessage(FULL_NOTIFICATIONS, "Freeing queue for origin %d\n", origin);
+
+    deleteQueue(&SEL);
+
+}
+
 /* 
  * This is yet another BellmanFord variant with these key differences:
  *  1. No backlabels are calculated or returned; only link cost labels.
@@ -124,11 +367,6 @@ void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
  *     nodes (e.g., if there is a bush and you wish to scan topologically-
  *     earlier nodes first).  Set this to NULL if you do not have such an
  *     ordering available.
- *
- * Eventually will combine with BellmanFord above, but this seems to have
- * more significant performance advantages in the tap-b implementation, keep
- * as is for now.
- *
  */
 
 void BellmanFord_NoLabel(int origin, double *label, network_type *network,
@@ -208,7 +446,6 @@ void BellmanFord_NoLabel(int origin, double *label, network_type *network,
     deleteQueue(&SEL);
 }
 
-
 /*
 heapDijsktra is an implementation of Dijkstra's algorithm using a binary heap.
 This is a one-to-all shortest path algorithm, starting at 'origin'.  *label and
@@ -216,28 +453,27 @@ This is a one-to-all shortest path algorithm, starting at 'origin'.  *label and
  completion.  *network is a pointer to the underlying network data structure,
  passing by reference is faster.
 */
-void heapDijkstra(int origin, double *label, arc_type **backarc, network_type
+void heapDijkstra(int origin, double *label, int *backnode, network_type
         *network) {
 
     int j;
     arcListElt *i;
     int curnode;
 
-   
-    /* Initialize heap */
+   /* Initialize heap */
     double tempLabel;
     heap_type *dijkstraHeap = createHeap(network->numNodes, network->numNodes);
 
-    /* Initialize Dijkstra's */
+   /* Initialize Dijkstra's */
     for (j = 0; j < network->numNodes; j++) {
         dijkstraHeap->valueFn[j] = INFINITY; 
         /* valueFn in the heap stores the cost labels */
-        backarc[j] = NULL;
+        backnode[j] = NO_PATH_EXISTS;
     }
 
-    /* Now iterate until the heap is empty */
+   /* Now iterate until the heap is empty */
     insertHeap(dijkstraHeap, origin, 0);
-    while (dijkstraHeap->last >= 0) {
+    while (dijkstraHeap->last > 0) {
         curnode = findMinHeap(dijkstraHeap);
         deleteMinHeap(dijkstraHeap);
         for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
@@ -245,13 +481,11 @@ void heapDijkstra(int origin, double *label, arc_type **backarc, network_type
             j = i->arc->head;
             tempLabel = dijkstraHeap->valueFn[curnode] + i->arc->cost;
             if (tempLabel < dijkstraHeap->valueFn[j]) {
-                backarc[j] = i->arc;
-                /* Avoid centroid connectors */
+                backnode[j] = curnode;
                 if (j < network->firstThroughNode) {
                     dijkstraHeap->valueFn[j] = tempLabel;
                     continue;
                 }
-
                 if (dijkstraHeap->valueFn[j] == INFINITY)
                     insertHeap(dijkstraHeap, j, tempLabel);
                 else
@@ -260,7 +494,7 @@ void heapDijkstra(int origin, double *label, arc_type **backarc, network_type
         }
     }
 
-    /* Now copy labels to return, and clean up memory */
+   /* Now copy labels to return, and clean up memory */
     memcpy(label, dijkstraHeap->valueFn, sizeof(double) * network->numNodes);
     deleteHeap(dijkstraHeap);
 }
@@ -276,9 +510,11 @@ void changeFixedCosts(network_type *network, int class) {
     double oldCost;
 
     for (ij = 0; ij < network->numArcs; ij++) {
+        pthread_mutex_lock(&network->arc_muts[ij]);
         oldCost = network->arcs[ij].fixedCost;
         network->arcs[ij].fixedCost = network->arcs[ij].classCost[class];
         network->arcs[ij].cost += (network->arcs[ij].fixedCost - oldCost);
+        pthread_mutex_unlock(&network->arc_muts[ij]);
     }
 }
 
@@ -294,6 +530,7 @@ void finalizeNetwork(network_type *network) {
         initializeArcList(&(network->nodes[i].reverseStar));
     }
     for (i = 0; i < network->numArcs; i++) {
+        pthread_mutex_init(&network->arc_muts[i], NULL);
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);
@@ -371,10 +608,9 @@ void search(int origin, int* order, int *backnode, network_type *network,
                             switch (LIST.history[j]) {
                                 case NEVER_IN_QUEUE: enQueue(&LIST, j); break;
                                 case WAS_IN_QUEUE: frontQueue(&LIST, j); break;
-                                default: fatalError("Unsupported history.");
                             }
                             break;
-                    default: 
+                        default: 
                             fatalError("Unsupported queue type in search."); 
                             break;
                     }
@@ -500,7 +736,7 @@ Warning: This function does not check whether the given origin and class
 fall into the current batch.  Run checkifcurrent to check that if you want.
 */
 int nodeclass2origin(network_type *network, int originNode, int class) {
-    return (class * network->numZones + originNode) % network->batchSize;
+    return (class * network->numZones + originNode);
 }
 
 bool checkIfCurrentNodeClass(network_type *network, int originNode, int class) {
@@ -574,9 +810,10 @@ void deleteNetwork(network_type *network) {
        deleteVector(network->arcs[i].classToll);
    }
 
-   deleteMatrix(network->demand, network->numZones);
+   deleteMatrix(network->demand, network->batchSize);
    deleteVector(network->nodes);
    deleteVector(network->arcs);
+   deleteVector(network->arc_muts);
    deleteVector(network->tollFactor);
    deleteVector(network->distanceFactor);
    deleteScalar(network);
@@ -801,3 +1038,4 @@ void displayPathSet(pathSet *list) {
     printf("END OF PATH SET DISPLAY\n");
     waitForKey();
 }
+
