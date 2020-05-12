@@ -52,6 +52,7 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
     parameters.convergenceGap = 0;
 
     /* Miscellanea */
+    parameters.demandMultiplier = 1;
     if (parameters.lineSearch == &NewtonSearch) {
         parameters.maxLineSearchIterations = 1;
     } else {
@@ -135,7 +136,13 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         oldOldDirection = oldDirection;
         oldDirection = direction;
         direction = temp; /* This will be overwritten next time around */
+        
+        iteration++;
     }
+    
+    deleteMatrix(direction, network->numArcs);
+    deleteMatrix(oldDirection, network->numArcs);
+    deleteMatrix(oldOldDirection, network->numArcs);
 }
 
 /* Generate an initial solution if none is provided; do an all-or-nothing
@@ -143,7 +150,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
 void initializeFlows(network_type *network, double **direction,
                      CCparameters_type *parameters) {
     int ij, c;
-    double stepSize;
+    double stepSize, sptt;
 
     /* Initialize class flows to zero, then get total flows and costs */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -157,7 +164,7 @@ void initializeFlows(network_type *network, double **direction,
      * shift all flow in that direction.  Passing a number of parameters as
      * zero/null because a lot of features in AONdirection are not needed for
      * this. */
-    AONdirection(network, direction, NULL, NULL, 0, 0, NULL, parameters);
+    AONdirection(network, direction, NULL, NULL, 0, 0, &sptt, parameters);
     stepSize = 1;
     shiftFlows(network, direction, stepSize);
 }
@@ -326,6 +333,7 @@ void AONdirection(network_type *network, double **direction,
         changeFixedCosts(network, c);
         for (r = 0; r < network->numZones; r++) {
             *sptt += allOrNothing(network, targetFlows, r, c, parameters);
+    
         }
     }
     /********** up to here */
@@ -335,8 +343,8 @@ void AONdirection(network_type *network, double **direction,
         for (c = 0; c < network->numClasses; c++) {
             direction[ij][c] = targetFlows[ij][c]
                                 - network->arcs[ij].classFlow[c];
+            direction[ij][network->numClasses] += direction[ij][c];
         }
-        direction[ij][network->numClasses] += direction[ij][c];
     }
 
     return;
@@ -515,18 +523,18 @@ double allOrNothing(network_type *network, double **flows, int originZone,
 
 	/* Here is the main loop, in reverse topological order */
 	for (i = network->numNodes - 1; i > 0; i--) {
-		curnode = SPOrder[i];
-		if (curnode == origin) break;
-		if (SPTree[curnode] == NULL && remainingVehicles[curnode] > 0) {
-		    fatalError("allOrNothing: no path from %d to %d despite positive"
-		               " demand %f existing there!", origin, curnode,
-		               remainingVehicles[curnode]);
-		}
-		backnode = SPTree[curnode]->tail;
+    curnode = SPOrder[i];
+    if (curnode == origin) break;
+    if (SPTree[curnode] == NULL && remainingVehicles[curnode] > 0) {
+        fatalError("allOrNothing: no path from %d to %d despite positive"
+                   " demand %f existing there!", origin, curnode,
+                   remainingVehicles[curnode]);
+    }
+    backnode = SPTree[curnode]->tail;
         backarc = ptr2arc(network, SPTree[curnode]);
-		flows[backarc][class] += remainingVehicles[curnode];
-		remainingVehicles[backnode] += remainingVehicles[curnode];
-		remainingVehicles[curnode] = 0;
+    flows[backarc][class] += remainingVehicles[curnode];
+    remainingVehicles[backnode] += remainingVehicles[curnode];
+    remainingVehicles[curnode] = 0;
 	}
 	
     deleteVector(SPOrder);
@@ -570,6 +578,7 @@ void topoOrderTree(network_type *network, int *SPOrder, arc_type **SPTree) {
         fatalError("refreshTopologicalOrder did not label all nodes!");
     
     deleteVector(labeled);
+    deleteVector(pathNodes);
 }
 
 double CCrelativeGap(network_type *network, double tstt, double sptt) {
