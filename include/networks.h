@@ -12,6 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include "datastructures.h"
+#include <pthread.h>
 
 #define NO_PATH_EXISTS -1
 #define ARTIFICIAL 99999 /* Value used for costs, etc. on artificial links
@@ -156,6 +157,7 @@ typedef struct {
 typedef struct {
     node_type*  nodes;
     arc_type*   arcs;
+    pthread_mutex_t* arc_muts;
     double**    demand;
     int    numNodes;
     int    numArcs;
@@ -176,12 +178,24 @@ typedef struct {
 /* Used to detect when we are at the end of all batches and must reset */
 #define END_OF_ORIGINS_SENTINEL -2
 
-
-void BellmanFord(int origin, double *label, arc_type **backarc, int *order,
+/* These are new shortest path implementations that tries to streamline some of
+   the variants below.  Eventually we can deprecate some of  the others */
+void BellmanFordNew(int origin, double *label, arc_type **backarc, int *order,
                  network_type *network, queueDiscipline q);
+void heapDijkstraNew(int origin, double *label, arc_type **backarc,
+                  network_type *network);
+
+   
+/* Older label-correcting shortest path implementations */
+void BellmanFord(int origin, double *label, int *backnode,
+                 network_type *network, queueDiscipline q);
+void arcBellmanFord(int origin, double *label, arc_type **backarc,
+                    network_type *network, queueDiscipline q);
+void arcIndexBellmanFord(int origin, double *label, int *backarc,
+                         network_type *network, queueDiscipline q);
 void BellmanFord_NoLabel(int origin, double *label, network_type *network,
                          queueDiscipline q, double *labelGuess, int *order);
-void heapDijkstra(int origin, double *label, arc_type **backarc,
+void heapDijkstra(int origin, double *label, int *backnode,
                   network_type *network);
 
 
