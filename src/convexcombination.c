@@ -483,9 +483,9 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     int origin = nodeclass2origin(network, originZone, class);
 
     /* Find all-to-one shortest paths from origin */
-	switch (parameters->SP_algo) {
-	case HEAP_DIJKSTRA:
-        heapDijkstraNew(origin, SPLabels, SPTree, network);	
+    switch (parameters->SP_algo) {
+    case HEAP_DIJKSTRA:
+        heapDijkstraNew(origin, SPLabels, SPTree, network);    
         break;
     case PAPE:
         BellmanFordNew(origin, SPLabels, SPTree, NULL, network, DEQUE);    
@@ -496,14 +496,14 @@ double allOrNothing(network_type *network, double **flows, int originZone,
         break;
     default:
         fatalError("Unknown shortest path algorithm %d\n", parameters->SP_algo);    
-	}
-	
-	/* Calculate shortest path time (for gap) */
-	for (i = 0; i < network->numZones; i++) {
-	    originSPTT += SPLabels[i] * network->demand[origin][i];
-	}
-	
-	topoOrderTree(network, SPOrder, SPTree);
+    }
+    
+    /* Calculate shortest path time (for gap) */
+    for (i = 0; i < network->numZones; i++) {
+        originSPTT += SPLabels[i] * network->demand[origin][i];
+    }
+    
+    topoOrderTree(network, SPOrder, SPTree);
 
     /* Now load vehicles onto this tree in reverse topological order -- only one
        sweep of the tree is needed to find all flow from this origin.
@@ -516,13 +516,13 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     remainingVehicles = SPLabels; /* Re-use array to save memory, we don't need
                                      the shortest path labels anymore */
 
-	for (i = 0; i < network->numZones; i++)
-	    remainingVehicles[i] = network->demand[origin][i];
-	for (; i < network->numNodes; i++)
-	    remainingVehicles[i] = 0;
+    for (i = 0; i < network->numZones; i++)
+        remainingVehicles[i] = network->demand[origin][i];
+    for (; i < network->numNodes; i++)
+        remainingVehicles[i] = 0;
 
-	/* Here is the main loop, in reverse topological order */
-	for (i = network->numNodes - 1; i > 0; i--) {
+    /* Here is the main loop, in reverse topological order */
+    for (i = network->numNodes - 1; i > 0; i--) {
     curnode = SPOrder[i];
     if (curnode == origin) break;
     if (SPTree[curnode] == NULL && remainingVehicles[curnode] > 0) {
@@ -531,16 +531,16 @@ double allOrNothing(network_type *network, double **flows, int originZone,
                    remainingVehicles[curnode]);
     }
     backnode = SPTree[curnode]->tail;
-        backarc = ptr2arc(network, SPTree[curnode]);
+    backarc = ptr2arc(network, SPTree[curnode]);
     flows[backarc][class] += remainingVehicles[curnode];
     remainingVehicles[backnode] += remainingVehicles[curnode];
     remainingVehicles[curnode] = 0;
-	}
-	
+    }
+    
     deleteVector(SPOrder);
     deleteVector(SPTree);
     deleteVector(SPLabels);
-	return originSPTT;
+    return originSPTT;
 }
 
 
