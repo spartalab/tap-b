@@ -503,7 +503,7 @@ double allOrNothing(network_type *network, double **flows, int originZone,
         if (SPTree[i] != NULL) { /* Ordinary case, node is reachable */
             originSPTT += SPLabels[i] * network->demand[origin][i];
         } else { /* No path found... only an issue if there is demand */
-            if (network->demand[origin][i] > 0) {
+            if (network->demand[origin][i] > 0 && i != origin) {
                 fatalError("No path found from %d to %d but demand exists!",
                             originZone, i);
             }
