@@ -96,12 +96,15 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     }
 
     while (converged == FALSE) {
+        //printf("Old flows: %f %f %f %f %f\n", network->arcs[0].flow, network->arcs[1].flow, network->arcs[2].flow, network->arcs[3].flow, network->arcs[4].flow); 
+            
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
-
+        //printf("Direction: %f %f %f %f %f\n", direction[0][0], direction[1][0], direction[2][0], direction[3][0], direction[4][0]); 
+        
         /* This gives us the information needed to report gap and check
          * convergence */
         tstt = TSTT(network);
@@ -115,11 +118,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         if (iteration >= parameters->maxIterations) converged = TRUE;
         if (gap < parameters->convergenceGap) converged = TRUE;
 
-        /* Now find step size, and shift flows */
+        /* Now find step size and shift flows (the line search function
+           also does the shifting) */
         stepSize = parameters->lineSearch(network, direction, iteration,
                                           parameters);
-        shiftFlows(network, direction, stepSize);
-
+        
         /* Now set up for next iteration by scaling old directions,
          * shifting down old step sizes, and permuting array flows (no need to
          * copy, just swap pointers to alias them) */
@@ -243,7 +246,9 @@ double bisection(network_type *network, double **direction, int iteration,
         if (der > 0) lmax = lambda; else lmin = lambda;
     }
 
+    shiftFlows(network, direction, lambda);
     return lambda;
+    
     /* Suppress compiler warnings for unused variables */
     displayMessage(FULL_DEBUG, "%d", iteration);
 }
@@ -253,11 +258,12 @@ double bisection(network_type *network, double **direction, int iteration,
 double NewtonSearch(network_type *network, double **direction, int iteration,
                     CCparameters_type *parameters) {
     int k;
-    double stepSize;
+    double stepSize, totalStepSize = 0;
     double lmin = 0, lmax = 1; /* Initial bounds on Newton */
 
     /* Do a single step regardless... */
     stepSize = NewtonIteration(network, direction, lmin, lmax);
+    totalStepSize = stepSize;
 
     /* ...and if we need to do more, shift flows and keep going (note k
      * starts at 1 to reflect the iteration already done */
@@ -267,9 +273,11 @@ double NewtonSearch(network_type *network, double **direction, int iteration,
         lmin -= stepSize;
         lmax -= stepSize;
         stepSize = NewtonIteration(network, direction, lmin, lmax);
+        totalStepSize += stepSize;
     }
 
-    return stepSize; /* return a final step size for a last shift in main
+    shiftFlows(network, direction, stepSize); /* one final shift */
+    return totalStepSize; /* return a final step size for a last shift in main
                         convex combinations routine */
 
     /* Suppress compiler warnings for unused variables */
