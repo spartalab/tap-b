@@ -7,6 +7,8 @@ DEPDIR = .depend
 INCLUDEDIR = include
 
 $(shell mkdir -p $(DEPDIR) > /dev/null)
+$(shell mkdir -p $(OBJDIR))
+$(shell mkdir -p $(BINDIR))
 
 INCLUDEFLAG = -I $(INCLUDEDIR)
 POSTCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
