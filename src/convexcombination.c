@@ -500,7 +500,7 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     
     /* Calculate shortest path time (for gap) */
     for (i = 0; i < network->numZones; i++) {
-        if (SPTree[i] != NULL) { /* Ordinary case */
+        if (SPTree[i] != NULL) { /* Ordinary case, node is reachable */
             originSPTT += SPLabels[i] * network->demand[origin][i];
         } else { /* No path found... only an issue if there is demand */
             if (network->demand[origin][i] > 0) {
@@ -532,15 +532,18 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     for (i = network->numNodes - 1; i > 0; i--) {
         curnode = SPOrder[i];
         if (curnode == origin) break;
-        if (SPTree[curnode] == NULL && remainingVehicles[curnode] > 0) {
-            fatalError("allOrNothing: no path from %d to %d despite positive"
-                       " demand %f existing there!", origin, curnode,
-                       remainingVehicles[curnode]);
-        }
-        backnode = SPTree[curnode]->tail;
-        backarc = ptr2arc(network, SPTree[curnode]);
-        flows[backarc][class] += remainingVehicles[curnode];
-        remainingVehicles[backnode] += remainingVehicles[curnode];
+        if (SPTree[curnode] != NULL) { /* Usual case, can push vehicles back */
+            backnode = SPTree[curnode]->tail;
+            backarc = ptr2arc(network, SPTree[curnode]);
+            flows[backarc][class] += remainingVehicles[curnode];
+            remainingVehicles[backnode] += remainingVehicles[curnode];
+        } else { /* No path found... only an issue if there is demand */
+            if (remainingVehicles[curnode] > 0) {
+                fatalError("allOrNothing: no path from %d to %d despite "
+                           " demand %f existing there!", origin, curnode,
+                           remainingVehicles[curnode]);
+            }
+        } 
         remainingVehicles[curnode] = 0;
     }
     
