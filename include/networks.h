@@ -178,7 +178,15 @@ typedef struct {
 /* Used to detect when we are at the end of all batches and must reset */
 #define END_OF_ORIGINS_SENTINEL -2
 
+/* These are new shortest path implementations that tries to streamline some of
+   the variants below.  Eventually we can deprecate some of  the others */
+void BellmanFordNew(int origin, double *label, arc_type **backarc, int *order,
+                 network_type *network, queueDiscipline q);
+void heapDijkstraNew(int origin, double *label, arc_type **backarc,
+                  network_type *network);
 
+   
+/* Older label-correcting shortest path implementations */
 void BellmanFord(int origin, double *label, int *backnode,
                  network_type *network, queueDiscipline q);
 void arcBellmanFord(int origin, double *label, arc_type **backarc,

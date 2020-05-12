@@ -93,6 +93,7 @@ void enQueue(queue_type *queue, int elt);
 void frontQueue(queue_type *queue, int elt);
 int deQueue(queue_type *queue);
 void displayQueue(int minVerbosity, queue_type *queue);
+int queueSize(queue_type *queue);
 
 /******************
  ** Binary heaps **
@@ -107,15 +108,18 @@ typedef struct {
     int* nodeNDX;
     int maxsize;
     int maxelts;
+    int *succNDX;
+    int *predNDX;
+    int tmp;
 } heap_type;
 
 heap_type *createHeap(int heapsize, int eltsize);
-void insertHeap(heap_type *heap, int key, int value) ;
+void insertHeap(heap_type *heap, int key, double value) ;
 int  findMinHeap(heap_type *heap);
 void deleteMinHeap(heap_type *heap);
 void deleteHeap(heap_type *heap);
-void decreaseKey(heap_type *heap, int elt, int value);
-void increaseKey(heap_type *heap, int elt, int value);
+void decreaseKey(heap_type *heap, int elt, double value);
+void increaseKey(heap_type *heap, int elt, double value);
 void siftUp(heap_type *heap, int elt);
 void siftDown(heap_type *heap, int elt);
 int  heapPred(int elt);
