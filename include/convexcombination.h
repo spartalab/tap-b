@@ -31,6 +31,7 @@ typedef struct CCparameters {
     shortestPath_type    SP_algo;
     //gap_type             gapFunction;
     double convergenceGap;
+    double demandMultiplier;
     double maxTime;
     int    maxIterations;
     int    maxLineSearchIterations;
