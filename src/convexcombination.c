@@ -107,6 +107,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         tstt = TSTT(network);
         gap = parameters->gapFunction(network, tstt, sptt);
         elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
+        stopTime = clock();        
         displayMessage(LOW_NOTIFICATIONS, "Iteration %d: gap %.15f, obj %.15g,"
                       " time %.3f\n",iteration, gap, BeckmannFunction(network),
                       elapsedTime);
