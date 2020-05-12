@@ -224,7 +224,7 @@ double bisection(network_type *network, double **direction, int iteration,
     int ij, c, k; /* ij indexes arcs; c classes; k is an iteration counter */
     /* lambda is step size; lmin and lmax are lower and upper bounds; der
      * is the derivative test at the midpoint */
-    double lambda, lmin = 0, lmax = 1, der; 
+    double lambda = 1, lmin = 0, lmax = 1, der; 
     double tempFlow;
 
     for (k = 0; k < parameters->maxLineSearchIterations; k++) {
