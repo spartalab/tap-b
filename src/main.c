@@ -42,11 +42,13 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
+
 #if NCTCOG_ENABLED
     main_NCTCOG(argc, argv);
 #else
      main_TNTP(argc, argv);
 #endif
+
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
@@ -55,6 +57,22 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
+void main_FWtest(int argc, char* argv[]) {
+    verbosity = DEBUG;
+    
+    network_type *network = newScalar(network_type);
+    CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
+
+    readOBANetwork(network, argv[1], argv + 2, argc - 2,
+                  parameters.demandMultiplier);
+    parameters.convergenceGap = 1e-4;
+    parameters.maxLineSearchIterations = 1;
+    
+    convexCombinations(network, &parameters);
+
+    writeNetworkFlows(network, parameters.flowsFile);
+    deleteNetwork(network);
+}
 
 void main_TNTP(int argc, char* argv[]) {
    network_type *network = newScalar(network_type);
@@ -83,12 +101,15 @@ void main_TNTP(int argc, char* argv[]) {
        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
    }
    if (argc != 4) {
-       readOBANetwork(network, argv[1], argv + 2, argc - 2, &Bparameters);
+       readOBANetwork(network, argv[1], argv + 2, argc - 2,
+                      Bparameters.demandMultiplier);
    } else {
-       readOBANetwork(network, argv[1], argv + 2, argc - 3, &Bparameters);
+       readOBANetwork(network, argv[1], argv + 2, argc - 3,
+                      Bparameters.demandMultiplier);
    }
 #else
-   readOBANetwork(network, argv[1], argv + 2, argc - 2, &Bparameters);
+   readOBANetwork(network, argv[1], argv + 2, argc - 2,
+                  Bparameters.demandMultiplier);
 #endif
 
    /* Default: one batch */
