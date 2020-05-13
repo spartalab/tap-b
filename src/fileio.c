@@ -463,7 +463,7 @@ void readSDBNetwork(network_type *network, char *filename, double defaultAlpha,
 
 void readOBANetwork(network_type *network, char *linkFileName, 
                     char **tripFileName, int numClasses,
-                    algorithmBParameters_type *parameters) {
+                    double defaultDemandMultiplier) {
     int i, j, r = 0, c;
     int check;
     int numParams, status;
@@ -509,7 +509,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             endofMetadata = TRUE;
         } else {
             warning(MEDIUM_NOTIFICATIONS, "Ignoring unknown metadata tag %s "
-                    "in  parameters file %s", metadataTag, linkFileName);
+                    "in link file %s", metadataTag, linkFileName);
         }
     } while (endofMetadata == FALSE);
 
@@ -682,7 +682,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             }
         } while (endofMetadata == FALSE);
         if (demandMultiplier == IS_MISSING)
-            demandMultiplier = parameters->demandMultiplier;
+            demandMultiplier = defaultDemandMultiplier;
 
         /* Now read trip table */
         while (!feof(tripFile)) {
@@ -854,8 +854,7 @@ int parseMetadata(char* inputLine, char* metadataTag, char* metadataValue) {
         metadataTag[j++] = toupper(inputLine[i++]);
     }
     metadataTag[j] = 0;
-    if (inputLine[i] == 0) fatalError("Metadata tag not closed in parameters "
-            "file - ", metadataTag);
+    if (inputLine[i] == 0) fatalError("Metadata tag not closed: ", metadataTag);
     i++;
     while (inputLine[i] != 0 && (inputLine[i] == ' ' || inputLine[i] == '\t')) 
         i++;
