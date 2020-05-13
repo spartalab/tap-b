@@ -100,7 +100,7 @@ void assignStreamedDemand(network_type *network, int originNode, int destination
                           int class, float demandValue);
 void readOBANetwork(network_type *network, char *linkFileName,
                     char **tripFileName, int numClasses,
-                    algorithmBParameters_type *parameters);
+                    double defaultDemandMultiplier);
 void readSDBNetwork(network_type *network, char *filename, double defaultAlpha,
                     double defaultBeta);
 void writeDUENetwork(network_type *Network, char *filename);
