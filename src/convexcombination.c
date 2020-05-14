@@ -504,10 +504,10 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     /* Find all-to-one shortest paths from origin */
     switch (parameters->SP_algo) {
     case HEAP_DIJKSTRA:
-        heapDijkstraNew(origin, SPLabels, SPTree, network);    
+        heapDijkstraNew(originZone, SPLabels, SPTree, network);    
         break;
     case PAPE:
-        BellmanFordNew(origin, SPLabels, SPTree, NULL, network, DEQUE);    
+        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);    
         break;
     case PAPE_WS:
         fatalError("Warm-started PAPE not available in this implementation of "
@@ -516,13 +516,13 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     default:
         fatalError("Unknown shortest path algorithm %d\n", parameters->SP_algo);    
     }
-    
+  
     /* Calculate shortest path time (for gap) */
     for (i = 0; i < network->numZones; i++) {
         if (SPTree[i] != NULL) { /* Ordinary case, node is reachable */
             originSPTT += SPLabels[i] * network->demand[origin][i];
         } else { /* No path found... only an issue if there is demand */
-            if (network->demand[origin][i] > 0 && i != origin) {
+            if (network->demand[origin][i] > 0 && i != originZone) {
                 fatalError("No path found from %d to %d but demand exists!",
                             originZone, i);
             }
@@ -550,7 +550,7 @@ double allOrNothing(network_type *network, double **flows, int originZone,
     /* Here is the main loop, in reverse topological order */
     for (i = network->numNodes - 1; i > 0; i--) {
         curnode = SPOrder[i];
-        if (curnode == origin) break;
+        if (curnode == originZone) break;
         if (SPTree[curnode] != NULL) { /* Usual case, can push vehicles back */
             backnode = SPTree[curnode]->tail;
             backarc = ptr2arc(network, SPTree[curnode]);
