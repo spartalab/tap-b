@@ -79,6 +79,8 @@ void BFWdirection(network_type *network, double **direction,
 
 double allOrNothing(network_type *network, double **flows, int originZone,
                     int class, CCparameters_type *parameters);
+double allOrNothing_par(network_type *network, double *flows, int originZone,
+                        int class, CCparameters_type *parameters);
 void topoOrderTree(network_type *network, int *SPOrder, arc_type **SPTree); 
 void updateLinks(network_type *network, bool rectifyLinks);
 

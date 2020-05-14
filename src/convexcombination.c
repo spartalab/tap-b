@@ -19,7 +19,8 @@ struct thread_args {
     int id;
     int clss;
     double sptt;
-    double **targetFlows;
+//    double **targetFlows;
+    double *targetFlows;
     network_type *network;
     CCparameters_type *parameters;
 };
@@ -27,11 +28,13 @@ struct thread_args {
 void allOrNothingPool(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
     int r = args->id;
-    double **targetFlows = args->targetFlows;
+//    double **targetFlows = args->targetFlows;
+    double *targetFlows = args->targetFlows;
     network_type *network = args->network;
     CCparameters_type *parameters = args->parameters;
     int c = args->clss;
-    args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
+//    args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
+    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
 }
 threadpool thpool;
 #endif
@@ -377,7 +380,8 @@ void AONdirection(network_type *network, double **direction,
     for (r = 0; r < network->numZones; ++r) {
         args[r].id = r;
         args[r].network = network;
-        args[r].targetFlows = targetFlows;
+        args[r].targetFlows = calloc(network->numArcs, sizeof(double));
+//        args[r].targetFlows = targetFlows;
         args[r].clss = -1;
         args[r].parameters = parameters;
         args[r].sptt = -1;
@@ -394,7 +398,11 @@ void AONdirection(network_type *network, double **direction,
         thpool_wait(thpool);
         for (r = 0; r < network->numZones; ++r) {
             if (args[r].sptt < 0) {
-                fatalError("SPTT for origin %d is %f", r, args[r].sptt);
+                fatalError("SPTT is negative for origin %d is %f", r, args[r].sptt);
+            }
+            for (int i = 0; i < network->numArcs; ++i) {
+                targetFlows[i][c] += args[r].targetFlows[i];
+                args[r].targetFlows[i] = 0.0;
             }
             *sptt += args[r].sptt;
         }
@@ -404,6 +412,11 @@ void AONdirection(network_type *network, double **direction,
         }
 #endif
     }
+#if PARALLELISM
+    for (r = 0; r < network->numZones; ++r) {
+        deleteVector(args[r].targetFlows);
+    }
+#endif
 
     for (ij = 0; ij < network->numArcs; ij++) {
         for (c = 0; c < network->numClasses; c++) {
@@ -627,6 +640,94 @@ double allOrNothing(network_type *network, double **flows, int originZone,
         remainingVehicles[curnode] = 0;
     }
     
+    deleteVector(SPOrder);
+    deleteVector(SPTree);
+    deleteVector(SPLabels);
+    return originSPTT;
+}
+/* Finds an all-or-nothing assignment from a given origin.  Involves three main
+ * steps: shortest-path finding; identifying a topological order on the tree;
+ * and performing a descending pass to calculate flows.
+ *
+ * In the process, also calculates the SPTT for this origin (it comes almost
+ * for free from the shortest path algo) and returns this for use in gap
+ * calculations
+ */
+double allOrNothing_par(network_type *network, double *flows, int originZone,
+                    int class, CCparameters_type *parameters) {
+    int curnode, backnode, backarc, i;
+    double *remainingVehicles;
+    double originSPTT = 0;
+    declareVector(arc_type *, SPTree, network->numArcs);
+    declareVector(int, SPOrder, network->numNodes);
+    declareVector(double, SPLabels, network->numNodes);
+    int origin = nodeclass2origin(network, originZone, class);
+
+    /* Find all-to-one shortest paths from origin */
+    switch (parameters->SP_algo) {
+    case HEAP_DIJKSTRA:
+        heapDijkstraNew(originZone, SPLabels, SPTree, network);
+        break;
+    case PAPE:
+        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);
+        break;
+    case PAPE_WS:
+        fatalError("Warm-started PAPE not available in this implementation of "
+                   "convex combinations (storing trees takes too much space).");
+        break;
+    default:
+        fatalError("Unknown shortest path algorithm %d\n", parameters->SP_algo);
+    }
+
+    /* Calculate shortest path time (for gap) */
+    for (i = 0; i < network->numZones; i++) {
+        if (SPTree[i] != NULL) { /* Ordinary case, node is reachable */
+            originSPTT += SPLabels[i] * network->demand[origin][i];
+        } else { /* No path found... only an issue if there is demand */
+            if (network->demand[origin][i] > 0 && i != originZone) {
+                fatalError("No path found from %d to %d but demand exists!",
+                            originZone, i);
+            }
+        }
+    }
+
+    topoOrderTree(network, SPOrder, SPTree);
+
+    /* Now load vehicles onto this tree in reverse topological order -- only one
+       sweep of the tree is needed to find all flow from this origin.
+       remainingVehicles gives the number of vehicles at each node which have
+       not yet been fully assigned to their path.
+
+       In the TNTP file format, origins are numbered first.  The second loop
+       thus picks up where the first one left off.
+      */
+    remainingVehicles = SPLabels; /* Re-use array to save memory, we don't need
+                                     the shortest path labels anymore */
+
+    for (i = 0; i < network->numZones; i++)
+        remainingVehicles[i] = network->demand[origin][i];
+    for (; i < network->numNodes; i++)
+        remainingVehicles[i] = 0;
+
+    /* Here is the main loop, in reverse topological order */
+    for (i = network->numNodes - 1; i > 0; i--) {
+        curnode = SPOrder[i];
+        if (curnode == originZone) break;
+        if (SPTree[curnode] != NULL) { /* Usual case, can push vehicles back */
+            backnode = SPTree[curnode]->tail;
+            backarc = ptr2arc(network, SPTree[curnode]);
+            flows[backarc] += remainingVehicles[curnode];
+            remainingVehicles[backnode] += remainingVehicles[curnode];
+        } else { /* No path found... only an issue if there is demand */
+            if (remainingVehicles[curnode] > 0) {
+                fatalError("allOrNothing: no path from %d to %d despite "
+                           " demand %f existing there!", origin, curnode,
+                           remainingVehicles[curnode]);
+            }
+        }
+        remainingVehicles[curnode] = 0;
+    }
+
     deleteVector(SPOrder);
     deleteVector(SPTree);
     deleteVector(SPLabels);
