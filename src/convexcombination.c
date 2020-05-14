@@ -237,8 +237,9 @@ double bisection(network_type *network, double **direction, int iteration,
         for (c = 0; c < network->numClasses; c++) {
             changeFixedCosts(network, c);
             for (ij = 0; ij < network->numArcs; ij++) {
-                tempFlow = network->arcs[ij].classFlow[c]
-                            + lambda * direction[ij][c];
+                /* Get total flow based on complete shift */
+                tempFlow = network->arcs[ij].flow 
+                            + lambda * direction[ij][network->numClasses];
                 der += evaluateLinkCost(&network->arcs[ij], tempFlow)
                         * direction[ij][c];
             }
@@ -294,10 +295,14 @@ double NewtonIteration(network_type *network, double **direction, double lmin,
         for (ij = 0; ij < network->numArcs; ij++) {
             numer += network->arcs[ij].calculateCost(&network->arcs[ij]) 
                     * direction[ij][c];
-            denom += network->arcs[ij].calculateDer(&network->arcs[ij])
-                    * direction[ij][c] * direction[ij][c];
         }
     }
+    for (ij = 0; ij < network->numArcs; ij++) {
+        denom += network->arcs[ij].calculateDer(&network->arcs[ij])
+                * direction[ij][network->numClasses]
+                * direction[ij][network->numClasses];
+    }                    
+    
     if (denom != 0) { /* Typical case */
         lambda = - numer / denom;
         lambda = min(lambda, lmax);
