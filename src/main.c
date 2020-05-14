@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
 #if NCTCOG_ENABLED
     main_NCTCOG(argc, argv);
 #else
-     main_TNTP(argc, argv);
+//     main_TNTP(argc, argv);
+    main_FWtest(argc, argv);
 #endif
 
 
@@ -63,8 +64,38 @@ void main_FWtest(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
 
+#if PARALLELISM
+    int numOfThreads = 0;
+   if (argc != 4) {
+       displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
+       numOfThreads = getNumCores();
+   } else {
+       numOfThreads = atoi(argv[argc - 1]);
+   }
+#else
+    if (argc != 3)
+        fatalError("Must specify two arguments\n\nUsage: tap "
+                   "networkfile demandfile\n");
+
+#endif
+
+#if PARALLELISM
+    parameters.numThreads = numOfThreads;
+   if(parameters.numThreads < 1 || parameters.numThreads > 64) {
+       fatalError("Invalid number of threads: %d must be between 1 and 64", parameters.numThreads);
+   }
+   if (argc != 4) {
+       readOBANetwork(network, argv[1], argv + 2, argc - 2,
+                      parameters.demandMultiplier);
+   } else {
+       readOBANetwork(network, argv[1], argv + 2, argc - 3,
+                      parameters.demandMultiplier);
+   }
+#else
     readOBANetwork(network, argv[1], argv + 2, argc - 2,
-                  parameters.demandMultiplier);
+                   parameters.demandMultiplier);
+#endif
     parameters.convergenceGap = 1e-4;
     parameters.maxLineSearchIterations = 1;
     

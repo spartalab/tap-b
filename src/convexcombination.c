@@ -8,6 +8,33 @@
 
 #include "convexcombination.h"
 
+#if PARALLELISM
+#include "thpool.h"
+#include <pthread.h>
+#endif
+
+#if PARALLELISM
+//Struct for thread arguments
+struct thread_args {
+    int id;
+    int clss;
+    double sptt;
+    double **targetFlows;
+    network_type *network;
+    CCparameters_type *parameters;
+};
+
+void allOrNothingPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int r = args->id;
+    double **targetFlows = args->targetFlows;
+    network_type *network = args->network;
+    CCparameters_type *parameters = args->parameters;
+    int c = args->clss;
+    args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
+}
+threadpool thpool;
+#endif
 /* Initializes convex combination algorithm parameters.  Argument is a
  * CCalgorithm_type enum that sets default search direction and line search
  * functions.  Other parameters are set to reasonable defaults.
@@ -72,7 +99,9 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     int ij, c;
     double tstt, sptt, gap;
     double elapsedTime;
-
+#if PARALLELISM
+    thpool = thpool_init(parameters->numThreads);
+#endif
     /* Initialize step sizes so first one is a pure AON direction regardless of
      * search direction choice (two if using biconjugate) */
     double stepSize = 0, oldStepSize = 1, oldOldStepSize = 1;
@@ -342,14 +371,39 @@ void AONdirection(network_type *network, double **direction,
     }
 
     *sptt = 0; /* calculate incrementally */
-    /*********** This part is where we should focus on parallelizing */
+
+#if PARALLELISM
+    struct thread_args args[network->numZones];
+    for (r = 0; r < network->numZones; ++r) {
+        args[r].id = r;
+        args[r].network = network;
+        args[r].targetFlows = targetFlows;
+        args[r].clss = -1;
+        args[r].parameters = parameters;
+        args[r].sptt = -1;
+    }
+#endif
+
     for (c = 0; c < network->numClasses; c++) {
         changeFixedCosts(network, c);
+#if PARALLELISM
+        for (r = 0; r < network->numZones; ++r) {
+            args[r].clss = c;
+            thpool_add_work(thpool, (void (*)(void *)) allOrNothingPool, (void*)&args[r]);
+        }
+        thpool_wait(thpool);
+        for (r = 0; r < network->numZones; ++r) {
+            if (args[r].sptt < 0) {
+                fatalError("SPTT for origin %d is %f", r, args[r].sptt);
+            }
+            *sptt += args[r].sptt;
+        }
+#else
         for (r = 0; r < network->numZones; r++) {
             *sptt += allOrNothing(network, targetFlows, r, c, parameters);
         }
+#endif
     }
-    /********** up to here */
 
     for (ij = 0; ij < network->numArcs; ij++) {
         for (c = 0; c < network->numClasses; c++) {
@@ -559,7 +613,9 @@ double allOrNothing(network_type *network, double **flows, int originZone,
         if (SPTree[curnode] != NULL) { /* Usual case, can push vehicles back */
             backnode = SPTree[curnode]->tail;
             backarc = ptr2arc(network, SPTree[curnode]);
+            pthread_mutex_lock(&network->arc_muts[backarc]);
             flows[backarc][class] += remainingVehicles[curnode];
+            pthread_mutex_unlock(&network->arc_muts[backarc]);
             remainingVehicles[backnode] += remainingVehicles[curnode];
         } else { /* No path found... only an issue if there is demand */
             if (remainingVehicles[curnode] > 0) {

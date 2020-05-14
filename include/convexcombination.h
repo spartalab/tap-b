@@ -43,6 +43,9 @@ typedef struct CCparameters {
                               double, double, double*, struct CCparameters*);
     double (*lineSearch)(network_type*, double**, int, struct CCparameters*);
     double (*gapFunction)(network_type*, double, double);
+#if PARALLELISM
+    int numThreads;
+#endif
 } CCparameters_type;
 
 CCparameters_type initializeCCparameters(CCalgorithm_type algo);
