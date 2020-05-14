@@ -101,6 +101,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
+        
         /* This gives us the information needed to report gap and check
          * convergence */
         tstt = TSTT(network);
@@ -118,12 +119,15 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
            also does the shifting) */
         stepSize = parameters->lineSearch(network, direction, iteration,
                                           parameters);
+
         
         /* Now set up for next iteration by scaling old directions,
          * shifting down old step sizes, and permuting array flows (no need to
          * copy, just swap pointers to alias them) */
         for (ij = 0; ij < network->numArcs; ij++) {
-            for (c = 0; c < network->numClasses; c++) {
+            /* Inner loop goes all the way up to numClasses to get the
+               aggregate column right too */
+            for (c = 0; c <= network->numClasses; c++) {
                 direction[ij][c] *= (1 - stepSize);
                 oldDirection[ij][c] *= (1 - stepSize);
             }
@@ -338,12 +342,10 @@ void AONdirection(network_type *network, double **direction,
         changeFixedCosts(network, c);
         for (r = 0; r < network->numZones; r++) {
             *sptt += allOrNothing(network, targetFlows, r, c, parameters);
-    
         }
     }
     /********** up to here */
 
-    
     for (ij = 0; ij < network->numArcs; ij++) {
         for (c = 0; c < network->numClasses; c++) {
             direction[ij][c] = targetFlows[ij][c]
@@ -403,6 +405,9 @@ void CFWdirection(network_type *network, double **direction,
         }
     }
 
+    //displayMessage(FULL_NOTIFICATIONS, "Conjugacy level: %f\n",     
+    //               calculateConjugacy(network, direction, oldDirection));
+
     return;
     /* Suppress compiler warnings */
     displayMessage(FULL_DEBUG, "%p %f", oldOldDirection, oldOldStepSize);
@@ -416,16 +421,12 @@ void BFWdirection(network_type *network, double **direction,
     double **AON= direction; /* alias to save memory */
     double numer, denom, mu, nu, beta0, beta1, beta2; 
 
-    /* Initialize the "last column" of total flow shifts */
-    for (ij = 0; ij < network->numArcs; ij++) {
-        direction[ij][network->numClasses] = 0;
-    }
-
     /* First find all-or-nothing direction, ignoring irrelevant params  */
     AONdirection(network, AON, NULL, NULL, 0, 0, sptt, parameters);
+
     /* Do pure AON step if either of last two steps were full */
     if (oldStepSize == 1 || oldOldStepSize == 1) return;
-
+        
     /* Now calculate parameters for conjugacy */
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
@@ -440,7 +441,7 @@ void BFWdirection(network_type *network, double **direction,
     }
     if (denom == 0) return; /* Do pure AON step in this exceptional case */
     mu = - numer / denom * (1 - oldStepSize);
-
+    
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
         changeFixedCosts(network, c);
@@ -453,10 +454,15 @@ void BFWdirection(network_type *network, double **direction,
     }
     if (denom == 0) return; /* Do pure AON step in this exceptional case */
     nu = mu * oldStepSize / (1 - oldStepSize) - numer / denom;
-
+    
     beta0 = 1 / (1 + mu + nu);
     beta1 = nu * beta0;
     beta2 = mu * beta0;
+    
+    /* Initialize the "last column" of total flow shifts */
+    for (ij = 0; ij < network->numArcs; ij++) {
+        direction[ij][network->numClasses] = 0;
+    }
 
     for (c = 0; c < network->numClasses; c++) {
         for (ij = 0; ij < network->numArcs; ij++) {
@@ -467,6 +473,14 @@ void BFWdirection(network_type *network, double **direction,
             direction[ij][network->numClasses] += direction[ij][c];
         }
     }
+
+    //displayMessage(FULL_NOTIFICATIONS, "Conjugacy level 1: %f\n",     
+    //               calculateConjugacy(network, direction, oldDirection));
+
+    //displayMessage(FULL_NOTIFICATIONS, "Conjugacy level 2: %f\n",     
+    //               calculateConjugacy(network, direction, oldOldDirection));
+
+    
 }
 
 /* Finds an all-or-nothing assignment from a given origin.  Involves three main
