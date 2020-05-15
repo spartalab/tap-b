@@ -21,6 +21,7 @@ void setBatches(network_type *network, int batchSize, bool warmStart);
 
 void main_TNTP(int argc, char* argv[]);
 void main_NCTCOG(int argc, char* argv[]);
+void main_NCTCOGFW(int argc, char* argv[]);
 void main_FWtest(int argc, char* argv[]);
 
 #endif
