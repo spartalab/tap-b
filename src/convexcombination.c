@@ -7,6 +7,7 @@
  */
 
 #include "convexcombination.h"
+#include <time.h>
 
 #if PARALLELISM
 #include "thpool.h"
@@ -102,6 +103,8 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     int ij, c;
     double tstt, sptt, gap;
     double elapsedTime;
+    struct timespec tick, tock;
+
 #if PARALLELISM
     thpool = thpool_init(parameters->numThreads);
 #endif
@@ -130,6 +133,8 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     while (converged == FALSE) {
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
@@ -138,8 +143,9 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
          * convergence */
         tstt = TSTT(network);
         gap = parameters->gapFunction(network, tstt, sptt);
-        elapsedTime += ((double)(clock() - stopTime)) / CLOCKS_PER_SEC;
-        stopTime = clock();        
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+        elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
+
         displayMessage(LOW_NOTIFICATIONS, "Iteration %d: gap %.15f, obj %.15g,"
                       " time %.3f\n",iteration, gap, BeckmannFunction(network),
                       elapsedTime);
