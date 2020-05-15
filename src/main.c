@@ -266,9 +266,9 @@ void main_NCTCOGFW(int argc, char* argv[]) {
 #endif
 
 #if PARALLELISM
-    Bparameters.numThreads = numOfThreads;
-   if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
-       fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
+    parameters.numThreads = numOfThreads;
+   if(parameters.numThreads < 1 || parameters.numThreads > 64) {
+       fatalError("Invalid number of threads: %d must be between 1 and 64", parameters.numThreads);
    }
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
