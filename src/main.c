@@ -99,7 +99,8 @@ void main_FWtest(int argc, char* argv[]) {
 #endif
     parameters.convergenceGap = 1e-4;
     parameters.maxLineSearchIterations = 1;
-    
+    displayMessage(FULL_NOTIFICATIONS, "Starting Frank-Wolfe Variation Algorithm...\n");
+
     convexCombinations(network, &parameters);
 
     writeNetworkFlows(network, parameters.flowsFile);
@@ -303,7 +304,7 @@ void main_NCTCOGFW(int argc, char* argv[]) {
 //    setBatches(network, network->numZones, argv[2] == NULL);
 
 
-    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
+    displayMessage(FULL_NOTIFICATIONS, "Starting Frank-Wolfe Variation Algorithm...\n");
     parameters.convergenceGap = 1e-8;
     parameters.maxIterations = 5000;
     parameters.maxTime = 3600 * 24 * 7;
