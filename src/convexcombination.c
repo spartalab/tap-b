@@ -122,7 +122,6 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
                   network->numClasses + 1);
     double **temp; /* used for swapping */
 
-    clock_t stopTime = clock(); /* used for timing */
     elapsedTime = 0;
 
     /* If warmStart is true, assume that the flows in network are feasible */
