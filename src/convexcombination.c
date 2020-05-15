@@ -19,8 +19,8 @@ struct thread_args {
     int id;
     int clss;
     double sptt;
-//    double **targetFlows;
-    double *targetFlows;
+    double **targetFlows;
+//    double *targetFlows;
     network_type *network;
     CCparameters_type *parameters;
 };
@@ -28,13 +28,13 @@ struct thread_args {
 void allOrNothingPool(void* pVoid) {
     struct thread_args *args = (struct thread_args *) pVoid;
     int r = args->id;
-//    double **targetFlows = args->targetFlows;
-    double *targetFlows = args->targetFlows;
+    double **targetFlows = args->targetFlows;
+//    double *targetFlows = args->targetFlows;
     network_type *network = args->network;
     CCparameters_type *parameters = args->parameters;
     int c = args->clss;
-//    args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
-    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
+    args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
+//    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
 }
 threadpool thpool;
 #endif
@@ -380,8 +380,8 @@ void AONdirection(network_type *network, double **direction,
     for (r = 0; r < network->numZones; ++r) {
         args[r].id = r;
         args[r].network = network;
-        args[r].targetFlows = calloc(network->numArcs, sizeof(double));
-//        args[r].targetFlows = targetFlows;
+//        args[r].targetFlows = calloc(network->numArcs, sizeof(double));
+        args[r].targetFlows = targetFlows;
         args[r].clss = -1;
         args[r].parameters = parameters;
         args[r].sptt = -1;
@@ -400,10 +400,10 @@ void AONdirection(network_type *network, double **direction,
             if (args[r].sptt < 0) {
                 fatalError("SPTT is negative for origin %d is %f", r, args[r].sptt);
             }
-            for (int i = 0; i < network->numArcs; ++i) {
-                targetFlows[i][c] += args[r].targetFlows[i];
-                args[r].targetFlows[i] = 0.0;
-            }
+//            for (int i = 0; i < network->numArcs; ++i) {
+//                targetFlows[i][c] += args[r].targetFlows[i];
+//                args[r].targetFlows[i] = 0.0;
+//            }
             *sptt += args[r].sptt;
         }
 #else
@@ -412,11 +412,11 @@ void AONdirection(network_type *network, double **direction,
         }
 #endif
     }
-#if PARALLELISM
-    for (r = 0; r < network->numZones; ++r) {
-        deleteVector(args[r].targetFlows);
-    }
-#endif
+//#if PARALLELISM
+//    for (r = 0; r < network->numZones; ++r) {
+//        deleteVector(args[r].targetFlows);
+//    }
+//#endif
 
     for (ij = 0; ij < network->numArcs; ij++) {
         for (c = 0; c < network->numClasses; c++) {
