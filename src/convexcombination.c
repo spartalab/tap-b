@@ -145,9 +145,13 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
 
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %d: gap %.15f, obj %.15g,"
+        if(parameters->calculateBeckmann == TRUE)
+            displayMessage(LOW_NOTIFICATIONS, "Iteration %d: gap %.15f, obj %.15g,"
                       " time %.3f\n",iteration, gap, BeckmannFunction(network),
                       elapsedTime);
+        else
+            displayMessage(LOW_NOTIFICATIONS, "Iteration %d: gap %.15f,"
+                                              " time %.3f\n",iteration, gap,elapsedTime);
         if (elapsedTime > parameters->maxTime) converged = TRUE;
         if (iteration >= parameters->maxIterations) converged = TRUE;
         if (gap < parameters->convergenceGap) converged = TRUE;
