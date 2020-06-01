@@ -305,7 +305,7 @@ void main_NCTCOGFW(int argc, char* argv[]) {
 
 
     displayMessage(FULL_NOTIFICATIONS, "Starting Frank-Wolfe Variation Algorithm...\n");
-    parameters.convergenceGap = 1e-8;
+    parameters.convergenceGap = 1e-4;
     parameters.maxIterations = 5000;
     parameters.maxTime = 3600 * 24 * 7;
 
