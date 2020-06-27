@@ -122,10 +122,11 @@ void main_TNTP(int argc, char* argv[]) {
        numOfThreads = atoi(argv[argc - 1]);
    }
 #else
-   if (argc != 3)
-        fatalError("Must specify two arguments\n\nUsage: tap "
+   if (argc < 5)
+        fatalError("Must specify at least four arguments\n\nUsage: tap gap num_classes "
                    "networkfile demandfile\n");
-
+   if (argc-4 != atoi(argv[2]))
+        fatalError("Number of classes must match number of input demand files");
 #endif
 
 #if PARALLELISM
@@ -141,7 +142,7 @@ void main_TNTP(int argc, char* argv[]) {
                       Bparameters.demandMultiplier);
    }
 #else
-   readOBANetwork(network, argv[1], argv + 2, argc - 2,
+   readOBANetwork(network, argv[3], argv + 4, atoi(argv[2]),
                   Bparameters.demandMultiplier);
 #endif
 
@@ -149,7 +150,7 @@ void main_TNTP(int argc, char* argv[]) {
    setBatches(network, network->numOrigins, argv[2] == NULL);
 
    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-   Bparameters.convergenceGap = 1e-14;
+   Bparameters.convergenceGap = atof(argv[1]);
    Bparameters.maxIterations = 200;
    Bparameters.maxTime = 10000;
    // Bparameters.storeBushes = TRUE; // Uncomment if you want to save bushes for future warm start use
