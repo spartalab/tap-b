@@ -476,9 +476,8 @@ void CFWdirection(network_type *network, double **direction,
     }
     if (denom != 0) {
         alpha = min(numer / denom, 1 - parameters->CFWmaxweight);
-        if (alpha < 0) {
-            alpha = 0;
-        }
+        /* Project to 0 if the alpha value is 0 */
+        if (alpha < 0) alpha = 0;
     } else {
         alpha = 0;
     }
