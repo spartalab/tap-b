@@ -222,6 +222,10 @@ void shiftFlows(network_type *network, double **direction, double stepSize) {
     for (ij = 0; ij < network->numArcs; ij++) {
         for (c = 0; c < network->numClasses; c++) {
             network->arcs[ij].classFlow[c] += stepSize * direction[ij][c];
+            if (network->arcs[ij].classFlow[c] < -1.0) {
+                fatalError("Flow for link %d and class %d is negative: %f, step size: %f direction: %f\n", ij, c, network->arcs[ij].classFlow[c], stepSize, direction[ij][c]);
+                exit(1);
+            }
         }
         network->arcs[ij].flow += stepSize * direction[ij][network->numClasses];
     }
@@ -258,7 +262,9 @@ double MSALineSearch(network_type *network, double **direction, int iteration,
     /* Add 2 to iteration so the step size sequence is
      *    1/2, 1/3, 1/4, ....
      * (notice that the first iteration is 'iteration 0' */
-    return 1.0 / (iteration + 2);
+    double step = 1.0 / (iteration + 2);
+    shiftFlows(network, direction, step);
+    return step;
     /* Suppress compiler warnings for unused variables */
     displayMessage(FULL_DEBUG, "%p %p %p", network, direction, parameters);
 }
@@ -522,7 +528,8 @@ void BFWdirection(network_type *network, double **direction,
     }
     if (denom == 0) return; /* Do pure AON step in this exceptional case */
     mu = - numer / denom * (1 - oldStepSize);
-    
+    if (mu < 0) mu = 0;
+
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
         changeFixedCosts(network, c);
@@ -535,7 +542,8 @@ void BFWdirection(network_type *network, double **direction,
     }
     if (denom == 0) return; /* Do pure AON step in this exceptional case */
     nu = mu * oldStepSize / (1 - oldStepSize) - numer / denom;
-    
+    if (nu < 0) nu = 0;
+
     beta0 = 1 / (1 + mu + nu);
     beta1 = nu * beta0;
     beta2 = mu * beta0;
