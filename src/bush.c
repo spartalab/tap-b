@@ -214,7 +214,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
             network->arcs[ij].classFlow[c] = 0;
         }
     }
-    displayMessage(FULL_NOTIFICATIONS, "Initialed flows\n");
+    displayMessage(FULL_NOTIFICATIONS, "Initialized flows\n");
     /* 2. Now create bushes, either reading from a file (if warmStart parameter
           is TRUE); or creating entirely from scratch (default); or by
           creating one set of bushes from scratch and reusing for other classes
