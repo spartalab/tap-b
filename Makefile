@@ -19,7 +19,7 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 RM = rm -f
 
 CC = gcc
-CFLAGS = -std=c99 -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
+CFLAGS = -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
 CFLAGS += -Wpedantic -Warray-bounds
 DEBUGFLAGS = -g -O0

@@ -4,6 +4,8 @@ Fast, efficient C implementation of Algorithm-B for the traffic assignment probl
 
 As of 12/26/19, this iteration now includes "batching" for very large OD-matrices.
 
+This code has been updated as of 4/25/20 with various patches and bug fixes.
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. There are two main options: normal and parallel.
