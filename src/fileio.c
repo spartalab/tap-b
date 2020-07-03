@@ -820,6 +820,7 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
     int ij;
 
     for (ij = 0; ij < network->numArcs; ij++) {
+        if (network->arcs[ij].capacity == ARTIFICIAL) continue;
         fprintf(outFile, "(%d,%d) %f %f\n", network->arcs[ij].tail + 1,
                                             network->arcs[ij].head + 1,
                                             network->arcs[ij].flow,
