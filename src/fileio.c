@@ -297,7 +297,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     int r, s;
 //    char initial[6];
     // char *buffer = (char *) calloc(48, sizeof(char));
-    float buffer[12];
+    char buffer[12*sizeof(float)];
     displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     int count = 0;
