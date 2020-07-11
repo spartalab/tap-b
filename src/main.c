@@ -36,7 +36,7 @@ int getNumCores() {
 int main(int argc, char* argv[]) {
     /* verbosity is a global variable controlling how much output to produce,
      * see utils.h for possible values*/
-    verbosity = FULL_NOTIFICATIONS;
+    verbosity = NOTHING;
     #ifdef DEBUG_MODE
         debugFile = openFile("full_log.txt", "w");
     #endif

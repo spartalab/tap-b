@@ -147,6 +147,10 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     } 
 
+    double tstt = network->numBatches == 1 ?
+                                         TSTT(network) :
+                                         bushTSTT(network, bushes);
+    displayMessage(NOTHING, "%lf\n", tstt);
     /* Clean up */
     deleteBushes(network, bushes);
 
