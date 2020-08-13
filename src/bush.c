@@ -109,10 +109,13 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-
+#endif
             batchGap = bushRelativeGap(network, bushes, parameters);
+#if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
+#endif
             gap += batchGap;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
@@ -214,7 +217,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
             network->arcs[ij].classFlow[c] = 0;
         }
     }
-    displayMessage(FULL_NOTIFICATIONS, "Initialed flows\n");
+    displayMessage(FULL_NOTIFICATIONS, "Initialized flows\n");
     /* 2. Now create bushes, either reading from a file (if warmStart parameter
           is TRUE); or creating entirely from scratch (default); or by
           creating one set of bushes from scratch and reusing for other classes
@@ -923,20 +926,20 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
     }
    
     /* If strict criterion fails, try a looser one */
-    if (newArcs == 0) {
-        for (ij = 0; ij < network->numArcs; ij++) {
-            i = network->arcs[ij].tail;
-            j = network->arcs[ij].head;
-            if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
-                continue; /* No path to extend */
-            if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
-                && (network->arcs[ij].tail == origin2node(network, origin)
-                    || network->arcs[ij].tail >= network->firstThroughNode))
-            {
-                bushes->flow[ij] = NEW_LINK;
-            }
-        }
-    }      
+    // if (newArcs == 0) {
+    //     for (ij = 0; ij < network->numArcs; ij++) {
+    //         i = network->arcs[ij].tail;
+    //         j = network->arcs[ij].head;
+    //         if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
+    //             continue; /* No path to extend */
+    //         if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
+    //             && (network->arcs[ij].tail == origin2node(network, origin)
+    //                 || network->arcs[ij].tail >= network->firstThroughNode))
+    //         {
+    //             bushes->flow[ij] = NEW_LINK;
+    //         }
+    //     }
+    // }      
 
    /* Finally update bush data structures: delete/add merges, find a new
     * topological order, rectify approach proportions */

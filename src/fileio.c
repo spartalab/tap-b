@@ -297,7 +297,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     int r, s;
 //    char initial[6];
     // char *buffer = (char *) calloc(48, sizeof(char));
-    float buffer[12];
+    char buffer[12*sizeof(float)];
     displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     int count = 0;
@@ -820,7 +820,8 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
     int ij, c;
 
     for (ij = 0; ij < network->numArcs; ij++) {
-        fprintf(outFile, "(%d,%d) %f ", network->arcs[ij].tail + 1,
+        if (network->arcs[ij].capacity == ARTIFICIAL) continue;
+        fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
                                             network->arcs[ij].head + 1,
                                             network->arcs[ij].flow);
         for (c = 0; c < network->numClasses; ++c) {
