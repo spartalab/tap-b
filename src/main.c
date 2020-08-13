@@ -146,9 +146,6 @@ void main_TNTP(int argc, char* argv[]) {
                   Bparameters.demandMultiplier);
 #endif
 
-   /* Default: one batch */
-   setBatches(network, network->numOrigins, argv[2] == NULL);
-
    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
    Bparameters.convergenceGap = atof(argv[1]);
    Bparameters.maxIterations = 200;
@@ -157,6 +154,9 @@ void main_TNTP(int argc, char* argv[]) {
    Bparameters.warmStart = FALSE; //Set to true if you want to warm start. Batch size must be set to the size used when first storing the bush
    Bparameters.gapFunction = RELATIVE_GAP_1;
    Bparameters.calculateBeckmann = TRUE; /* Expensive with conic functions */
+
+   /* Default: one batch */
+   setBatches(network, network->numOrigins, atoi(argv[2]) == 0);
 
    AlgorithmB(network, &Bparameters);
    writeNetworkFlows(network, Bparameters.flowsFile);
@@ -340,7 +340,7 @@ void setBatches(network_type *network, int batchSize, bool warmStart) {
     if(!warmStart)
       writeBinaryMatrices(network);
 
-    if(network-> numBatches > 1 && !warmStart) {
+    if(network-> numBatches > 1) {
 
         deleteMatrix(network->demand, network->numOrigins);
         network->demand = newMatrix(network->batchSize, network->numZones, double);
