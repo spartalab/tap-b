@@ -114,12 +114,26 @@ void main_TNTP(int argc, char* argv[]) {
 
 #if PARALLELISM
    int numOfThreads = 0;
-   if (argc != 4) {
+  if (argc < 5)
+    fatalError("Must specify at least four arguments\n\nUsage: tap gap num_classes "
+               "networkfile demandfiles [num_threads]\n");
+   if (argc == atoi(argv[2]) + 4) {
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
        displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
        numOfThreads = getNumCores();
+     if (argc-4 != atoi(argv[2]))
+        fatalError("Number of classes must match number of input demand files");
    } else {
-       numOfThreads = atoi(argv[argc - 1]);
+      if (argc-5 != atoi(argv[2]))
+        fatalError("Number of classes must match number of input demand files");
+      numOfThreads = atoi(argv[argc-1]);
+   }
+   Bparameters.numThreads = numOfThreads;
+   if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
+       fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
+   }
+   else {
+      displayMessage(FULL_NOTIFICATIONS, "Number of threads: %d\n", numOfThreads);
    }
 #else
    if (argc < 5)
@@ -129,23 +143,7 @@ void main_TNTP(int argc, char* argv[]) {
         fatalError("Number of classes must match number of input demand files");
 #endif
 
-#if PARALLELISM
-   Bparameters.numThreads = numOfThreads;
-   if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
-       fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
-   }
-   if (argc != 4) {
-       readOBANetwork(network, argv[1], argv + 2, argc - 2,
-                      Bparameters.demandMultiplier);
-   } else {
-       readOBANetwork(network, argv[1], argv + 2, argc - 3,
-                      Bparameters.demandMultiplier);
-   }
-#else
-   readOBANetwork(network, argv[3], argv + 4, atoi(argv[2]),
-                  Bparameters.demandMultiplier);
-#endif
-
+   readOBANetwork(network, argv[3], argv + 4, atoi(argv[2]), Bparameters.demandMultiplier);
    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
    Bparameters.convergenceGap = atof(argv[1]);
    Bparameters.maxIterations = 200;
