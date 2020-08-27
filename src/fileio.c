@@ -817,15 +817,17 @@ void writeOBANetwork(network_type *network, char *linkFileName,
  */
 void writeNetworkFlows(network_type *network, char *outputFileName) {
     FILE *outFile = openFile(outputFileName, "w");
-    int ij;
+    int ij, c;
 
     for (ij = 0; ij < network->numArcs; ij++) {
         if (network->arcs[ij].capacity == ARTIFICIAL) continue;
-        fprintf(outFile, "(%d,%d) %f %f\n", network->arcs[ij].tail + 1,
+        fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
                                             network->arcs[ij].head + 1,
-                                            network->arcs[ij].flow,
-                                            network->arcs[ij].cost
-                                                - network->arcs[ij].fixedCost);
+                                            network->arcs[ij].flow);
+        for (c = 0; c < network->numClasses; ++c) {
+            fprintf(outFile, "%f ", network->arcs[ij].classFlow[c]);
+        }
+        fprintf(outFile, "\n");
     }
     
     fclose(outFile);
