@@ -46,8 +46,8 @@ int main(int argc, char* argv[]) {
 
 #if NCTCOG_ENABLED
 //    main_NCTCOG(argc, argv);
-//     main_NCTCOGFW(argc, argv);
-    main_NCTCOGFW_conic_calculator(argc, argv);
+     main_NCTCOGFW(argc, argv);
+//    main_NCTCOGFW_conic_calculator(argc, argv);
 #else
      main_TNTP(argc, argv);
 //    main_FWtest(argc, argv);
@@ -329,7 +329,6 @@ struct NCTCOG_Translator {
 
 void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
-    CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
 
     displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
     if (argc != 5)
@@ -343,6 +342,8 @@ void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
     displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
     readNCTCOGNetwork(network, argv[1], NULL, argv[3]);
 
+    network->arcs[67155].flow = 1.68575;
+    printf("%f\n", conicCost(&network->arcs[67155]));
 
     struct NCTCOG_Translator* translator = newVector(89421, struct NCTCOG_Translator);
     for(int i = 0; i < 89421; ++i) {
@@ -350,7 +351,6 @@ void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
         translator[i].BA_index = -1;
     }
 
-    char* fname = "nctcog/translator.csv";
     char lineData[5][STRING_SIZE];
     char fullLine[STRING_SIZE];
     FILE *translator_file = openFile(argv[4], "r");
@@ -373,6 +373,9 @@ void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
     for (int ij = 0; ij < network->numArcs; ij++) {
         times[ij] = 0.0;
     }
+    for (int c = 0; c < network->numClasses; c++) {
+        changeFixedCosts(network, c);
+    }
     FILE *flows_file = openFile(argv[2], "r");
     if (fgets(fullLine, STRING_SIZE, flows_file) == NULL)
         fatalError("Cannot read header of flows_file %s", flows_file);
@@ -385,6 +388,7 @@ void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
         int ba_arc_idx = translator[idx].BA_index;
         if (ab_arc_idx != -1) {
             network->arcs[ab_arc_idx].flow = atof(lineData[3]);
+
             times[ab_arc_idx] = conicCost(&network->arcs[ab_arc_idx]);
         }
         if (ba_arc_idx != -1) {

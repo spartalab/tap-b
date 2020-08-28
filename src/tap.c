@@ -199,7 +199,8 @@ double quarticBPRint(struct arc_type *arc, bool includeFixedCost) {
 }
 
 double conicCost(struct arc_type *arc) {
-    double time = arc->freeFlowTime;
+    double time = arc->freeFlowTime + 0.5;
+//    double time = arc->freeFlowTime + arc->fixedCost;
     double x = arc->flow/arc->capacity;
 
     arc->oldRoot = sqrt(arc->b * arc->b + arc->a * arc->a
@@ -209,24 +210,21 @@ double conicCost(struct arc_type *arc) {
     time += arc->freeFlowTime *
             (1 + arc->oldRoot - arc->a * (1 - x + arc->e) - arc->b - arc->h0);
 
-//    printf("time after concic delay added %f\n", time);
-
     /* Add signalized delay */
     if (arc->flow/arc->saturationFlow <= 0.875) {
         time += arc->sParam / (1 - arc->flow/arc->saturationFlow);
     } else if (arc->flow/arc->saturationFlow < 0.925) {
         time += arc->CD + arc->flow/arc->saturationFlow *
-                    (arc->CC + arc->flow/arc->saturationFlow *
-                        (arc->CB + arc->flow/arc->saturationFlow * arc->CA));
+                          (arc->CC + arc->flow/arc->saturationFlow *
+                                     (arc->CB + arc->flow/arc->saturationFlow * arc->CA));
     } else {
         time += arc->sParam / 0.1;
     }
-//    printf("time after signal delay added %f\n", time);
 
-//    /* Add unsignalized delay */
-    if (x > 1e-8) time += (arc->m) + (arc->u) * x;
+    /* Add unsignalized delay */
+    if(arc->flow > 0) time += arc->m + arc->u * arc->flow/arc->capacity;
 
-//    printf("time after unsignal delay added %f\n", time);
+    if (isnan(time) || isinfl(time) || time < 0 ) displayMessage(MEDIUM_NOTIFICATIONS, "Negative time %f resulted on link with idx: %d and flow: %f\n", time, arc->ID, arc->flow);
     return time;
 }
 
@@ -239,6 +237,7 @@ double conicDer(struct arc_type *arc) {
     der += arc->a * arc->freeFlowTime / arc->capacity
            * (1 - arc->a*(1 - arc->flow/arc->capacity + arc->e) / arc->oldRoot);
 
+//    der += arc->freeFlowTime * (arc->a/arc->capacity + (0.5 * 1.0/sqrt( ))
     /* Add signalized delay */
     if (arc->flow/arc->saturationFlow <= 0.875) {
         der += arc->sParam / (arc->saturationFlow
@@ -252,7 +251,8 @@ double conicDer(struct arc_type *arc) {
 
     /* Add unsignalized delay */
     der += arc->u /arc->capacity;
-
+    if (isnan(der)) displayMessage(FULL_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
+//    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
     return der;
 }
 

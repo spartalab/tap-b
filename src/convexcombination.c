@@ -62,7 +62,7 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
         break;
     case CONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &CFWdirection;
-        parameters.lineSearch = &NewtonSearch;
+        parameters.lineSearch = &bisection;
         break;
     case BICONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &BFWdirection;
@@ -699,16 +699,21 @@ double allOrNothing_par(network_type *network, double *flows, int originZone,
     default:
         fatalError("Unknown shortest path algorithm %d\n", parameters->SP_algo);
     }
-
+    for (i = 0; i < network->numZones; i++) {
+        if (SPTree[i] == NULL) { /* Ordinary case, node is reachable */
+            displayMessage(FULL_NOTIFICATIONS, "Node(%d) does not have backlink\n", i);
+        }
+    }
     /* Calculate shortest path time (for gap) */
     for (i = 0; i < network->numZones; i++) {
         if (SPTree[i] != NULL) { /* Ordinary case, node is reachable */
             originSPTT += SPLabels[i] * network->demand[origin][i];
         } else { /* No path found... only an issue if there is demand */
-            if (network->demand[origin][i] > 0 && i != originZone) {
+                for (int j = 0; j < network->numArcs; ++j) {
+                    displayMessage(FULL_NOTIFICATIONS, "Flow on link (%d) is %f\n", j, network->arcs[j].flow);
+                }
                 fatalError("No path found from %d to %d but demand exists!",
                             originZone, i);
-            }
         }
     }
 

@@ -185,7 +185,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
     fclose(networkFile);
 }
 
-void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table) {
+void readNCTCOGTranslator(const char *fileName, NCTCOG_tap_idx *table) {
     char fullLine[STRING_SIZE];
     char lineData[3][STRING_SIZE];
     FILE *file = openFile(fileName, "r");
@@ -220,7 +220,7 @@ void readNCTCOGTranslatedFlows(network_type *network, char *flowsFileName, float
 
     FILE *file = openFile(flowsFileName, "r");
 
-    char* fname = "nctcog/translator.csv";
+    const char* fname = "nctcog/translator.csv";
     readNCTCOGTranslator(fname, translator);
 
     /* Skip header row */
