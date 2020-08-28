@@ -185,7 +185,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
 
 void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table) {
     char fullLine[STRING_SIZE];
-    char lineData[4][STRING_SIZE];
+    char lineData[3][STRING_SIZE];
     FILE *file = openFile(fileName, "r");
 
     /* Skip header row */
@@ -195,7 +195,7 @@ void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table) {
     for (int i = 0; i < 85088; i++) {
         if (fgets(fullLine, STRING_SIZE, file) == NULL)
             fatalError("Link file done before all links read.");
-        parseCSV(lineData, fullLine, 4);
+        parseCSV(lineData, fullLine, 3);
         int ij = atof(lineData[1]);
         if (strcmp(lineData[2], "True") == 0) {
             table[ij].AB = atoi(lineData[0]);
@@ -210,8 +210,8 @@ void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table) {
 void readNCTCOGTranslatedFlows(network_type *network, char *flowsFileName, float *table) {
     char fullLine[STRING_SIZE];
     char lineData[10][STRING_SIZE];
-    NCTCOG_tap_idx *translator = malloc(sizeof(NCTCOG_tap_idx) * 85090);
-    for (int i = 0; i < 85090; i++) {
+    NCTCOG_tap_idx *translator = malloc(sizeof(NCTCOG_tap_idx) * 89430);
+    for (int i = 0; i < 89430; i++) {
         translator[i].AB = -1;
         translator[i].BA = -1;
     }
