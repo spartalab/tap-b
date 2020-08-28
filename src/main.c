@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 #if NCTCOG_ENABLED
 //    main_NCTCOG(argc, argv);
     // main_NCTCOGFW(argc, argv);
-    main_NCTCOGFW_test(argc, argv);
+    main_NCTCOGFW_conic_calculator(argc, argv);
 #else
      main_TNTP(argc, argv);
 //    main_FWtest(argc, argv);
@@ -322,33 +322,87 @@ void main_NCTCOGFW(int argc, char* argv[]) {
     deleteNetwork(network);
 }
 
-void main_NCTCOGFW_test(int argc, char* argv[]) {
+struct NCTCOG_Translator {
+    int AB_index;
+    int BA_index;
+};
+
+void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
 
-    displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
+    displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
     if (argc != 5)
         fatalError("Must specify three arguments for NCTCOG:\n\n"
-                       "networkfile triptable convertertable\n\n"
-                       "-network file has link data\n"
-                       "-triptable has the OD matrix in CSV form\n"
-                       "-convertertable translates wrap IDs to TAP-B\n");
+                       "networkfile flowsfile convertertable\n\n"
+                       "-networkfile has link data\n"
+                       "-flowsfile has flows to calculate times for\n"
+                       "-convertertable translates wrap IDs to TAP-B\n"
+                       "-translator translates nctcog link index to TAP-B indices");
 
     displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
-    if (strcmp("", argv[2]) == 0) {
-      argv[2] = NULL;
-      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+    readNCTCOGNetwork(network, argv[1], NULL, argv[3]);
 
+
+    struct NCTCOG_Translator* translator = newVector(89421, struct NCTCOG_Translator);
+    for(int i = 0; i < 89421; ++i) {
+        translator[i].AB_index = -1;
+        translator[i].BA_index = -1;
     }
-    readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
 
-    float *table = malloc(80 * sizeof(float));
+    char* fname = "nctcog/translator.csv";
+    char lineData[5][STRING_SIZE];
+    char fullLine[STRING_SIZE];
+    FILE *translator_file = openFile(argv[4], "r");
+    if (fgets(fullLine, STRING_SIZE, translator_file) == NULL)
+        fatalError("Cannot read header of translator_file %s", translator_file);
+    while (TRUE) { /* Break in middle when out of lines */
+        if (fgets(fullLine, STRING_SIZE, translator_file) == NULL) break;
+        if (strstr(fullLine, ",") == NULL) continue;
+        parseCSV(lineData, fullLine, 3);
+        int idx = atoi(lineData[1]);
+        if (strcmp(lineData[2], "True") == 0) {
+            translator[idx].AB_index = atoi(lineData[0]);
+        } else {
+            translator[idx].BA_index = atoi(lineData[0]);
+        }
+    }
+    fclose(translator_file);
 
-    readNCTCOGTranslatedFlows(network, argv[4], table);
+    double* times = newVector(network->numArcs, double);
+    for (int ij = 0; ij < network->numArcs; ij++) {
+        times[ij] = 0.0;
+    }
+    FILE *flows_file = openFile(argv[2], "r");
+    if (fgets(fullLine, STRING_SIZE, flows_file) == NULL)
+        fatalError("Cannot read header of flows_file %s", flows_file);
+    while (TRUE) { /* Break in middle when out of lines */
+        if (fgets(fullLine, STRING_SIZE, flows_file) == NULL) break;
+        if (strstr(fullLine, ",") == NULL) continue;
+        parseCSV(lineData, fullLine, 5);
+        int idx = atoi(lineData[0]);
+        int ab_arc_idx = translator[idx].AB_index;
+        int ba_arc_idx = translator[idx].BA_index;
+        if (ab_arc_idx != -1) {
+            network->arcs[ab_arc_idx].flow = atof(lineData[3]);
+            times[ab_arc_idx] = conicCost(&network->arcs[ab_arc_idx]);
+        }
+        if (ba_arc_idx != -1) {
+            network->arcs[ba_arc_idx].flow = atof(lineData[4]);
+            times[ba_arc_idx] = conicCost(&network->arcs[ba_arc_idx]);
+        }
+    }
+    fclose(flows_file);
 
-    // writeNetworkFlows(network, parameters.flowsFile);
-    //deleteNetwork(network);
-    free(table);
+    FILE *outFile = openFile("calculated_file.csv", "w");
+    int ij;
+
+    for (ij = 0; ij < network->numArcs; ij++) {
+        if (network->arcs[ij].capacity == ARTIFICIAL) continue;
+        fprintf(outFile, "%f\n", times[ij]);
+    }
+
+    fclose(outFile);
 }
 #endif
 
