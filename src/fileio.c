@@ -183,6 +183,68 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
     fclose(networkFile);
 }
 
+void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table) {
+    char fullLine[STRING_SIZE];
+    char lineData[4][STRING_SIZE];
+    FILE *file = openFile(fileName, "r");
+
+    /* Skip header row */
+    if (fgets(fullLine, STRING_SIZE, file) == NULL)
+        fatalError("Cannot read header of network file %s", file);
+    
+    for (int i = 0; i < 85088; i++) {
+        if (fgets(fullLine, STRING_SIZE, file) == NULL)
+            fatalError("Link file done before all links read.");
+        parseCSV(lineData, fullLine, 4);
+        int ij = atof(lineData[1]);
+        if (strcmp(lineData[2], "True") == 0) {
+            table[ij].AB = atoi(lineData[0]);
+        } else if (strcmp(lineData[2], "False") == 0) {
+            table[ij].BA = atoi(lineData[0]);
+        } else {
+            fatalError("Translator has an empty entry.");
+        }
+    }
+}
+
+void readNCTCOGTranslatedFlows(network_type *network, char *flowsFileName, float *table) {
+    char fullLine[STRING_SIZE];
+    char lineData[10][STRING_SIZE];
+    NCTCOG_tap_idx *translator = malloc(sizeof(NCTCOG_tap_idx) * 85090);
+    for (int i = 0; i < 85090; i++) {
+        translator[i].AB = -1;
+        translator[i].BA = -1;
+    }
+
+    FILE *file = openFile(flowsFileName, "r");
+
+    char* fname = "nctcog/translator.csv";
+    readNCTCOGTranslator(fname, translator);
+
+    /* Skip header row */
+    if (fgets(fullLine, STRING_SIZE, file) == NULL)
+        fatalError("Cannot read header of network file %s", file);
+    
+    for (int i = 0; i < 50167; i++) {
+        if (fgets(fullLine, STRING_SIZE, file) == NULL)
+            fatalError("Link file done before all links read.");
+        parseCSV(lineData, fullLine, 10);
+        int index = atoi(lineData[1]);
+        int ABidx = translator[index].AB;
+        int BAidx = translator[index].BA;
+        if (ABidx != -1) {
+            network->arcs[ABidx].flow = atof(lineData[2]);
+            table[ABidx] = network->arcs[ABidx].calculateCost(&network->arcs[ABidx]);
+        }
+        if (BAidx != -1) {
+            network->arcs[BAidx].flow = atof(lineData[3]);
+            table[ABidx] = network->arcs[ABidx].calculateCost(&network->arcs[ABidx]);
+        }
+    }
+    free(translator);
+}
+
+
 void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
         char *to, char *cap, char *len, char *freeFlow, char *conical, char
         *shift, char *sPar, char *satFlow, char *CA, char *CB, char *CC, char

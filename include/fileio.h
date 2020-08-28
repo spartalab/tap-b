@@ -80,6 +80,11 @@ typedef enum {
     NUM_NCTCOG_NET_COLUMNS
 } NCTCOG_net_columns;
 
+typedef struct {
+    int AB;
+    int BA;
+} NCTCOG_tap_idx;
+
 void readNCTCOGNetwork(network_type *network, char *networkFileName,
                        char *tripFileName, char *converterFileName);
 void writeBinaryMatrices(network_type *network);
@@ -87,6 +92,8 @@ void readConverterFile(char *converterFileName, int *table, int maxValue,
                        int maxKey, bool isInverse);
 int convert(int value, int *table, int maxKey);
 void readNCTCOGLinks(network_type *network, char *networkFileName, int *table);
+void readNCTCOGTranslator(char *fileName, NCTCOG_tap_idx *table);
+void readNCTCOGTranslatedFlows(network_type *network, char *fileName, float *table);
 void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
         char *to, char *cap, char *len, char *freeFlow, char *conical, char
         *shift, char *sPar, char *satFlow, char *CA ,char *CB, char *CC, char

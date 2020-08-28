@@ -68,7 +68,7 @@ release: $(BINDIR)/$(PROJECT)
 # ---------- debug target---------------------------
 
 .PHONY: debug
-debug: CFLAGS += $(DEBUGFLAGS)
+debug: CFLAGS += $(DEBUGFLAGS) -DNCTCOG_ENABLED=1 
 debug: $(BINDIR)/$(PROJECT)
 
 # ---------- profile target-------------------------

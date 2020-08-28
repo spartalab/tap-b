@@ -1,4 +1,5 @@
 #include "main.h"
+#include "stdlib.h"
 #ifdef _WIN32
 #include <windows.h>
 #elif MACOS
@@ -45,7 +46,8 @@ int main(int argc, char* argv[]) {
 
 #if NCTCOG_ENABLED
 //    main_NCTCOG(argc, argv);
-    main_NCTCOGFW(argc, argv);
+    // main_NCTCOGFW(argc, argv);
+    main_NCTCOGFW_test(argc, argv);
 #else
      main_TNTP(argc, argv);
 //    main_FWtest(argc, argv);
@@ -239,6 +241,7 @@ void main_NCTCOG(int argc, char* argv[]) {
     writeNetworkFlows(network, Bparameters.flowsFile);
     deleteNetwork(network);
 }
+
 void main_NCTCOGFW(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
@@ -317,6 +320,35 @@ void main_NCTCOGFW(int argc, char* argv[]) {
 
     writeNetworkFlows(network, parameters.flowsFile);
     deleteNetwork(network);
+}
+
+void main_NCTCOGFW_test(int argc, char* argv[]) {
+    network_type *network = newScalar(network_type);
+    CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
+
+    displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
+    if (argc != 5)
+        fatalError("Must specify three arguments for NCTCOG:\n\n"
+                       "networkfile triptable convertertable\n\n"
+                       "-network file has link data\n"
+                       "-triptable has the OD matrix in CSV form\n"
+                       "-convertertable translates wrap IDs to TAP-B\n");
+
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
+    if (strcmp("", argv[2]) == 0) {
+      argv[2] = NULL;
+      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+
+    }
+    readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
+
+    float *table = malloc(80 * sizeof(float));
+
+    readNCTCOGTranslatedFlows(network, argv[4], table);
+
+    // writeNetworkFlows(network, parameters.flowsFile);
+    //deleteNetwork(network);
+    free(table);
 }
 #endif
 
