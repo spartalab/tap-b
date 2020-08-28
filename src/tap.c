@@ -199,16 +199,18 @@ double quarticBPRint(struct arc_type *arc, bool includeFixedCost) {
 }
 
 double conicCost(struct arc_type *arc) {
-    double time = arc->freeFlowTime + arc->fixedCost;
-        
+    double time = arc->freeFlowTime;
+    double x = arc->flow/arc->capacity;
+
     arc->oldRoot = sqrt(arc->b * arc->b + arc->a * arc->a
-                        * (1 - arc->flow/arc->capacity + arc->e)
-                        * (1 - arc->flow/arc->capacity + arc->e));
+                        * (1 - x + arc->e)
+                        * (1 - x + arc->e));
     /* Add conic delay */
     time += arc->freeFlowTime *
-            (arc->oldRoot -arc->h0
-              + arc->a * arc->flow/arc->capacity );
-    
+            (1 + arc->oldRoot - arc->a * (1 - x + arc->e) - arc->b - arc->h0);
+
+//    printf("time after concic delay added %f\n", time);
+
     /* Add signalized delay */
     if (arc->flow/arc->saturationFlow <= 0.875) {
         time += arc->sParam / (1 - arc->flow/arc->saturationFlow);
@@ -219,10 +221,12 @@ double conicCost(struct arc_type *arc) {
     } else {
         time += arc->sParam / 0.1;
     }
+//    printf("time after signal delay added %f\n", time);
 
-    /* Add unsignalized delay */
-        time += arc->m + arc->u * arc->flow/arc->capacity;
-    
+//    /* Add unsignalized delay */
+    time += (arc->m + arc->u) * x;
+
+//    printf("time after unsignal delay added %f\n", time);
     return time;
 }
 

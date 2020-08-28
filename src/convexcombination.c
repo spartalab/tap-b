@@ -181,7 +181,9 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         oldOldDirection = oldDirection;
         oldDirection = direction;
         direction = temp; /* This will be overwritten next time around */
-        
+
+//        verifyFlows(network);
+
         iteration++;
     }
     

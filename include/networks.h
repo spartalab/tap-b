@@ -68,6 +68,7 @@ typedef struct arc_type {
     double  der;
 
     int     ID; /* NCTCOG ID */
+    bool    AB_Link;
     double  freeFlowTime;
     double  capacity;
     double  a; /* Conical parameter */

@@ -396,10 +396,10 @@ void main_NCTCOGFW_conic_calculator(int argc, char* argv[]) {
 
     FILE *outFile = openFile("calculated_file.csv", "w");
     int ij;
-
+    fprintf(outFile, "ID1,time,Is_AB\n");
     for (ij = 0; ij < network->numArcs; ij++) {
         if (network->arcs[ij].capacity == ARTIFICIAL) continue;
-        fprintf(outFile, "%f\n", times[ij]);
+        fprintf(outFile, "%d,%f,%d\n", network->arcs[ij].ID, times[ij], network->arcs[ij].AB_Link);
     }
 
     fclose(outFile);
