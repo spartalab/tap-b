@@ -286,7 +286,7 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     } else {
         fatalError("Unreadable exclude parameter '%s'", exclude);
     }
-    arc->h0 = 1 + sqrt(arc->a * arc->a * arc->e * arc->e + arc->b * arc->b) - arc->a * arc->e - arc->b;
+    arc->h0 = 1 + sqrt(arc->a * arc->a * (1 + arc->e) * (1 + arc->e) + arc->b * arc->b) - arc->a * (1 + arc->e) - arc->b;
     arc->alpha = 0.15;
     arc->beta = 4;
     arc->toll = 0;
