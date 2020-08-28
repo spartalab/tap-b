@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
 #if NCTCOG_ENABLED
 //    main_NCTCOG(argc, argv);
-    // main_NCTCOGFW(argc, argv);
+//     main_NCTCOGFW(argc, argv);
     main_NCTCOGFW_conic_calculator(argc, argv);
 #else
      main_TNTP(argc, argv);

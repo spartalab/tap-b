@@ -224,7 +224,7 @@ double conicCost(struct arc_type *arc) {
 //    printf("time after signal delay added %f\n", time);
 
 //    /* Add unsignalized delay */
-    time += (arc->m + arc->u) * x;
+    if (x > 1e-8) time += (arc->m) + (arc->u) * x;
 
 //    printf("time after unsignal delay added %f\n", time);
     return time;
