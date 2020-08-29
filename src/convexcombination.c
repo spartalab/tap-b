@@ -62,7 +62,7 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
         break;
     case CONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &CFWdirection;
-        parameters.lineSearch = &NewtonSearch;
+        parameters.lineSearch = &bisection;
         break;
     case BICONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &BFWdirection;
@@ -74,7 +74,7 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
         parameters.searchDirection = &AONdirection;
         parameters.lineSearch = &bisection;                      
     }
-    parameters.SP_algo = HEAP_DIJKSTRA;
+    parameters.SP_algo = PAPE;
     
     /* Convergence criteria */
     parameters.gapFunction = &CCrelativeGap;
