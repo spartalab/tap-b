@@ -8,11 +8,11 @@
 
 /* These routines are HARD-CODED for the NCTCOG network.  They cannot read
  * any other network or file.  Dimensions, etc. will be wrong.*/
-#define NCTCOG_NODES 32782
+#define NCTCOG_NODES 32799
 #define NCTCOG_DIRECTED_LINKS 85089
 #define NCTCOG_UNDIRECTED_LINKS 50295
 #define NCTCOG_ZONES 5352
-#define NCTCOG_MAX_NODE_ID 77429
+#define NCTCOG_MAX_NODE_ID 154223
 #define NCTCOG_NUM_CLASSES 10
 void readNCTCOGNetwork(network_type *network, char *networkFileName,
                        char *tripFileName, char *converterFileName) {
