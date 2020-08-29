@@ -9,8 +9,8 @@
 /* These routines are HARD-CODED for the NCTCOG network.  They cannot read
  * any other network or file.  Dimensions, etc. will be wrong.*/
 #define NCTCOG_NODES 32799
-#define NCTCOG_DIRECTED_LINKS 85089
-#define NCTCOG_UNDIRECTED_LINKS 50295
+#define NCTCOG_DIRECTED_LINKS 85088
+#define NCTCOG_UNDIRECTED_LINKS 50294
 #define NCTCOG_ZONES 5352
 #define NCTCOG_MAX_NODE_ID 154223
 #define NCTCOG_NUM_CLASSES 10
@@ -151,7 +151,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
 
     /* Now read for each link */
     ij = 0; /* ij counts directional links, e undirected links */
-    for (e = 1; e < NCTCOG_UNDIRECTED_LINKS; e++) {
+    for (e = 0; e < NCTCOG_UNDIRECTED_LINKS; e++) {
         if (fgets(fullLine, STRING_SIZE, networkFile) == NULL)
             fatalError("Link file done before all links read.");
         parseCSV(lineData, fullLine, NUM_NCTCOG_NET_COLUMNS);
