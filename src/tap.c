@@ -199,9 +199,10 @@ double quarticBPRint(struct arc_type *arc, bool includeFixedCost) {
 }
 
 double conicCost(struct arc_type *arc) {
-    double time = arc->freeFlowTime + 0.5;
-//    double time = arc->freeFlowTime + arc->fixedCost;
+    double time = arc->freeFlowTime + arc->fixedCost;
+//    double time = arc->freeFlowTime + 0.5;
     double x = arc->flow/arc->capacity;
+    double v_s = arc->flow/arc->saturationFlow;
 
     arc->oldRoot = sqrt(arc->b * arc->b + arc->a * arc->a
                         * (1 - x + arc->e)
@@ -211,20 +212,17 @@ double conicCost(struct arc_type *arc) {
             (1 + arc->oldRoot - arc->a * (1 - x + arc->e) - arc->b - arc->h0);
 
     /* Add signalized delay */
-    if (arc->flow/arc->saturationFlow <= 0.875) {
-        time += arc->sParam / (1 - arc->flow/arc->saturationFlow);
-    } else if (arc->flow/arc->saturationFlow < 0.925) {
-        time += arc->CD + arc->flow/arc->saturationFlow *
-                          (arc->CC + arc->flow/arc->saturationFlow *
-                                     (arc->CB + arc->flow/arc->saturationFlow * arc->CA));
+    if (v_s <= 0.875) {
+        time += arc->sParam / (1 - v_s);
+    } else if (v_s < 0.925) {
+        time += arc->CD + v_s * (arc->CC + v_s * (arc->CB + v_s * arc->CA));
     } else {
         time += arc->sParam / 0.1;
     }
 
     /* Add unsignalized delay */
-    if(arc->flow > 0) time += arc->m + arc->u * arc->flow/arc->capacity;
+    time += arc->m + arc->u * x;
 
-    if (isnan(time) || isinfl(time) || time < 0 ) displayMessage(MEDIUM_NOTIFICATIONS, "Negative time %f resulted on link with idx: %d and flow: %f\n", time, arc->ID, arc->flow);
     return time;
 }
 
