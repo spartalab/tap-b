@@ -229,25 +229,27 @@ double conicCost(struct arc_type *arc) {
  * calculated in the objective. */
 double conicDer(struct arc_type *arc) {
     double der = 0;
-    
+    double x = arc->flow/arc->capacity;
+    double v_s = arc->flow/arc->saturationFlow;
+    double x_prime = 1.0/arc->capacity;
+    double v_s_prime = 1.0/arc->saturationFlow;
+    double oldRoot_prime = (-1 * arc->a * arc->a * (1 - x + arc->e) * x_prime)/arc->oldRoot;
+
     /* Start with conic part... use saved root */
-    der += arc->a * arc->freeFlowTime / arc->capacity
-           * (1 - arc->a*(1 - arc->flow/arc->capacity + arc->e) / arc->oldRoot);
+    der += arc->freeFlowTime * (oldRoot_prime + arc->a * x_prime);
 
     /* Add signalized delay */
     if (arc->flow/arc->saturationFlow <= 0.875) {
-        der += arc->sParam / (arc->saturationFlow
-                * (1 - arc->flow/arc->saturationFlow) 
-                * (1 - arc->flow/arc->saturationFlow));
+        der += (arc->sParam * v_s_prime )/ ((1 - v_s) * (1 - v_s));
     } else if (arc->flow/arc->saturationFlow < 0.925) {
-        der += (arc->CC + arc->flow/arc->saturationFlow *
-                 (2 * arc->CB + arc->flow/arc->saturationFlow * 3 *arc->CA))
-                 / arc->saturationFlow;
+        der += (arc->CC + v_s *
+                 (2 * arc->CB + v_s * 3 *arc->CA)) * v_s_prime;
     }
 
     /* Add unsignalized delay */
-    der += arc->u /arc->capacity;
-
+    der += arc->u * x_prime;
+    if (isnan(der)) displayMessage(FULL_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
+//    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
     return der;
 }
 
