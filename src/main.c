@@ -37,7 +37,7 @@ int getNumCores() {
 int main(int argc, char* argv[]) {
     /* verbosity is a global variable controlling how much output to produce,
      * see utils.h for possible values*/
-    verbosity = FULL_NOTIFICATIONS;
+    verbosity = FULL_DEBUG;
     #ifdef DEBUG_MODE
         debugFile = openFile("full_log.txt", "w");
     #endif
@@ -65,7 +65,7 @@ void main_FWtest(int argc, char* argv[]) {
     verbosity = DEBUG;
     
     network_type *network = newScalar(network_type);
-    CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
+    CCparameters_type parameters = initializeCCparameters(BICONJUGATE_FRANK_WOLFE);
 
 #if PARALLELISM
     int numOfThreads = 0;

@@ -8,11 +8,11 @@
 
 /* These routines are HARD-CODED for the NCTCOG network.  They cannot read
  * any other network or file.  Dimensions, etc. will be wrong.*/
-#define NCTCOG_NODES 32782
-#define NCTCOG_DIRECTED_LINKS 85089
-#define NCTCOG_UNDIRECTED_LINKS 50295
+#define NCTCOG_NODES 32799
+#define NCTCOG_DIRECTED_LINKS 85088
+#define NCTCOG_UNDIRECTED_LINKS 50294
 #define NCTCOG_ZONES 5352
-#define NCTCOG_MAX_NODE_ID 77429
+#define NCTCOG_MAX_NODE_ID 154223
 #define NCTCOG_NUM_CLASSES 10
 void readNCTCOGNetwork(network_type *network, char *networkFileName,
                        char *tripFileName, char *converterFileName) {
@@ -151,7 +151,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
 
     /* Now read for each link */
     ij = 0; /* ij counts directional links, e undirected links */
-    for (e = 1; e < NCTCOG_UNDIRECTED_LINKS; e++) {
+    for (e = 0; e < NCTCOG_UNDIRECTED_LINKS; e++) {
         if (fgets(fullLine, STRING_SIZE, networkFile) == NULL)
             fatalError("Link file done before all links read.");
         parseCSV(lineData, fullLine, NUM_NCTCOG_NET_COLUMNS);
@@ -258,6 +258,8 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     arc->ID = atoi(ID);
     arc->tail = convert(atoi(from), table, NCTCOG_MAX_NODE_ID);
     arc->head = convert(atoi(to), table, NCTCOG_MAX_NODE_ID);
+    arc->NCTCOG_HEAD = atoi(to);
+    arc->NCTCOG_TAIL = atoi(from);
     arc->flow = 0;
     arc->cost = atof(freeFlow);
     arc->der = 0;
@@ -286,6 +288,7 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     } else {
         fatalError("Unreadable exclude parameter '%s'", exclude);
     }
+    arc->b = (2 * arc->a -1) / (2 * arc->a - 2);
     arc->h0 = 1 + sqrt(arc->a * arc->a * (1 + arc->e) * (1 + arc->e) + arc->b * arc->b) - arc->a * (1 + arc->e) - arc->b;
     arc->alpha = 0.15;
     arc->beta = 4;
@@ -340,6 +343,7 @@ void readNCTCOGTrips(network_type *network, char *tripFileName, int *table) {
         if (fgets(fullLine, STRING_SIZE, tripFile) == NULL) break;
         if (strstr(fullLine, ",") == NULL) continue;
         parseCSV(lineData, fullLine, NUM_NCTCOG_CLASSES + 2);
+//        displayMessage(FULL_DEBUG, "Assigning demand for r:%s and s: %s\n", lineData[0], lineData[1]);
         r = convert(atoi(lineData[0]), table, NCTCOG_MAX_NODE_ID);
         s = convert(atoi(lineData[1]), table, NCTCOG_MAX_NODE_ID);
         assignDemand(network, r, s, SOLO_35, lineData[2]);
