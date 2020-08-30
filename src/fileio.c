@@ -10,7 +10,7 @@
  * any other network or file.  Dimensions, etc. will be wrong.*/
 #define NCTCOG_NODES 32799
 #define NCTCOG_DIRECTED_LINKS 85088
-#define NCTCOG_UNDIRECTED_LINKS 50294
+#define NCTCOG_UNDIRECTED_LINKS 50166
 #define NCTCOG_ZONES 5352
 #define NCTCOG_MAX_NODE_ID 154223
 #define NCTCOG_NUM_CLASSES 10
@@ -281,9 +281,9 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     arc->toll_Med = atof(medToll);
     arc->toll_Heavy = atof(heavyToll);
     arc->length = atof(len);
-    if (strcmp(exclude, "TRUE") == 0) {
+    if (strcmp(exclude, "1") == 0) {
         arc->excludeDA = TRUE;
-    } else if (strcmp(exclude, "FALSE") == 0) {
+    } else if (strcmp(exclude, "0") == 0) {
         arc->excludeDA = FALSE;
     } else {
         fatalError("Unreadable exclude parameter '%s'", exclude);

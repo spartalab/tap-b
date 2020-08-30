@@ -221,7 +221,7 @@ double conicCost(struct arc_type *arc) {
     }
 
     /* Add unsignalized delay */
-    time += arc->m + arc->u * x;
+    if (arc->u > 0) time += arc->m + arc->u * x;
 
     return time;
 }
