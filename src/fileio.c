@@ -190,79 +190,80 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
         *srToll, char *medToll, char *heavyToll, char *exclude) {
     int c;
 
-    network->arcs[ij].ID = atoi(ID);
-    network->arcs[ij].tail = convert(atoi(from), table, NCTCOG_MAX_NODE_ID);
-    network->arcs[ij].head = convert(atoi(to), table, NCTCOG_MAX_NODE_ID);
-    network->arcs[ij].flow = 0;
-    network->arcs[ij].cost = atof(freeFlow);
-    network->arcs[ij].der = 0;
-    network->arcs[ij].freeFlowTime = atof(freeFlow);
-    network->arcs[ij].capacity = atof(cap);
-    network->arcs[ij].a = atof(conical);
-    network->arcs[ij].e = atof(shift);
-    network->arcs[ij].sParam = atof(sPar);
-    network->arcs[ij].saturationFlow = atof(satFlow);
-    network->arcs[ij].CA = atof(CA);
-    network->arcs[ij].CB = atof(CB);
-    network->arcs[ij].CC = atof(CC);
-    network->arcs[ij].CD = atof(CD);
-    network->arcs[ij].m = atof(minDelay);
-    network->arcs[ij].u = atof(uPar);
-    network->arcs[ij].operCost = atof(operCost);
-    network->arcs[ij].toll_DA = atof(daToll);
-    network->arcs[ij].toll_SR = atof(srToll);
-    network->arcs[ij].toll_Med = atof(medToll);
-    network->arcs[ij].toll_Heavy = atof(heavyToll);
-    network->arcs[ij].length = atof(len);
+    arc_type* arc = &network->arcs[ij];
+    arc->ID = atoi(ID);
+    arc->tail = convert(atoi(from), table, NCTCOG_MAX_NODE_ID);
+    arc->head = convert(atoi(to), table, NCTCOG_MAX_NODE_ID);
+    arc->flow = 0;
+    arc->cost = atof(freeFlow);
+    arc->der = 0;
+    arc->freeFlowTime = atof(freeFlow);
+    arc->capacity = atof(cap);
+    arc->a = atof(conical);
+    arc->e = atof(shift);
+    arc->sParam = atof(sPar);
+    arc->saturationFlow = atof(satFlow);
+    arc->CA = atof(CA);
+    arc->CB = atof(CB);
+    arc->CC = atof(CC);
+    arc->CD = atof(CD);
+    arc->m = atof(minDelay);
+    arc->u = atof(uPar);
+    arc->operCost = atof(operCost);
+    arc->toll_DA = atof(daToll);
+    arc->toll_SR = atof(srToll);
+    arc->toll_Med = atof(medToll);
+    arc->toll_Heavy = atof(heavyToll);
+    arc->length = atof(len);
     if (strcmp(exclude, "TRUE") == 0) {
-        network->arcs[ij].excludeDA = TRUE;
+        arc->excludeDA = TRUE;
     } else if (strcmp(exclude, "FALSE") == 0) {
-        network->arcs[ij].excludeDA = FALSE;
+        arc->excludeDA = FALSE;
     } else {
         fatalError("Unreadable exclude parameter '%s'", exclude);
     }
-
-    network->arcs[ij].alpha = 0.15;
-    network->arcs[ij].beta = 4;
-    network->arcs[ij].toll = 0;
-    network->arcs[ij].speedLimit = IS_MISSING;
-    network->arcs[ij].linkType = IS_MISSING;
-    network->arcs[ij].fixedCost = 0;
-    if (network->arcs[ij].saturationFlow > 0) { /* Regular link */
-        network->arcs[ij].calculateCost = &conicCost;
-        network->arcs[ij].calculateDer = &conicDer;
-        network->arcs[ij].calculateInt = &conicInt;
+    arc->h0 = 1 + sqrt(arc->a * arc->a * (1 + arc->e) * (1 + arc->e) + arc->b * arc->b) - arc->a * (1 + arc->e) - arc->b;
+    arc->alpha = 0.15;
+    arc->beta = 4;
+    arc->toll = 0;
+    arc->speedLimit = IS_MISSING;
+    arc->linkType = IS_MISSING;
+    arc->fixedCost = 0;
+    if (arc->saturationFlow > 0) { /* Regular link */
+        arc->calculateCost = &conicCost;
+        arc->calculateDer = &conicDer;
+        arc->calculateInt = &conicInt;
     } else { /* Centroid connector */
-        network->arcs[ij].alpha = 0;
-        network->arcs[ij].beta = 1;
-        network->arcs[ij].calculateCost = &linearBPRcost;
-        network->arcs[ij].calculateDer = &linearBPRder;
-        network->arcs[ij].calculateInt = &linearBPRint;
+        arc->alpha = 0;
+        arc->beta = 1;
+        arc->calculateCost = &linearBPRcost;
+        arc->calculateDer = &linearBPRder;
+        arc->calculateInt = &linearBPRint;
     }
 
-    network->arcs[ij].classFlow = newVector(network->numClasses, double);
-    network->arcs[ij].classCost = newVector(network->numClasses, double);
-    network->arcs[ij].classToll = newVector(network->numClasses, double);
+    arc->classFlow = newVector(network->numClasses, double);
+    arc->classCost = newVector(network->numClasses, double);
+    arc->classToll = newVector(network->numClasses, double);
 
     for (c = 0; c < network->numClasses; c++) {
         if (isDA(c)) {
-            network->arcs[ij].classToll[c] = network->arcs[ij].toll_DA;
+            arc->classToll[c] = arc->toll_DA;
         } else if (isHOV(c)) {
-            network->arcs[ij].classToll[c] = network->arcs[ij].toll_SR;
+            arc->classToll[c] = arc->toll_SR;
         } else if (c == MED_TRUCKS) {
-            network->arcs[ij].classToll[c] = network->arcs[ij].toll_Med;
+            arc->classToll[c] = arc->toll_Med;
         } else if (c == HVY_TRUCKS) {
-            network->arcs[ij].classToll[c] = network->arcs[ij].toll_Heavy;
+            arc->classToll[c] = arc->toll_Heavy;
         } else {
             fatalError("Class index and NCTCOG_classes typedef not aligned.");
         }
-        if (isSolo(c) && network->arcs[ij].excludeDA == TRUE) {
-            network->arcs[ij].classCost[c] = ARTIFICIAL;
+        if (isSolo(c) && arc->excludeDA == TRUE) {
+            arc->classCost[c] = ARTIFICIAL;
         } else {
-            network->arcs[ij].classCost[c] = network->tollFactor[c] 
-            * (network->arcs[ij].operCost + network->arcs[ij].classToll[c]);
+            arc->classCost[c] = network->tollFactor[c]
+            * (arc->operCost + arc->classToll[c]);
         }
-        network->arcs[ij].classFlow[c] = 0;
+        arc->classFlow[c] = 0;
     }
 }
 
