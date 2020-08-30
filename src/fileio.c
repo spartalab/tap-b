@@ -8,7 +8,7 @@
 
 /* These routines are HARD-CODED for the NCTCOG network.  They cannot read
  * any other network or file.  Dimensions, etc. will be wrong.*/
-#define NCTCOG_NODES 32799
+#define NCTCOG_NODES 32766
 #define NCTCOG_DIRECTED_LINKS 85088
 #define NCTCOG_UNDIRECTED_LINKS 50166
 #define NCTCOG_ZONES 5352

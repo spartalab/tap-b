@@ -23,6 +23,7 @@ void main_TNTP(int argc, char* argv[]);
 void main_NCTCOG(int argc, char* argv[]);
 void main_NCTCOGFW(int argc, char* argv[]);
 void main_NCTCOGFW_conic_calculator(int argc, char* argv[]);
+void main_NCTCOGFW_conic_derivative(int argc, char* argv[]);
 void main_FWtest(int argc, char* argv[]);
 
 #endif
