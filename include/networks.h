@@ -68,6 +68,7 @@ typedef struct arc_type {
     double  der;
 
     int     ID; /* NCTCOG ID */
+    char    NCTCOG_ID[10]; /* Include AB, BA */
     double  freeFlowTime;
     double  capacity;
     double  a; /* Conical parameter */
@@ -142,6 +143,7 @@ typedef struct {
 /* node_type -- data structure for nodes.  Only contains lists of arcs entering
  * and leaving the node */
 typedef struct {
+    int     NCTCOG_ID;
     arcList forwardStar;
     arcList reverseStar;
 } node_type;
