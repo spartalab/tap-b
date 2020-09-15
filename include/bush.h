@@ -41,6 +41,12 @@
 
 #define NEW_LINK -1
 //#define PARALLELISM 1
+typedef enum scan_type {
+    LONGEST_BUSH_PATH,
+    LONGEST_USED_PATH,
+    LONGEST_USED_OR_SP,
+    NO_LONGEST_PATH
+} scan_type;
 
 /*
  * merge_type: Extra data for merge nodes
@@ -244,6 +250,7 @@ typedef struct algorithmBParameters_type{
    bool     warmStart;
    bool     calculateBeckmann;
    queueDiscipline SPQueueDiscipline;
+   scan_type updateBushScanType;
    void     (*createInitialBush)(int, network_type *, bushes_type *,
                                  struct algorithmBParameters_type *);
    void     (*topologicalOrder)(int, network_type *, bushes_type *,
@@ -261,13 +268,6 @@ typedef struct algorithmBParameters_type{
    char     matrixStem[STRING_SIZE-20];
    char     flowsFile[STRING_SIZE];
 } algorithmBParameters_type;
-
-typedef enum scan_type {
-    LONGEST_BUSH_PATH,
-    LONGEST_USED_PATH,
-    LONGEST_USED_OR_SP,
-    NO_LONGEST_PATH
-} scan_type;
 
 /* Master routine and parameters */
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters);

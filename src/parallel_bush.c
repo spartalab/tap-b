@@ -83,7 +83,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
+    scanBushes_par(origin, network, bushes, parameters, parameters->updateBushScanType);
     calculateBushFlows_par(origin, network, bushes);
 
     /* Make a first pass... */
@@ -120,7 +120,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
     }
 
     /* If strict criterion fails, try a looser one */
-    if (newArcs == 0) {
+    if (newArcs == 0 && parameters->updateBushScanType == LONGEST_BUSH_PATH) {
         for (ij = 0; ij < network->numArcs; ij++) {
             i = network->arcs[ij].tail;
             j = network->arcs[ij].head;
