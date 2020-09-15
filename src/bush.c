@@ -926,20 +926,20 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
     }
    
     /* If strict criterion fails, try a looser one */
-    // if (newArcs == 0) {
-    //     for (ij = 0; ij < network->numArcs; ij++) {
-    //         i = network->arcs[ij].tail;
-    //         j = network->arcs[ij].head;
-    //         if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
-    //             continue; /* No path to extend */
-    //         if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
-    //             && (network->arcs[ij].tail == origin2node(network, origin)
-    //                 || network->arcs[ij].tail >= network->firstThroughNode))
-    //         {
-    //             bushes->flow[ij] = NEW_LINK;
-    //         }
-    //     }
-    // }      
+     if (newArcs == 0) {
+         for (ij = 0; ij < network->numArcs; ij++) {
+             i = network->arcs[ij].tail;
+             j = network->arcs[ij].head;
+             if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
+                 continue; /* No path to extend */
+             if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
+                 && (network->arcs[ij].tail == origin2node(network, origin)
+                     || network->arcs[ij].tail >= network->firstThroughNode))
+             {
+                 bushes->flow[ij] = NEW_LINK;
+             }
+         }
+     }
 
    /* Finally update bush data structures: delete/add merges, find a new
     * topological order, rectify approach proportions */
@@ -985,6 +985,7 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
                        "incoming contributing links", i, origin);
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
+            if (bushes->flow[lastApproach] == NEW_LINK) bushes->flow[lastApproach] = 0;
         } else { /* Must create a merge */
             merge = createMerge(numApproaches);
             arc = 0;
