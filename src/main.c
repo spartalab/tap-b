@@ -44,8 +44,8 @@ int main(int argc, char* argv[]) {
        in the TNTP format or the NCTCOG network specifically */
 
 #if NCTCOG_ENABLED
-//    main_NCTCOG(argc, argv);
-    main_NCTCOGFW(argc, argv);
+    main_NCTCOG(argc, argv);
+//    main_NCTCOGFW(argc, argv);
 #else
      main_TNTP(argc, argv);
 //    main_FWtest(argc, argv);
@@ -195,30 +195,25 @@ void main_NCTCOG(int argc, char* argv[]) {
    }
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
-    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...%s\n", argv[2]);
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...%s\n", argv[1]);
     if (strcmp("", argv[2]) == 0) {
       argv[2] = NULL;
-      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+      displayMessage(FULL_NOTIFICATIONS, "No Input Matrix path provided, assuming warm start\n");
 
     }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
-
-    /* Uncomment the following line to read archived binary OD matrices */
-    /* readNCTCOGNetwork(network, argv[1], NULL, argv[3]); */
 
 #else
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
-    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...\n");
+    displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...%s\n", argv[1]);
     if (strcmp("", argv[2]) == 0) {
       argv[2] = NULL;
-      displayMessage(FULL_NOTIFICATIONS, "Here\n");
+      displayMessage(FULL_NOTIFICATIONS, "No Input Matrix path provided, assuming warm start\n");
 
     }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
 
-    /* Uncomment the following line to read archived binary OD matrices */
-    /* readNCTCOGNetwork(network, argv[1], NULL, argv[3]); */
 #endif
 
     /* Default batching for NCTCOG: one per *class* */
@@ -227,7 +222,7 @@ void main_NCTCOG(int argc, char* argv[]) {
 
 
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-    Bparameters.convergenceGap = 1e-8;
+    Bparameters.convergenceGap = 1e-4;
     Bparameters.maxIterations = 5000;
     Bparameters.maxTime = 3600 * 24 * 7;
 
