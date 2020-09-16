@@ -14,4 +14,3 @@ batch*
 matrix*
 *.condor
 *.log
-CMakeLists.txt
