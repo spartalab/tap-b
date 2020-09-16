@@ -196,7 +196,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     
     parameters.includeGapTime = TRUE;
 
-    parameters.updateBushScanType = LONGEST_USED_OR_SP;
+    parameters.updateBushScanType = LONGEST_BUSH_PATH;
     parameters.createInitialBush = &initialBushShortestPath;
     parameters.topologicalOrder = &genericTopologicalOrder;
     parameters.linkShiftB = &exactCostUpdate;
