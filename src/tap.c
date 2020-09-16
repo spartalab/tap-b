@@ -239,16 +239,15 @@ double conicDer(struct arc_type *arc) {
     der += arc->freeFlowTime * (oldRoot_prime + arc->a * x_prime);
 
     /* Add signalized delay */
-    if (arc->flow/arc->saturationFlow <= 0.875) {
+    if (v_s <= 0.875) {
         der += (arc->sParam * v_s_prime )/ ((1 - v_s) * (1 - v_s));
-    } else if (arc->flow/arc->saturationFlow < 0.925) {
+    } else if (v_s < 0.925) {
         der += (arc->CC + v_s *
-                          (2 * arc->CB + v_s * 3 *arc->CA)) * v_s_prime;
+                 (2 * arc->CB + v_s * 3 *arc->CA)) * v_s_prime;
     }
 
     /* Add unsignalized delay */
     der += arc->u * x_prime;
-
     if (isnan(der)) displayMessage(FULL_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
 //    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
     return der;
