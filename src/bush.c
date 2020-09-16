@@ -82,42 +82,27 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
              && (iteration == 0 || gap > parameters->convergenceGap)) {
         iteration++;
         gap = 0; /* Will accumulate total gap across batches for averaging */
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
+            clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
             /* Do main work for this batch */
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Loading Batch...\n");
             loadBatch(batch, network, &bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
             updateBatchBushes(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
             updateBatchFlows(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
             storeBatch(batch, network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Stored Batch\n");
             /* Check gap and report progress. */
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
-            stopTime = clock();
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-#endif
+            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tick.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
+            displayMessage(LOW_NOTIFICATIONS, "Calculating batch relative gap...\n");
             batchGap = bushRelativeGap(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
-#endif
+            displayMessage(LOW_NOTIFICATIONS, "Calculated batch relative gap...\n");
             gap += batchGap;
-            if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
                 sprintf(beckmannString, "obj %.15g, ",
                         BeckmannFunction(network));
@@ -126,7 +111,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             }
 
             if (network->numBatches > 1) {
-                displayMessage(LOW_NOTIFICATIONS, "*Batch %ld: batchgap %.15f,"
+                displayMessage(FULL_NOTIFICATIONS, "*Batch %ld: batchgap %.15f,"
                        " %stime %.3f s.\n", batch, batchGap,
                            beckmannString, elapsedTime);  
             }
@@ -134,7 +119,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         }
         /* Report information from the entire iteration (all batches) */
         gap /= network->numBatches;
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, "
+        displayMessage(FULL_NOTIFICATIONS, "Iteration %d:%s gap %.15f, "
                        "%stime %.3f, %d shifts\n",
                         iteration, 
                         network->numBatches > 1 ? " est." : "",
