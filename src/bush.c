@@ -64,7 +64,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
 
-    double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
+    double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY, entropy = -INFINITY, batchEntropy = -INFINITY;
 
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
@@ -82,6 +82,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
              && (iteration == 0 || gap > parameters->convergenceGap)) {
         iteration++;
         gap = 0; /* Will accumulate total gap across batches for averaging */
+        entropy = 0;
         clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
@@ -113,10 +114,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
 #endif
             batchGap = bushRelativeGap(network, bushes, parameters);
+            batchEntropy = bushEntropy(network, bushes);
 #if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
 #endif
             gap += batchGap;
+            entropy += batchEntropy;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
                 sprintf(beckmannString, "obj %.15g, ",
@@ -134,11 +137,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         }
         /* Report information from the entire iteration (all batches) */
         gap /= network->numBatches;
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, "
-                       "%stime %.3f, %d shifts\n",
+        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, entropy %.15f, "
+                       "%stime %.3f,%d shifts\n",
                         iteration, 
                         network->numBatches > 1 ? " est." : "",
                         gap,
+                        entropy,
                         beckmannString,
                         elapsedTime,
                         parameters->numFlowShifts);
@@ -667,6 +671,38 @@ double bushRelativeGap(network_type *network, bushes_type *bushes,
         warning(LOW_NOTIFICATIONS, "SPTT is zero\n");
     }
     return (tstt / sptt - 1);
+}
+
+double bushEntropy(network_type *network, bushes_type *bushes) {
+    int j, ij, r;
+    arcListElt* curArc;
+    double entropy = 0.0;
+    for (r = 0; r < network->batchSize; r++) {
+        if (outOfOrigins(network, r) == TRUE) break;
+        for (j = 0; j < network->numNodes; j++) {
+            double total = 0.0;
+            calculateBushFlows(r, network, bushes);
+            for (curArc = network->nodes[j].reverseStar.head; curArc != NULL;
+                 curArc = curArc->next) {
+                ij = ptr2arc(network, curArc->arc);
+                if (isInBush(r, ij, network, bushes) == TRUE)
+                    total += bushes->flow[ij];
+            }
+//            displayMessage(FULL_NOTIFICATIONS, "Total incomong flow for node r(%d) is %f\n", r, total);
+            if (total <= 1e-14) continue;
+            for (curArc = network->nodes[j].reverseStar.head; curArc != NULL;
+                 curArc = curArc->next) {
+                ij = ptr2arc(network, curArc->arc);
+                if (isInBush(r, ij, network, bushes) == TRUE && bushes->flow[ij] >= 1e-14) {
+                    entropy += bushes->flow[ij] * log(bushes->flow[ij] / total);
+                }
+            }
+            displayMessage(FULL_DEBUG, "Entropy, flow for node r(%d) is %f, %f\n", r, entropy, total);
+//#endif
+        }
+    }
+
+    return -entropy;
 }
 
 double bushAEC(network_type *network, bushes_type *bushes,

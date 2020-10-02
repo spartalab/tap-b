@@ -297,6 +297,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
 double bushTSTT(network_type *network, bushes_type *bushes);
 double bushRelativeGap(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters);
+double bushEntropy(network_type *network, bushes_type *bushes);
 double bushAEC(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters);
 double bushMEC(network_type *network, bushes_type *bushes,
