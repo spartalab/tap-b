@@ -114,7 +114,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
 #endif
             batchGap = bushRelativeGap(network, bushes, parameters);
-            batchEntropy = bushEntropy(network, bushes);
+            batchEntropy = bushEntropy(network, bushes, parameters);
 #if NCTCOG_ENABLED
             displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
 #endif
@@ -673,33 +673,19 @@ double bushRelativeGap(network_type *network, bushes_type *bushes,
     return (tstt / sptt - 1);
 }
 
-double bushEntropy(network_type *network, bushes_type *bushes) {
-    int j, ij, r;
-    arcListElt* curArc;
+double bushEntropy(network_type *network, bushes_type *bushes,
+                   algorithmBParameters_type *parameters) {
+    int ij, r;
     double entropy = 0.0;
     for (r = 0; r < network->batchSize; r++) {
         if (outOfOrigins(network, r) == TRUE) break;
-        for (j = 0; j < network->numNodes; j++) {
-            double total = 0.0;
-            calculateBushFlows(r, network, bushes);
-            for (curArc = network->nodes[j].reverseStar.head; curArc != NULL;
-                 curArc = curArc->next) {
-                ij = ptr2arc(network, curArc->arc);
-                if (isInBush(r, ij, network, bushes) == TRUE)
-                    total += bushes->flow[ij];
+        calculateBushFlows(r, network, bushes);
+        for (ij = 0; ij < network->numArcs; ij++) {
+            if (isInBush(r, ij, network, bushes) == TRUE && bushes->flow[ij] >= parameters->minLinkFlow && bushes->nodeFlow[network->arcs[ij].head] >= parameters->minLinkFlow) {
+                entropy += bushes->flow[ij] * log(bushes->flow[ij] / bushes->nodeFlow[network->arcs[ij].head]);
             }
-//            displayMessage(FULL_NOTIFICATIONS, "Total incomong flow for node r(%d) is %f\n", r, total);
-            if (total <= 1e-14) continue;
-            for (curArc = network->nodes[j].reverseStar.head; curArc != NULL;
-                 curArc = curArc->next) {
-                ij = ptr2arc(network, curArc->arc);
-                if (isInBush(r, ij, network, bushes) == TRUE && bushes->flow[ij] >= 1e-14) {
-                    entropy += bushes->flow[ij] * log(bushes->flow[ij] / total);
-                }
-            }
-            displayMessage(FULL_DEBUG, "Entropy, flow for node r(%d) is %f, %f\n", r, entropy, total);
-//#endif
         }
+        displayMessage(FULL_DEBUG, "Entropy for bush(%d) %f\n", r, entropy);
     }
 
     return -entropy;
