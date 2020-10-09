@@ -218,7 +218,10 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     arc->der = 0;
     arc->freeFlowTime = atof(freeFlow);
     arc->capacity = atof(cap);
-    arc->a = atof(conical);
+    if (strcmp(conical,"--") == 0)
+        arc->a = 12;
+    else
+        arc->a = atof(conical);
     arc->e = atof(shift);
     arc->sParam = atof(sPar);
     arc->saturationFlow = atof(satFlow);
