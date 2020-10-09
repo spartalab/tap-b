@@ -16,7 +16,6 @@
 #include "tap.h"
 #include "utils.h"
 
-#define STRING_SIZE 9999
 #define DESTINATIONS_PER_LINE 5
 
 #define PAUSE_ON_ERROR FALSE
