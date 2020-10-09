@@ -52,16 +52,16 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
 
     for (c = 0; c < network->numClasses; c++) network->distanceFactor[c] = 0;
     /* Toll factors are *inverse* of VOT */
-    network->tollFactor[SOLO_17] = 60.0 / 10.5; 
-    network->tollFactor[SOLO_35] = 60.0 / 21.0;
-    network->tollFactor[SOLO_45] = 60.0 / 27.0;
-    network->tollFactor[SOLO_90] = 60.0 / 54.0;
-    network->tollFactor[HOV_17] = 60.0 / 10.5;
-    network->tollFactor[HOV_35] = 60.0 / 21.0;
-    network->tollFactor[HOV_45] = 60.0 / 27.0;
-    network->tollFactor[HOV_90] = 60.0 / 54.0;
-    network->tollFactor[MED_TRUCKS] = 60.0 / 60.0;
-    network->tollFactor[HVY_TRUCKS] = 60.0 / 60.0;
+    network->tollFactor[SOLO_17] = 60.0 / 30.0; 
+    network->tollFactor[SOLO_35] = 60.0 / 48.0;
+    network->tollFactor[SOLO_45] = 60.0 / 60.0;
+    network->tollFactor[SOLO_90] = 60.0 / 102.0;
+    network->tollFactor[HOV_17] = 60.0 / 30.0;
+    network->tollFactor[HOV_35] = 60.0 / 48.0;
+    network->tollFactor[HOV_45] = 60.0 / 60.0;
+    network->tollFactor[HOV_90] = 60.0 / 102.0;
+    network->tollFactor[MED_TRUCKS] = 60.0 / 90.0;
+    network->tollFactor[HVY_TRUCKS] = 60.0 / 90.0;
 
     /* Now read files */
     readConverterFile(converterFileName, NCTCOG2SDB, network->numNodes,
