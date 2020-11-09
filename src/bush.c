@@ -85,7 +85,11 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
+#ifdef WIN32
+            timespec_get(&tick, TIME_UTC);
+#else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+#endif
             /* Do main work for this batch */
             displayMessage(LOW_NOTIFICATIONS, "Loading Batch...\n");
             loadBatch(batch, network, &bushes, parameters);
@@ -97,8 +101,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             storeBatch(batch, network, bushes, parameters);
             displayMessage(LOW_NOTIFICATIONS, "Stored Batch\n");
             /* Check gap and report progress. */
+#ifdef WIN32
+            timespec_get(&tock, TIME_UTC);
+#else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tick.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
+#endif
+            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             displayMessage(LOW_NOTIFICATIONS, "Calculating batch relative gap...\n");
             batchGap = bushRelativeGap(network, bushes, parameters);
             displayMessage(LOW_NOTIFICATIONS, "Calculated batch relative gap...\n");
@@ -299,7 +307,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
     
 #if PARALLELISM
     int c; 
-    struct thread_args args[network->batchSize];
+    struct thread_args args[10000];
     for (int j = 0; j < network->batchSize; ++j) {
         args[j].id = j;
         args[j].network = network;
@@ -355,7 +363,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
         doneAny = FALSE;
             
  #if PARALLELISM
-         struct thread_args args[network->batchSize];
+         struct thread_args args[10000];
          for (int j = 0; j < network->batchSize; ++j) {
              args[j].id = j;
              args[j].network = network;

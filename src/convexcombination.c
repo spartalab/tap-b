@@ -132,8 +132,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     while (converged == FALSE) {
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
+#ifdef WIN32
+        timespec_get(&tick, TIME_UTC);
+#else
         clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
-
+#endif
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
@@ -142,7 +145,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
          * convergence */
         tstt = TSTT(network);
         gap = parameters->gapFunction(network, tstt, sptt);
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+#ifdef WIN32
+        timespec_get(&tick, TIME_UTC);
+#else
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+#endif
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
 
         if(parameters->calculateBeckmann == TRUE)
@@ -391,7 +398,7 @@ void AONdirection(network_type *network, double **direction,
     *sptt = 0; /* calculate incrementally */
 
 #if PARALLELISM
-    struct thread_args args[network->numZones];
+    struct thread_args args[10000];
     for (r = 0; r < network->numZones; ++r) {
         args[r].id = r;
         args[r].network = network;

@@ -4,6 +4,8 @@ obj/
 bin/
 cmake-build-debug/
 cmake-build-release/
+cmake-build-debug-visual-studio/
+cmake-build-release-visual-studio/
 full_log.txt
 net/Sydney*
 results/
@@ -14,3 +16,4 @@ batch*
 matrix*
 *.condor
 *.log
+*.exe
