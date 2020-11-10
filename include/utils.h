@@ -15,7 +15,7 @@
 #define EXIT_DEBUG -2
 
 #define IS_MISSING -1
-#define STRING_SIZE 9999
+#define STRING_SIZE 20000
 
 #define PAUSE_ON_ERROR FALSE
 #define PAUSE_ON_WARNING FALSE
