@@ -2,8 +2,7 @@
 obj/
 .depend/
 bin/
-cmake-build-debug/
-cmake-build-release/
+cmake-build-*
 full_log.txt
 net/Sydney*
 results/
