@@ -222,11 +222,11 @@ void main_NCTCOG(int argc, char* argv[]) {
 
 
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-    Bparameters.convergenceGap = 1e-4;
+    Bparameters.convergenceGap = 1e-3;
     Bparameters.maxIterations = 5000;
     Bparameters.maxTime = 3600 * 24 * 7;
 
-    Bparameters.warmStart = FALSE;
+    Bparameters.warmStart = TRUE;
     Bparameters.calculateBeckmann = FALSE; /* Expensive with conic functions */
     Bparameters.gapFunction = RELATIVE_GAP_1;
 
