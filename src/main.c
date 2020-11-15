@@ -42,16 +42,7 @@ int main(int argc, char* argv[]) {
     #endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
-
-#if NCTCOG_ENABLED
     main_NCTCOG(argc, argv);
-//    main_NCTCOGFW(argc, argv);
-#else
-     main_TNTP(argc, argv);
-//    main_FWtest(argc, argv);
-#endif
-
-
     #ifdef DEBUG_MODE
         fclose(debugFile);
     #endif
@@ -161,7 +152,6 @@ void main_TNTP(int argc, char* argv[]) {
    deleteNetwork(network);
 }
 
-#if NCTCOG_ENABLED
 void main_NCTCOG(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
@@ -177,16 +167,6 @@ void main_NCTCOG(int argc, char* argv[]) {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
        numOfThreads = atoi(argv[argc - 1]);
    }
-#else
-    displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
-    if (argc != 4)
-        fatalError("Must specify three arguments for NCTCOG:\n\n"
-                       "networkfile triptable convertertable\n\n"
-                       "-network file has link data\n"
-                       "-triptable has the OD matrix in CSV form\n"
-                       "-convertertable translates wrap IDs to TAP-B\n");
-
-#endif
 
 #if PARALLELISM
     Bparameters.numThreads = numOfThreads;
@@ -340,60 +320,3 @@ void setBatches(network_type *network, int batchSize, bool warmStart) {
     }
 
 }
-
-/*
- * CURRENTLY NOT USED since we can now read full NCTCOG.
- *
- * Full version of NCTCOG network not currently available.  So make it from
- * a previously-aggregated version:
- *  1. Multiply # origins by 10 (for 10 classes)
- *  2. Split each OD pair into 10 even parts
- *  3. Assign each class a particular VOT
- *  4. Assign each link a toll equal to its free-flow time.
- *
- * We assume that the NCTCOG network was read in SDB format, not TNTP.
- */
-#if NCTCOG_ENABLED
-#define NCTCOG_CLASSES 10
-#define MAX_VOT 1.0
-void inferNCTCOGNetwork(network_type *network) {
-    int ij, r, s, c, origin;
-    double **newDemand;
-
-    /* 1. Create more classes */
-    network->numOrigins = network->numZones * NCTCOG_CLASSES;
-    network->numClasses = NCTCOG_CLASSES;
-    newDemand = newMatrix(network->numOrigins, network->numZones, double);
-
-    /* 2. Split OD matrix */
-    for (r = 0; r < network->numZones; r++) {
-        for (s = 0; s < network->numZones; s++) {
-            for (c = 0; c < NCTCOG_CLASSES; c++) {
-                origin = nodeclass2origin(network, r, c);
-                newDemand[origin][s] = network->demand[r][s] / NCTCOG_CLASSES;
-            }
-        }
-    }
-    free(network->demand);
-    network->demand = newDemand;
-
-    /* 3. Set class VOTs */
-    network->tollFactor = newVector(NCTCOG_CLASSES, double);
-    network->distanceFactor = newVector(NCTCOG_CLASSES, double);
-    for (c = 0; c < network->numClasses; c++) {
-        network->tollFactor[c] = MAX_VOT * c / NCTCOG_CLASSES;
-        network->distanceFactor[c] = 0;
-    }
-
-    /* 4.Set link toll to free-flow time and do other needful link things */
-    for (ij = 0; ij < network->numArcs; ij++) {
-        network->arcs[ij].toll = network->arcs[ij].freeFlowTime;
-        network->arcs[ij].length = 0;
-        free(network->arcs[ij].classFlow);
-        network->arcs[ij].classFlow = newVector(NCTCOG_CLASSES, double);
-        for (c = 0; c < network->numClasses; c++) {
-            network->arcs[ij].classFlow[c] = 0;
-        }
-    }
-}
-#endif

@@ -543,12 +543,12 @@ void finalizeNetwork(network_type *network) {
         for (c = 0; c < network->numClasses; c++) {
             network->arcs[i].classFlow[c] = 0;
             /* TODO: This is an ugly hack, do better later */
-            #if NCTCOG_ENABLED
-            #else            
-            network->arcs[i].classCost[c] =
-                network->arcs[i].length * network->distanceFactor[c] 
-                + network->arcs[i].classToll[c] * network->tollFactor[c];
-            #endif
+//            #if NCTCOG_ENABLED
+//            #else
+//            network->arcs[i].classCost[c] =
+//                network->arcs[i].length * network->distanceFactor[c]
+//                + network->arcs[i].classToll[c] * network->tollFactor[c];
+//            #endif
         }
     }
  

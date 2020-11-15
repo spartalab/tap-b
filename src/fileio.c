@@ -845,9 +845,7 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
 
     for (ij = 0; ij < network->numArcs; ij++) {
         if (network->arcs[ij].capacity == ARTIFICIAL) continue;
-        fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
-                                            network->arcs[ij].head + 1,
-                                            network->arcs[ij].flow);
+        fprintf(outFile, "%s %f \n", network->arcs[ij].NCTCOG_ID, network->arcs[ij].flow);
         for (c = 0; c < network->numClasses; ++c) {
             fprintf(outFile, "%f ", network->arcs[ij].classFlow[c]);
         }
