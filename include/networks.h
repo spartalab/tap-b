@@ -99,9 +99,9 @@ typedef struct arc_type {
     int     linkType;
 
     double  fixedCost; /* Reflects toll and distance */
-    double  (*calculateCost)(struct arc_type *arc);
+    double  (*calculateCost)(struct arc_type *arc, int);
     double  (*calculateDer)(struct arc_type *der);
-    double  (*calculateInt)(struct arc_type *der, bool);
+    double  (*calculateInt)(struct arc_type *der, int);
 } arc_type;
 
 
