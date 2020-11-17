@@ -501,24 +501,6 @@ void heapDijkstra(int origin, double *label, int *backnode, network_type
 
 
 /*
-changeFixedCosts: Updates the network costs for the new specified toll and 
-distance factors.
-
-*/
-void changeFixedCosts(network_type *network, int class) {
-    int ij;
-    double oldCost;
-
-    for (ij = 0; ij < network->numArcs; ij++) {
-        pthread_mutex_lock(&network->arc_muts[ij]);
-        oldCost = network->arcs[ij].fixedCost;
-        network->arcs[ij].fixedCost = network->arcs[ij].classCost[class];
-        network->arcs[ij].cost += (network->arcs[ij].fixedCost - oldCost);
-        pthread_mutex_unlock(&network->arc_muts[ij]);
-    }
-}
-
-/*
 finalizeNetwork: After adding the links and nodes to the network struct, this
 function generates the forward and reverse star lists. 
 */

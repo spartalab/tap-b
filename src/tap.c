@@ -30,7 +30,7 @@ double BeckmannFunction(network_type *network) {
     double Beckmann = 0;
     int ij, c;
     for (ij = 0; ij < network->numArcs; ij++) {
-        Beckmann += network->arcs[ij].calculateInt(&network->arcs[ij], FALSE);
+        Beckmann += network->arcs[ij].calculateInt(&network->arcs[ij], NO_FIXED_COST);
         for (c = 0; c < network->numClasses; c++) {
             Beckmann += network->arcs[ij].classFlow[c]
                        * network->arcs[ij].classCost[c];
@@ -120,13 +120,14 @@ double linkCost(arc_type *arc, cost_type costFunction) {
 
 /*
  * generalBPRcost -- Evaluates the BPR function for an arbitrary polynomial.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation.
  */
-double generalBPRcost(struct arc_type *arc) {
+double generalBPRcost(struct arc_type *arc, int c) {
    if (arc->flow <= 0)
    // Protect against negative flow values and 0^0 errors
-       return arc->freeFlowTime + arc->fixedCost;
+       return arc->freeFlowTime + (c >= 0 ? arc->classCost[c] : 0);
 
-   return arc->fixedCost + arc->freeFlowTime *
+   return (c >= 0 ? arc->classCost[c] : 0) + arc->freeFlowTime *
        (1 + arc->alpha * pow(arc->flow / arc->capacity, arc->beta));
 }
 
@@ -148,19 +149,22 @@ double generalBPRder(struct arc_type *arc) {
 
 /*
  * generalBPRint -- Evaluate integral of an arbitrary polynomial BPR function.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation.
  */
-double generalBPRint(struct arc_type *arc, bool includeFixedCost) {
+double generalBPRint(struct arc_type *arc, int c) {
    if (arc->flow <= 0) return 0; /* Protect against negative flow values and 
                                     0^0 errors */
-   return arc->flow * (includeFixedCost == TRUE ? arc->fixedCost : 0
+   return arc->flow * ((c >= 0 ? arc->classCost[c] : 0)
            + arc->freeFlowTime * 
            (1 + arc->alpha / (arc->beta + 1) * 
             pow(arc->flow / arc->capacity, arc->beta)));
 }
 
-/* linearBPRcost/der/int -- Faster implementation for linear BPR functions. */
-double linearBPRcost(struct arc_type *arc) {
-   return arc->fixedCost + arc->freeFlowTime *
+/* linearBPRcost/der/int -- Faster implementation for linear BPR functions.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
+ * */
+double linearBPRcost(struct arc_type *arc, int c) {
+   return (c >= 0 ? arc->classCost[c] : 0) + arc->freeFlowTime *
        (1 + arc->alpha * arc->flow / arc->capacity);
 }
 
@@ -168,18 +172,19 @@ double linearBPRder(struct arc_type *arc) {
    return arc->freeFlowTime * arc->alpha / arc->capacity;
 }
 
-double linearBPRint(struct arc_type *arc, bool includeFixedCost) {
-   return arc->flow * (includeFixedCost == TRUE ? arc->fixedCost : 0
+double linearBPRint(struct arc_type *arc, int c) {
+   return arc->flow * ((c >= 0 ? arc->classCost[c] : 0)
            + arc->freeFlowTime * (1 + arc->flow*arc->alpha/arc->capacity/2));
 }
 
 /* quarticBPRcost/der/int -- Faster implementation for 4th-power BPR functions
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
  */
-double quarticBPRcost(struct arc_type *arc) {
+double quarticBPRcost(struct arc_type *arc, int c) {
    double y = arc->flow / arc->capacity;
    y *= y;
    y *= y;
-   return arc->fixedCost + arc->freeFlowTime * (1 + arc->alpha * y);
+   return (c >= 0 ? arc->classCost[c] : 0) + arc->freeFlowTime * (1 + arc->alpha * y);
 }
 
 double quarticBPRder(struct arc_type *arc) {
@@ -190,16 +195,19 @@ double quarticBPRder(struct arc_type *arc) {
 
 }
 
-double quarticBPRint(struct arc_type *arc, bool includeFixedCost) {
+double quarticBPRint(struct arc_type *arc, int c) {
    double y = arc->flow / arc->capacity;
    y *= y;
    y *= y;
-   return arc->flow * (includeFixedCost == TRUE ? arc->fixedCost : 0
+   return arc->flow * ((c >= 0 ? arc->classCost[c] : 0)
            + arc->freeFlowTime * (1 + arc->alpha * y / 5));
 }
 
-double conicCost(struct arc_type *arc) {
-    double time = arc->freeFlowTime + arc->fixedCost;
+/* conicCost/der/int -- Conic Delay calculations
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
+ */
+double conicCost(struct arc_type *arc, int c) {
+    double time = arc->freeFlowTime + (c >= 0 ? arc->classCost[c] : 0);
     double x = arc->flow/arc->capacity;
     double v_s = arc->flow/arc->saturationFlow;
 
@@ -253,11 +261,11 @@ double conicDer(struct arc_type *arc) {
     return der;
 }
 
-double conicInt(struct arc_type *arc, bool includeFixedCost) {
+double conicInt(struct arc_type *arc, int c) {
     fatalError("Conic integrals not yet implemented; set calculateBeckmann "
                "to FALSE in parameters.");
     /* Suppress compiler warning about unused arguments */
-    displayMessage(FULL_DEBUG, "%p%d", arc, (int) includeFixedCost);
+    displayMessage(FULL_DEBUG, "%p%d", arc, (int) c);
     return IS_MISSING;
 }
 
@@ -271,13 +279,11 @@ network struct -- this allows SPTT to be calculated without changing any values
 in the network, at the expense of a little more run time.
 */
 double SPTT(network_type *network) {
-    int r, j, c, originNode;
+    int r, j, originNode;
     double sptt = 0;
     declareVector(double, SPcosts, network->numNodes);
     for (r = 0; r < network->numOrigins; r++) {
         originNode = origin2node(network, r);
-        c = origin2class(network, r);
-        changeFixedCosts(network, c);
         BellmanFord_NoLabel(originNode, SPcosts, network, DEQUE, NULL, NULL);
         for (j = 0; j < network->numZones; j++) {
             sptt += network->demand[r][j] * SPcosts[j];
@@ -316,7 +322,7 @@ double classCost(network_type *network, int class, double timeFactor,
     for (ij = 0; ij < network->numArcs; ij++) {
         sum += network->arcs[ij].classFlow[class]
                * (timeFactor *
-                    (network->arcs[ij].cost - network->arcs[ij].fixedCost)
+                    (network->arcs[ij].cost - network->arcs[ij].classCost[class])
                   + distanceFactor * network->arcs[ij].length
                   + tollFactor * network->arcs[ij].classToll[class]);
     }
@@ -341,7 +347,7 @@ double classTravelTime(network_type *network, int class) {
 double classGeneralizedCost(network_type *network, int class) {
     int ij;
     double sum = 0;
-    changeFixedCosts(network, class);
+//    changeFixedCosts(network, class);
     for (ij = 0; ij < network->numArcs; ij++) {
         sum += network->arcs[ij].classFlow[class] * network->arcs[ij].cost;
     }
@@ -356,7 +362,7 @@ according to costFunction
 void updateAllCosts(network_type *network) {
     int i;
     for (i = 0; i < network->numArcs; i++)
-      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
+      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i], NO_FIXED_COST);
 }
 
 /*
