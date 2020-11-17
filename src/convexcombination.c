@@ -249,7 +249,7 @@ void updateLinks(network_type *network, bool rectifyFlows) {
 
     for (ij = 0; ij < network->numArcs; ij++) {
         network->arcs[ij].cost =
-                network->arcs[ij].calculateCost(&network->arcs[ij], c);
+                network->arcs[ij].calculateCost(&network->arcs[ij], NO_FIXED_COST);
         network->arcs[ij].der =
                 network->arcs[ij].calculateDer(&network->arcs[ij]);
     }

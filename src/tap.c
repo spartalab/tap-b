@@ -30,7 +30,7 @@ double BeckmannFunction(network_type *network) {
     double Beckmann = 0;
     int ij, c;
     for (ij = 0; ij < network->numArcs; ij++) {
-        Beckmann += network->arcs[ij].calculateInt(&network->arcs[ij], -1);
+        Beckmann += network->arcs[ij].calculateInt(&network->arcs[ij], NO_FIXED_COST);
         for (c = 0; c < network->numClasses; c++) {
             Beckmann += network->arcs[ij].classFlow[c]
                        * network->arcs[ij].classCost[c];
@@ -120,6 +120,7 @@ double linkCost(arc_type *arc, cost_type costFunction) {
 
 /*
  * generalBPRcost -- Evaluates the BPR function for an arbitrary polynomial.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation.
  */
 double generalBPRcost(struct arc_type *arc, int c) {
    if (arc->flow <= 0)
@@ -148,6 +149,7 @@ double generalBPRder(struct arc_type *arc) {
 
 /*
  * generalBPRint -- Evaluate integral of an arbitrary polynomial BPR function.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation.
  */
 double generalBPRint(struct arc_type *arc, int c) {
    if (arc->flow <= 0) return 0; /* Protect against negative flow values and 
@@ -158,7 +160,9 @@ double generalBPRint(struct arc_type *arc, int c) {
             pow(arc->flow / arc->capacity, arc->beta)));
 }
 
-/* linearBPRcost/der/int -- Faster implementation for linear BPR functions. */
+/* linearBPRcost/der/int -- Faster implementation for linear BPR functions.
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
+ * */
 double linearBPRcost(struct arc_type *arc, int c) {
    return (c >= 0 ? arc->classCost[c] : 0) + arc->freeFlowTime *
        (1 + arc->alpha * arc->flow / arc->capacity);
@@ -174,6 +178,7 @@ double linearBPRint(struct arc_type *arc, int c) {
 }
 
 /* quarticBPRcost/der/int -- Faster implementation for 4th-power BPR functions
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
  */
 double quarticBPRcost(struct arc_type *arc, int c) {
    double y = arc->flow / arc->capacity;
@@ -198,6 +203,9 @@ double quarticBPRint(struct arc_type *arc, int c) {
            + arc->freeFlowTime * (1 + arc->alpha * y / 5));
 }
 
+/* conicCost/der/int -- Conic Delay calculations
+ * If -1 is provided for second argument, fixed cost is excluded from calculation of cost and integral.
+ */
 double conicCost(struct arc_type *arc, int c) {
     double time = arc->freeFlowTime + (c >= 0 ? arc->classCost[c] : 0);
     double x = arc->flow/arc->capacity;
@@ -354,7 +362,7 @@ according to costFunction
 void updateAllCosts(network_type *network) {
     int i;
     for (i = 0; i < network->numArcs; i++)
-      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i], -1);
+      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i], NO_FIXED_COST);
 }
 
 /*

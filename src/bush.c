@@ -268,7 +268,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                 network->arcs[ij].flow += (*bushes)->flow[ij];
                 network->arcs[ij].classFlow[c] += (*bushes)->flow[ij];
                 network->arcs[ij].cost =
-                    network->arcs[ij].calculateCost(&network->arcs[ij], -1);
+                    network->arcs[ij].calculateCost(&network->arcs[ij], NO_FIXED_COST);
             }
         }
         sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
