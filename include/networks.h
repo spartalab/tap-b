@@ -57,6 +57,7 @@ typedef enum {
  * Beckmann function).
  *
  */
+#define ID_SIZE 10
 typedef struct arc_type {
     int    tail;
     int    head;
@@ -68,7 +69,7 @@ typedef struct arc_type {
     double  der;
 
     int     ID; /* NCTCOG ID */
-    char    NCTCOG_ID[10]; /* Include AB, BA */
+    char    NCTCOG_ID[ID_SIZE]; /* Include AB, BA */
     double  freeFlowTime;
     double  capacity;
     double  a; /* Conical parameter */
@@ -100,9 +101,9 @@ typedef struct arc_type {
     int     linkType;
 
     double  fixedCost; /* Reflects toll and distance */
-    double  (*calculateCost)(struct arc_type *arc);
+    double  (*calculateCost)(struct arc_type *arc, int);
     double  (*calculateDer)(struct arc_type *der);
-    double  (*calculateInt)(struct arc_type *der, bool);
+    double  (*calculateInt)(struct arc_type *der, int);
 } arc_type;
 
 

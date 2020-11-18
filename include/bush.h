@@ -48,6 +48,7 @@ typedef enum scan_type {
     NO_LONGEST_PATH
 } scan_type;
 
+
 /*
  * merge_type: Extra data for merge nodes
  *
@@ -65,12 +66,12 @@ typedef enum scan_type {
  *                    shifts for this merge will start.
  */
 typedef struct merge_type {
-   int      numApproaches;
-   int      *approach; /* [approachIndex] */ 
-   double   *approachFlow; /* [approachIndex] */
-   int      LPlink;
-   int      SPlink;
-   int      divergenceNode; 
+    int      numApproaches;
+    int      *approach; /* [approachIndex] */ 
+    double   *approachFlow; /* [approachIndex] */
+    int      LPlink;
+    int      SPlink;
+    int      divergenceNode; 
 } merge_type;
 
 /*
@@ -115,24 +116,24 @@ typedef struct merge_type {
  *           numMerges above for the size of this array).
  */
 typedef struct bushes_type {
-   double   *LPcost; /* [node] */
-   double   *SPcost; /* [node] */
-   double   *flow; /* [link] */
-   double   *nodeFlow; /* [node] */
-   bool     *updateBush; /* [origin]... process or skip this origin? */
-   int      **bushOrder; /* [origin][nodeOrder] */
-   int      **pred; /* [origin][node] */
-   int      *lastMerge; /* [origin] */
-   int      *numMerges; /* [origin] */
-   merge_type ***merges; /* [origin][merge]*/
-   double   **LPcost_par; /* [thread][node] */
-   double   **SPcost_par; /* [thread][node] */
-   double   **flow_par; /* [thread][node] */
-   double   **nodeFlow_par; /* [thread][node] */
-   double   **nodeFlowshift_par; /* [origin][shift] */
+    double   *LPcost; /* [node] */
+    double   *SPcost; /* [node] */
+    double   *flow; /* [link] */
+    double   *nodeFlow; /* [node] */
+    bool     *updateBush; /* [origin]... process or skip this origin? */
+    int      **bushOrder; /* [origin][nodeOrder] */
+    int      **pred; /* [origin][node] */
+    int      *lastMerge; /* [origin] */
+    int      *numMerges; /* [origin] */
+    merge_type ***merges; /* [origin][merge]*/
+    double   **LPcost_par; /* [thread][node] */
+    double   **SPcost_par; /* [thread][node] */
+    double   **flow_par; /* [thread][node] */
+    double   **nodeFlow_par; /* [thread][node] */
+    double   **nodeFlowshift_par; /* [origin][shift] */
 
 
-   network_type *network; /* Points back to the corresponding network */
+    network_type *network; /* Points back to the corresponding network */
 } bushes_type;
 
 /*
@@ -230,43 +231,52 @@ typedef struct bushes_type {
  *  flowsFile -- name for file to write flows, default is "flows.txt"
  */
 typedef struct algorithmBParameters_type{
-   gap_type gapFunction;
-   double   convergenceGap;
-   double   maxTime;
-   int      maxIterations;
-   int      innerIterations;
-   int      shiftReps;
-   bool     rescanAfterShift;
-   double   demandMultiplier;
-   double   thresholdGap;
-   double   thresholdAEC;
-   double   minCostDifference;
-   double   minLinkFlowShift;
-   double   minLinkFlow;
-   double   minDerivative;
-   double   newtonStep;
-   int      numNewtonShifts;
-   int      numFlowShifts; /* Counter to measure algorithm performance */
-   bool     warmStart;
-   bool     calculateBeckmann;
-   queueDiscipline SPQueueDiscipline;
-   scan_type updateBushScanType;
-   void     (*createInitialBush)(int, network_type *, bushes_type *,
+    gap_type gapFunction;
+    double   convergenceGap;
+    double   maxTime;
+    int      maxIterations;
+    int      innerIterations;
+    int      shiftReps;
+    bool     rescanAfterShift;
+    double   demandMultiplier;
+    double   thresholdGap;
+    double   thresholdAEC;
+    double   minCostDifference;
+    double   minLinkFlowShift;
+    double   minLinkFlow;
+    double   minDerivative;
+    double   newtonStep;
+    int      numNewtonShifts;
+    int      numFlowShifts; /* Counter to measure algorithm performance */
+    bool     warmStart;
+    bool     calculateBeckmann;
+    queueDiscipline SPQueueDiscipline;
+    scan_type updateBushScanType;    
+    void     (*createInitialBush)(int, network_type *, bushes_type *,
                                  struct algorithmBParameters_type *);
-   void     (*topologicalOrder)(int, network_type *, bushes_type *,
+    void     (*topologicalOrder)(int, network_type *, bushes_type *,
                                 struct algorithmBParameters_type *);
-   void     (*linkShiftB)(int, double, network_type *);
+    void     (*linkShiftB)(int, double, network_type *, int class);
 
-#if PARALLELISM
-   int numThreads;
-#endif
-   bool     storeMatrices;
-   bool     storeBushes;
-   bool     reuseFirstBush;
-   bool     includeGapTime;
-   char     batchStem[STRING_SIZE-20]; /* Leave space for index */
-   char     matrixStem[STRING_SIZE-20];
-   char     flowsFile[STRING_SIZE];
+    network_type format;
+    //char[STRING_SIZE] networkFileName;
+    //char[STRING_SIZE] tripsFileName;
+    //char[STRING_SIZE] converterFileName;
+    int numClasses;
+    int numBatches;
+
+    #if PARALLELISM
+    int numThreads;
+    #endif
+    
+    bool     useStoredMatrices;    
+    bool     storeMatrices;
+    bool     storeBushes;
+    bool     reuseFirstBush;
+    bool     includeGapTime;
+    char     batchStem[STRING_SIZE-20]; /* Leave space for index */
+    char     matrixStem[STRING_SIZE-20];
+    char     flowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
 /* Master routine and parameters */
@@ -276,10 +286,8 @@ algorithmBParameters_type initializeAlgorithmBParameters();
 /* Main Algorithm B helper functions */
 void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters);
-void updateBatchBushes(network_type *network, bushes_type *bushes,
-                       int *lastClass, algorithmBParameters_type *parameters);
-void updateBatchFlows(network_type *network, bushes_type *bushes,
-                      int *lastClass, algorithmBParameters_type *parameters);
+void updateBatchBushes(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void updateBatchFlows(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters);
 void storeBatch(int batch, network_type *network, bushes_type *bushes,
@@ -346,7 +354,7 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes);
 bool isMergeNode(int origin, int i, bushes_type *bushes);
 int pred2merge(int ij);
 int merge2pred(int m);
-void exactCostUpdate(int ij, double shift, network_type *network);
+void exactCostUpdate(int ij, double shift, network_type *network, int class);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);

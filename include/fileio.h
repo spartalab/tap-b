@@ -106,7 +106,9 @@ void readSDBNetwork(network_type *network, char *filename, double defaultAlpha,
 void writeDUENetwork(network_type *Network, char *filename);
 void writeOBANetwork(network_type *Network, char *linkfile, char *tripfile);
 
+void writeNCTCOGFlows(network_type *network, char *outputFileName);
 void writeNetworkFlows(network_type *network, char *outputFileName);
+void writeFixedCosts(network_type *network, char *outputFileName);
 
 ///////////////////////
 // String processing //

@@ -35,6 +35,7 @@ typedef struct CCparameters {
     double maxTime;
     int    maxIterations;
     int    maxLineSearchIterations;
+    int    numClasses;
     bool   calculateBeckmann;
     double CFWmaxweight;
     bool   warmStart;
@@ -43,9 +44,13 @@ typedef struct CCparameters {
                               double, double, double*, struct CCparameters*);
     double (*lineSearch)(network_type*, double**, int, struct CCparameters*);
     double (*gapFunction)(network_type*, double, double);
-#if PARALLELISM
+    network_type format;
+    //char[STRING_SIZE] networkFileName;
+    //char[STRING_SIZE] tripsFileName;
+    //char[STRING_SIZE] converterFileName;    
+    #if PARALLELISM
     int numThreads;
-#endif
+    #endif
 } CCparameters_type;
 
 CCparameters_type initializeCCparameters(CCalgorithm_type algo);
@@ -86,7 +91,7 @@ void updateLinks(network_type *network, bool rectifyLinks);
 
 double CCrelativeGap(network_type *network, double tstt, double sptt);
 double CCaverageExcessCost(network_type *network, double tstt, double sptt);
-double evaluateLinkCost(arc_type *arc, double flow);
+double evaluateLinkCost(arc_type *arc, double flow, int class);
 
 double calculateConjugacy(network_type *network, double **direction1,
                           double **direction2);
