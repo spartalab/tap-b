@@ -74,7 +74,7 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
         parameters.searchDirection = &AONdirection;
         parameters.lineSearch = &bisection;                      
     }
-    parameters.SP_algo = PAPE;
+    parameters.SP_algo = HEAP_DIJKSTRA;
     
     /* Convergence criteria */
     parameters.gapFunction = &CCrelativeGap;
@@ -141,6 +141,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         /* This gives us the information needed to report gap and check
          * convergence */
         tstt = TSTT(network);
+        displayMessage(DEBUG, "TSTT: %f SPTT: %f\n", tstt, sptt);
         gap = parameters->gapFunction(network, tstt, sptt);
         clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
@@ -249,7 +250,7 @@ void updateLinks(network_type *network, bool rectifyFlows) {
 
     for (ij = 0; ij < network->numArcs; ij++) {
         network->arcs[ij].cost =
-                network->arcs[ij].calculateCost(&network->arcs[ij]);
+                network->arcs[ij].calculateCost(&network->arcs[ij], c);
         network->arcs[ij].der =
                 network->arcs[ij].calculateDer(&network->arcs[ij]);
     }
@@ -279,20 +280,23 @@ double bisection(network_type *network, double **direction, int iteration,
     double tempFlow;
 
     for (k = 0; k < parameters->maxLineSearchIterations; k++) {
+        displayMessage(DEBUG, "Testing %f of %d\n", lambda, parameters->maxLineSearchIterations);
         lambda = (lmax + lmin) / 2;
         der = 0;
         for (c = 0; c < network->numClasses; c++) {
-            changeFixedCosts(network, c);
+//            changeFixedCosts(network, c);
             for (ij = 0; ij < network->numArcs; ij++) {
                 /* Get total flow based on complete shift */
                 tempFlow = network->arcs[ij].flow 
                             + lambda * direction[ij][network->numClasses];
-                der += evaluateLinkCost(&network->arcs[ij], tempFlow)
+                der += evaluateLinkCost(&network->arcs[ij], tempFlow, c)
                         * direction[ij][c];
             }
         }
         if (der > 0) lmax = lambda; else lmin = lambda;
     }
+
+    displayMessage(DEBUG, "Step size: %f (algo %d)\n", lambda);
 
     shiftFlows(network, direction, lambda);
     return lambda;
@@ -338,9 +342,9 @@ double NewtonIteration(network_type *network, double **direction, double lmin,
     int ij, c;
     double lambda = 0, numer = 0, denom = 0;
     for (c = 0; c < network->numClasses; c++) {
-        changeFixedCosts(network, c);
+//        changeFixedCosts(network, c);
         for (ij = 0; ij < network->numArcs; ij++) {
-            numer += network->arcs[ij].calculateCost(&network->arcs[ij]) 
+            numer += network->arcs[ij].calculateCost(&network->arcs[ij], c) 
                     * direction[ij][c];
         }
     }
@@ -404,7 +408,7 @@ void AONdirection(network_type *network, double **direction,
 #endif
 
     for (c = 0; c < network->numClasses; c++) {
-        changeFixedCosts(network, c);
+//        changeFixedCosts(network, c);
 #if PARALLELISM
         for (r = 0; r < network->numZones; ++r) {
             args[r].clss = c;
@@ -465,7 +469,7 @@ void CFWdirection(network_type *network, double **direction,
     /* Now calculate parameters for conjugacy */
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
-        changeFixedCosts(network, c);
+//        changeFixedCosts(network, c);
         for (ij = 0; ij < network->numArcs; ij++) {
             numer += network->arcs[ij].der
                         * AON[ij][c] * oldDirection[ij][c];
@@ -519,7 +523,7 @@ void BFWdirection(network_type *network, double **direction,
     /* Now calculate parameters for conjugacy */
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
-        changeFixedCosts(network, c);
+//        changeFixedCosts(network, c);
         for (ij = 0; ij < network->numArcs; ij++) {
             numer += network->arcs[ij].der
                         * AON[ij][c] * oldOldDirection[ij][c];
@@ -534,7 +538,7 @@ void BFWdirection(network_type *network, double **direction,
 
     numer = 0; denom = 0;
     for (c = 0; c < network->numClasses; c++) {
-        changeFixedCosts(network, c);
+//        changeFixedCosts(network, c);
         for (ij = 0; ij < network->numArcs; ij++) {
             numer += network->arcs[ij].der
                         * AON[ij][c] * oldDirection[ij][c];
@@ -803,11 +807,11 @@ double CCaverageExcessCost(network_type *network, double tstt, double sptt) {
 }
 
 /* Evaluate a link performance function WITHOUT changing the underlying flow */
-double evaluateLinkCost(arc_type *arc, double flow) {
+double evaluateLinkCost(arc_type *arc, double flow, int c) {
     double oldFlow = arc->flow;
     double cost;
     arc->flow = flow;
-    cost = arc->calculateCost(arc);
+    cost = arc->calculateCost(arc, c);
     arc->flow = oldFlow;
     return cost;
 }

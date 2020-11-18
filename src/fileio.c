@@ -32,7 +32,7 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
 
     if (tripFileName == NULL) { /* Warm-start = compact matrix */
-        network->demand = newMatrix(network->numZones, network->numZones,
+        network->demand = newMatrix(network->numOrigins, network->numZones,
                                     double);
     } else { /* Cold start = full matrix */
         network->demand = newMatrix(network->numOrigins, network->numZones,
@@ -52,6 +52,21 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
 
     for (c = 0; c < network->numClasses; c++) network->distanceFactor[c] = 0;
     /* Toll factors are *inverse* of VOT */
+    /* Offpeak: 
+    network->tollFactor[SOLO_17] = 60.0 / 7.8; 
+    network->tollFactor[SOLO_35] = 60.0 / 15.0;
+    network->tollFactor[SOLO_45] = 60.0 / 19.2;
+    network->tollFactor[SOLO_90] = 60.0 / 36.0;
+    network->tollFactor[HOV_17] = 60.0 / 7.8;
+    network->tollFactor[HOV_35] = 60.0 / 15.0;
+    network->tollFactor[HOV_45] = 60.0 / 19.2;
+    network->tollFactor[HOV_90] = 60.0 / 36.0;
+    network->tollFactor[MED_TRUCKS] = 60.0 / 60.0;
+    network->tollFactor[HVY_TRUCKS] = 60.0 / 60.0;
+    */
+    
+
+    /* AM peak: */
     network->tollFactor[SOLO_17] = 60.0 / 30.0; 
     network->tollFactor[SOLO_35] = 60.0 / 48.0;
     network->tollFactor[SOLO_45] = 60.0 / 60.0;
@@ -62,6 +77,20 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     network->tollFactor[HOV_90] = 60.0 / 102.0;
     network->tollFactor[MED_TRUCKS] = 60.0 / 90.0;
     network->tollFactor[HVY_TRUCKS] = 60.0 / 90.0;
+    
+        
+    /* PM peak: 
+    network->tollFactor[SOLO_17] = 60.0 / 10.5; 
+    network->tollFactor[SOLO_35] = 60.0 / 21.0;
+    network->tollFactor[SOLO_45] = 60.0 / 27.0;
+    network->tollFactor[SOLO_90] = 60.0 / 54.0;
+    network->tollFactor[HOV_17] = 60.0 / 10.5;
+    network->tollFactor[HOV_35] = 60.0 / 21.0;
+    network->tollFactor[HOV_45] = 60.0 / 27.0;
+    network->tollFactor[HOV_90] = 60.0 / 54.0;
+    network->tollFactor[MED_TRUCKS] = 60.0 / 60.0;
+    network->tollFactor[HVY_TRUCKS] = 60.0 / 60.0;
+    */
 
     /* Now read files */
     readConverterFile(converterFileName, NCTCOG2SDB, network->numNodes,
@@ -101,7 +130,8 @@ void writeBinaryMatrices(network_type *network) {
     int batch, r, origin;
     char filename[STRING_SIZE];
     FILE* matrixFile;
-
+    
+    printf("Writing binary matrices for %d batches", network->numBatches);
     for (batch = 0; batch < network->numBatches; batch++) {
         sprintf(filename, "matrix%d.bin", batch);
         matrixFile = openFile(filename, "wb");
@@ -160,7 +190,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
             fatalError("Link file done before all links read.");
         parseCSV(lineData, fullLine, NUM_NCTCOG_NET_COLUMNS);
         if (strcmp(lineData[DIR], "FALSE") == 0) { /* Create AB link */
-            sprintf(network->arcs[ij].NCTCOG_ID, "%s AB", lineData[ID]);
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s,AB", lineData[ID]);
             makeLink(network, ij++, table, lineData[ID], lineData[FROM_NODE],
                 lineData[TO_NODE], lineData[PMCAP_AB], lineData[LENGTH],
                 lineData[PKFRTIME_AB], lineData[A_PK_CONICAL],
@@ -172,7 +202,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
                 lineData[TOLL_MEDIUM_TRUCK_PM_AB],
                 lineData[TOLL_HEAVY_TRUCK_PM_AB], lineData[FLAG_EXCLUDE_DA]);
         } else if (strcmp(lineData[DIR], "TRUE") == 0) { /* Create AB and BA links */
-            sprintf(network->arcs[ij].NCTCOG_ID, "%s AB", lineData[ID]);
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s,AB", lineData[ID]);
             makeLink(network, ij++, table, lineData[ID], lineData[FROM_NODE],
                 lineData[TO_NODE], lineData[PMCAP_AB], lineData[LENGTH],
                 lineData[PKFRTIME_AB], lineData[A_PK_CONICAL],
@@ -184,7 +214,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
                 lineData[TOLL_MEDIUM_TRUCK_PM_AB],
                 lineData[TOLL_HEAVY_TRUCK_PM_AB], lineData[FLAG_EXCLUDE_DA]);
 
-            sprintf(network->arcs[ij].NCTCOG_ID, "%s BA", lineData[ID]);        
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s,BA", lineData[ID]);        
             makeLink(network, ij++, table, lineData[ID], lineData[TO_NODE],
                 lineData[FROM_NODE], lineData[PMCAP_BA], lineData[LENGTH],
                 lineData[PKFRTIME_BA], lineData[A_PK_CONICAL],
@@ -280,6 +310,7 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
         } else {
             fatalError("Class index and NCTCOG_classes typedef not aligned.");
         }
+
         if (isSolo(c) && arc->excludeDA == TRUE) {
             arc->classCost[c] = ARTIFICIAL;
         } else {
@@ -366,6 +397,7 @@ void assignDemand(network_type *network, int originNode, int destinationNode,
                   int class, char *demandValue) {
     int origin = nodeclass2origin(network, originNode, class);
     network->demand[origin][destinationNode] = atof(demandValue);
+    network->totalODFlow += atof(demandValue);
 }
 
 void assignStreamedDemand(network_type *network, int originNode, int destinationNode,
@@ -841,13 +873,35 @@ void writeOBANetwork(network_type *network, char *linkFileName,
  */
 void writeNetworkFlows(network_type *network, char *outputFileName) {
     FILE *outFile = openFile(outputFileName, "w");
+    int ij;
+
+    for (ij = 0; ij < network->numArcs; ij++) {
+        fprintf(outFile, "(%d,%d) %f %f\n", network->arcs[ij].tail + 1,
+                                            network->arcs[ij].head + 1,
+                                            network->arcs[ij].flow,
+                                            network->arcs[ij].cost
+                                                - network->arcs[ij].fixedCost);
+    }
+    
+    fclose(outFile);
+}
+
+
+void writeNCTCOGFlows(network_type *network, char *outputFileName) {
+    FILE *outFile = openFile(outputFileName, "w");
     int ij, c;
 
     for (ij = 0; ij < network->numArcs; ij++) {
         if (network->arcs[ij].capacity == ARTIFICIAL) continue;
-        fprintf(outFile, "%s %f \n", network->arcs[ij].NCTCOG_ID, network->arcs[ij].flow);
+        /*fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
+                                            network->arcs[ij].head + 1,
+                                            network->arcs[ij].flow);
+        */
+        fprintf(outFile, "%s,%f,%f", network->arcs[ij].NCTCOG_ID,
+                                        network->arcs[ij].flow,
+                                        conicCost(&(network->arcs[ij]), -1));
         for (c = 0; c < network->numClasses; ++c) {
-            fprintf(outFile, "%f ", network->arcs[ij].classFlow[c]);
+            fprintf(outFile, ",%f,%f", network->arcs[ij].classFlow[c],conicCost(&(network->arcs[ij]), c));
         }
         fprintf(outFile, "\n");
     }
@@ -855,6 +909,25 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
     fclose(outFile);
 }
 
+void writeFixedCosts(network_type *network, char *outputFileName) {
+    FILE *outFile = openFile(outputFileName, "w");
+    int ij, c;
+
+    for (ij = 0; ij < network->numArcs; ij++) {
+        if (network->arcs[ij].capacity == ARTIFICIAL) continue;
+        /*fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
+                                            network->arcs[ij].head + 1,
+                                            network->arcs[ij].flow);
+        */
+        fprintf(outFile, "%s ", network->arcs[ij].NCTCOG_ID);
+        for (c = 0; c < network->numClasses; ++c) {
+            fprintf(outFile, "%f ", network->arcs[ij].classCost[c]);
+        }
+        fprintf(outFile, "\n");
+    }
+    
+    fclose(outFile);
+}
 
 
 
@@ -935,3 +1008,4 @@ void parseCSV(char field[][STRING_SIZE], char *fullLine, int numFields) {
     /* Copy last field */
     strncpy(field[curField], position, STRING_SIZE);
 }
+

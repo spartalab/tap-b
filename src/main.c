@@ -182,7 +182,7 @@ void main_NCTCOG(int argc, char* argv[]) {
 
     }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
-
+        
 #else
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
@@ -193,31 +193,34 @@ void main_NCTCOG(int argc, char* argv[]) {
 
     }
     readNCTCOGNetwork(network, argv[1], argv[2], argv[3]);
-
+        
 #endif
 
     /* Default batching for NCTCOG: one per *class* */
 
-    setBatches(network, network->numZones, argv[2] == NULL);
+    setBatches(network, network->numZones, FALSE);
+    
 
-
+    displayMessage(FULL_NOTIFICATIONS, "Total demand: %f\n", network->totalODFlow);
     displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
     Bparameters.convergenceGap = 1e-3;
     Bparameters.maxIterations = 5000;
     Bparameters.maxTime = 3600 * 24 * 7;
 
     Bparameters.warmStart = TRUE;
+    Bparameters.reuseFirstBush = TRUE;    
     Bparameters.calculateBeckmann = FALSE; /* Expensive with conic functions */
     Bparameters.gapFunction = RELATIVE_GAP_1;
 
     AlgorithmB(network, &Bparameters);
-    writeNetworkFlows(network, Bparameters.flowsFile);
+    writeNCTCOGFlows(network, Bparameters.flowsFile);
     deleteNetwork(network);
 }
 void main_NCTCOGFW(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
-    CCparameters_type parameters = initializeCCparameters(CONJUGATE_FRANK_WOLFE);
-
+    CCparameters_type parameters = initializeCCparameters(BICONJUGATE_FRANK_WOLFE);
+    verbosity = DEBUG;
+    
 #if PARALLELISM
    int numOfThreads = 0;
    if (argc != 5) {
@@ -314,7 +317,6 @@ void setBatches(network_type *network, int batchSize, bool warmStart) {
       writeBinaryMatrices(network);
 
     if(network-> numBatches > 1) {
-
         deleteMatrix(network->demand, network->numOrigins);
         network->demand = newMatrix(network->batchSize, network->numZones, double);
     }
