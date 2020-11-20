@@ -20,6 +20,7 @@
 #include "datastructures.h"
 #include "utils.h"
 #include "bush.h"
+#include "cpthread.h"
 pthread_mutex_t shift_lock;
 
 /* Parallized main Algorithm B helper functions */

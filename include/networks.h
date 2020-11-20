@@ -12,7 +12,7 @@
 #include <math.h>
 #include <string.h>
 #include "datastructures.h"
-#include <pthread.h>
+#include "cpthread.h"
 
 #define NO_PATH_EXISTS -1
 #define ARTIFICIAL 99999 /* Value used for costs, etc. on artificial links

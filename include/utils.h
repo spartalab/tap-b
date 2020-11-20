@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define DEBUG_MODE /* If enabled, echo output to log file. */
@@ -16,7 +17,8 @@
 
 #define IS_MISSING -1
 #define STRING_SIZE 20000
-
+#define TRUE 1
+#define FALSE 0
 #define PAUSE_ON_ERROR FALSE
 #define PAUSE_ON_WARNING FALSE
 
@@ -35,18 +37,12 @@ Dividing a quantity by these values will convert it from standard units
 #define FEET       1.0
 #define INCHES     0.083333333
 
-//#define min(x,y)    ( ((x)<(y)) ? (x) : (y) )
-//#define max(x,y)    ( ((x)>(y)) ? (x) : (y) )
+#define min(x,y)    ( ((x)<(y)) ? (x) : (y) )
+#define max(x,y)    ( ((x)>(y)) ? (x) : (y) )
 #define swap(a,b) SWAP(&a, &b, sizeof(a))
 #define round2int(x)  (int)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
 #define round2long(x)  (long)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
 
-#ifndef __cplusplus
-typedef enum {
-    FALSE,
-    TRUE
-} bool;
-#endif
 
 #ifdef DEBUG_MODE
     char debugFileName[STRING_SIZE];

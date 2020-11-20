@@ -5,14 +5,15 @@
  * See comments on bush.h for descriptions of the data structures used for
  * bushes.
  */
-#include "bush.h"
-#include <time.h>
 
+#include <time.h>
 #if PARALLELISM
-    #include "thpool.h"
-    #include <pthread.h> 
+    #include "tpool.h"
     #include "parallel_bush.h"
+#else
+    #include "bush.h"
 #endif
+
 
 #if PARALLELISM
 //Struct for thread arguments
@@ -41,7 +42,7 @@ void updateFlowsPool(void* pVoid) {
     algorithmBParameters_type *parameters = args->parameters;
     args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
 }
-threadpool thpool;
+tpool_t* thpool;
 #endif
 
 /*
@@ -52,7 +53,7 @@ threadpool thpool;
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
     pthread_mutex_init(&shift_lock, NULL);
-    thpool = thpool_init(parameters->numThreads);
+    thpool = tpool_create(parameters->numThreads);
 #endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
@@ -85,7 +86,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
-#ifdef WIN32
+#ifdef _WIN32
             timespec_get(&tick, TIME_UTC);
 #else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
@@ -101,7 +102,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             storeBatch(batch, network, bushes, parameters);
             displayMessage(LOW_NOTIFICATIONS, "Stored Batch\n");
             /* Check gap and report progress. */
-#ifdef WIN32
+#ifdef _WIN32
             timespec_get(&tock, TIME_UTC);
 #else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
@@ -323,10 +324,10 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        tpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
         *lastClass = c;
     }
-    thpool_wait(thpool);
+    tpool_wait(thpool);
 
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
@@ -335,10 +336,10 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        tpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
         *lastClass = c;
     }
-    thpool_wait(thpool);
+    tpool_wait(thpool);
 #else
     int origin, c;
     for (origin = 0; origin < network->batchSize; origin++) {
@@ -379,9 +380,9 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
              if (c != *lastClass) {
                  changeFixedCosts(network, c);
              }
-             thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+             tpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
          }
-         thpool_wait(thpool);
+         tpool_wait(thpool);
 
          for (int j = 0; j < network->batchSize; ++j) {
              doneAny |= args[j].update_flows_ret;

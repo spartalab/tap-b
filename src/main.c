@@ -8,38 +8,17 @@
 #include <unistd.h>
 #endif
 
-/* Code indepdent taken from Stack Overflow (https://stackoverflow.com/a/3006416) */
-int getNumCores() {
-#ifdef WIN32
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
-#elif MACOS
-    int nm[2];
-    size_t len = 4;
-    uint32_t count;
-
-    nm[0] = CTL_HW; nm[1] = HW_AVAILCPU;
-    sysctl(nm, 2, &count, &len, NULL, 0);
-
-    if(count < 1) {
-        nm[1] = HW_NCPU;
-        sysctl(nm, 2, &count, &len, NULL, 0);
-        if(count < 1) { count = 1; }
-    }
-    return count;
-#else
-    return sysconf(_SC_NPROCESSORS_ONLN);
+#if PARALLELISM
+#include "cpthread.h"
 #endif
-}
 
 int main(int argc, char* argv[]) {
     /* verbosity is a global variable controlling how much output to produce,
      * see utils.h for possible values*/
     verbosity = FULL_NOTIFICATIONS;
-    #ifdef DEBUG_MODE
+#ifdef DEBUG_MODE
         debugFile = openFile("full_log.txt", "w");
-    #endif
+#endif
     /* Uncomment one of these, depending on whether you want to read a network
        in the TNTP format or the NCTCOG network specifically */
 
@@ -47,14 +26,14 @@ int main(int argc, char* argv[]) {
     main_NCTCOG(argc, argv);
 //    main_NCTCOGFW(argc, argv);
 #else
-     main_TNTP(argc, argv);
-//    main_FWtest(argc, argv);
+//     main_TNTP(argc, argv);
+    main_FWtest(argc, argv);
 #endif
 
 
-    #ifdef DEBUG_MODE
+#ifdef DEBUG_MODE
         fclose(debugFile);
-    #endif
+#endif
 
     return EXIT_SUCCESS;
 }
@@ -69,8 +48,8 @@ void main_FWtest(int argc, char* argv[]) {
     int numOfThreads = 0;
    if (argc != 4) {
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
-       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
-       numOfThreads = getNumCores();
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", pcthread_get_num_procs());
+       numOfThreads = pcthread_get_num_procs();
    } else {
        numOfThreads = atoi(argv[argc - 1]);
    }
@@ -119,8 +98,8 @@ void main_TNTP(int argc, char* argv[]) {
                "networkfile demandfiles [num_threads]\n");
    if (argc == atoi(argv[2]) + 4) {
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
-       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
-       numOfThreads = getNumCores();
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", pcthread_get_num_procs());
+       numOfThreads = pcthread_get_num_procs();
      if (argc-4 != atoi(argv[2]))
         fatalError("Number of classes must match number of input demand files");
    } else {
@@ -171,8 +150,8 @@ void main_NCTCOG(int argc, char* argv[]) {
    if (argc != 5) {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
-       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
-       numOfThreads = getNumCores();
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", pcthread_get_num_procs());
+       numOfThreads = pcthread_get_num_procs();
    } else {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
        numOfThreads = atoi(argv[argc - 1]);
@@ -243,8 +222,8 @@ void main_NCTCOGFW(int argc, char* argv[]) {
    if (argc != 5) {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
-       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
-       numOfThreads = getNumCores();
+       displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", pcthread_get_num_procs());
+       numOfThreads = pcthread_get_num_procs();
    } else {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
        numOfThreads = atoi(argv[argc - 1]);

@@ -10,7 +10,7 @@
 #include <time.h>
 
 #if PARALLELISM
-#include "thpool.h"
+#include "tpool.h"
 #include <pthread.h>
 #endif
 
@@ -37,7 +37,7 @@ void allOrNothingPool(void* pVoid) {
     args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
 //    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
 }
-threadpool thpool;
+tpool_t* thpool;
 #endif
 /* Initializes convex combination algorithm parameters.  Argument is a
  * CCalgorithm_type enum that sets default search direction and line search
@@ -106,7 +106,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     struct timespec tick, tock;
 
 #if PARALLELISM
-    thpool = thpool_init(parameters->numThreads);
+    thpool = tpool_create(parameters->numThreads);
 #endif
     /* Initialize step sizes so first one is a pure AON direction regardless of
      * search direction choice (two if using biconjugate) */
@@ -415,9 +415,9 @@ void AONdirection(network_type *network, double **direction,
 #if PARALLELISM
         for (r = 0; r < network->numZones; ++r) {
             args[r].clss = c;
-            thpool_add_work(thpool, (void (*)(void *)) allOrNothingPool, (void*)&args[r]);
+            tpool_add_work(thpool, (void (*)(void *)) allOrNothingPool, (void*)&args[r]);
         }
-        thpool_wait(thpool);
+        tpool_wait(thpool);
         for (r = 0; r < network->numZones; ++r) {
             if (args[r].sptt < 0) {
                 fatalError("SPTT is negative for origin %d is %f", r, args[r].sptt);

@@ -7,7 +7,7 @@
 
 #include "tap.h"
 #if PARALLELISM
-    #include "pthread.h"
+    #include "cpthread.h"
 #endif
 
 //////////////////////////////////
