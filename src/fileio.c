@@ -404,6 +404,7 @@ void assignStreamedDemand(network_type *network, int originNode, int destination
                   int class, float demandValue) {
     int origin = originNode + class * network->batchSize;
     network->demand[origin][destinationNode] = demandValue;
+    network->totalODFlow += demandValue;
 }
 
 void readSDBNetwork(network_type *network, char *filename, double defaultAlpha,
