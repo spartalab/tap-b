@@ -168,11 +168,13 @@ void main_NCTCOG(int argc, char* argv[]) {
        numOfThreads = atoi(argv[argc - 1]);
    }
 
-#if PARALLELISM
     Bparameters.numThreads = numOfThreads;
    if(Bparameters.numThreads < 1 || Bparameters.numThreads > 64) {
        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
    }
+#endif
+
+#if PARALLELISM
     /* Uncomment the following line to read demand file afresh (rather than
      * from the pre-read binary matrices */
     displayMessage(FULL_NOTIFICATIONS, "Reading NCTCOG Network...%s\n", argv[1]);
@@ -296,7 +298,6 @@ void main_NCTCOGFW(int argc, char* argv[]) {
     writeNetworkFlows(network, parameters.flowsFile);
     deleteNetwork(network);
 }
-#endif
 
 /*
 setBatches: Re-partitions the network into origin batches of the given
