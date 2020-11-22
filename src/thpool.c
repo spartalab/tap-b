@@ -13,18 +13,16 @@
 #ifdef WIN32
 #include <io.h>
 #include <BaseTsd.h>
-#include <signal.h>
 #include <windows.h>
-#else
-#include <unistd.h>
 #endif
+#include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <errno.h>
 #include <time.h>
 
+#include "cpthread.h"
 #include "thpool.h"
 
 #ifdef THPOOL_DEBUG
@@ -256,8 +254,8 @@ void thpool_pause(thpool_* thpool_p) {
     int n;
     for (n=0; n < thpool_p->num_threads_alive; n++){
 #ifdef WIN32
-        pthread_kill(thpool_p->threads[n]->pthread, SIGBREAK);
-        #else
+        SuspendThread(thpool_p->threads[n]->pthread);
+#else
         pthread_kill(thpool_p->threads[n]->pthread, SIGUSR1);
 #endif
     }
@@ -270,8 +268,14 @@ void thpool_resume(thpool_* thpool_p) {
     // implemented yet, meanwhile this supresses
     // the warnings
     (void)thpool_p;
-
+#ifdef WIN32
+    int n;
+    for (n=0; n < thpool_p->num_threads_alive; n++){
+        ResumeThread(thpool_p->threads[n]->pthread);
+    }
+#else
     threads_on_hold = 0;
+#endif
 }
 
 

@@ -22,14 +22,26 @@ int pthread_join(pthread_t thread, void **value_ptr)
     return 0;
 }
 
+int pthread_kill(pthread_t thread, int signal)
+{
+    (void) thread;
+    return raise(signal);
+
+}
+
 int pthread_detach(pthread_t thread)
 {
     CloseHandle(thread);
 }
 
+int pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t *attr)
+{
+    (void)attr;
 
+    if (mutex == NULL)
         return 1;
-    EnterCriticalSection(mutex);
+
+    InitializeCriticalSection(mutex);
     return 0;
 }
 

@@ -36,6 +36,7 @@ struct timespec {
 int pthread_create(pthread_t *thread, pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
 int pthread_join(pthread_t thread, void **value_ptr);
 int pthread_detach(pthread_t);
+int pthread_detach(pthread_t, int signal);
 
 int pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t *attr);
 int pthread_mutex_destroy(pthread_mutex_t *mutex);

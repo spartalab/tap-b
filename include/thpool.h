@@ -16,7 +16,7 @@ extern "C" {
 
 
 typedef struct thpool_* threadpool;
-
+typedef threadpool thpool_t;
 
 /**
  * @brief  Initialize threadpool
@@ -191,7 +191,6 @@ int thpool_num_threads_working(threadpool);
 #elif defined(__APPLE__) && defined(__MACH__)
 int pthread_setname_np(const char*);
 #else
-//err("thread_do(): pthread_setname_np is not supported on this system");
-int pthread_setname_np(const char*);
+err("thread_do(): pthread_setname_np is not supported on this system");
 #endif
 #endif

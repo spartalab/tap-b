@@ -8,7 +8,8 @@
 
 #include <time.h>
 #if PARALLELISM
-    #include "tpool.h"
+//    #include "tpool.h"
+    #include "thpool.h"
     #include "parallel_bush.h"
 #else
     #include "bush.h"
@@ -42,7 +43,8 @@ void updateFlowsPool(void* pVoid) {
     algorithmBParameters_type *parameters = args->parameters;
     args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
 }
-tpool_t* thpool;
+//tpool_t* thpool;
+thpool_t thpool;
 #endif
 
 /*
@@ -53,7 +55,8 @@ tpool_t* thpool;
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
     pthread_mutex_init(&shift_lock, NULL);
-    thpool = tpool_create(parameters->numThreads);
+//    thpool = tpool_create(parameters->numThreads);
+    thpool = thpool_init(parameters->numThreads);
 #endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
@@ -324,10 +327,10 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        tpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
         *lastClass = c;
     }
-    tpool_wait(thpool);
+    thpool_wait(thpool);
 
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
@@ -336,10 +339,10 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        tpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
         *lastClass = c;
     }
-    tpool_wait(thpool);
+    thpool_wait(thpool);
 #else
     int origin, c;
     for (origin = 0; origin < network->batchSize; origin++) {
@@ -380,9 +383,9 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
              if (c != *lastClass) {
                  changeFixedCosts(network, c);
              }
-             tpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+             thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
          }
-         tpool_wait(thpool);
+         thpool_wait(thpool);
 
          for (int j = 0; j < network->batchSize; ++j) {
              doneAny |= args[j].update_flows_ret;
