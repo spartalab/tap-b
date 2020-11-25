@@ -26,8 +26,8 @@ int main(int argc, char* argv[]) {
     main_NCTCOG(argc, argv);
 //    main_NCTCOGFW(argc, argv);
 #else
-//     main_TNTP(argc, argv);
-    main_FWtest(argc, argv);
+     main_TNTP(argc, argv);
+//    main_FWtest(argc, argv);
 #endif
 
 

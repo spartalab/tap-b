@@ -7,23 +7,25 @@
  *//** @file thpool.h *//*
  * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
  *
+* 11/23/20: @ribsthakkar Adapted to use the cpthreads implementation
+ *
  ********************************/
 
 #define _POSIX_C_SOURCE 200809L
-#ifdef WIN32
+#include "thpool.h"
+#include <stdio.h>
+ #ifdef WIN32
 #include <io.h>
 #include <BaseTsd.h>
-#include <windows.h>
-#endif
+#else
 #include <unistd.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
+#endif
 
-#include "cpthread.h"
-#include "thpool.h"
+
 
 #ifdef THPOOL_DEBUG
 #define THPOOL_DEBUG 1

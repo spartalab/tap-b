@@ -11,7 +11,7 @@
 
 #if PARALLELISM
 #include "thpool.h"
-#include <pthread.h>
+#include "cpthread.h"
 #endif
 
 #if PARALLELISM
@@ -146,7 +146,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         tstt = TSTT(network);
         gap = parameters->gapFunction(network, tstt, sptt);
 #ifdef WIN32
-        timespec_get(&tick, TIME_UTC);
+        timespec_get(&tock, TIME_UTC);
 #else
         clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
 #endif

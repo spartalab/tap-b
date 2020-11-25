@@ -1,14 +1,16 @@
 #include "cpthread.h"
+#include <signal.h>
+#include <time.h>
 
-#ifdef _WIN32
+#ifdef WIN32
 int pthread_create(pthread_t *thread, pthread_attr_t *attr, void *(*start_routine)(void *), void *arg)
 {
-    void(attr);
+    (void) attr;
 
     if (thread == NULL || start_routine == NULL)
         return 1;
 
-    *thread = CreateThread(NULL, 0, start_routine, arg, 0, NULL);
+    *thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) start_routine, arg, 0, NULL);
     if (*thread == NULL)
         return 1;
     return 0;
@@ -31,7 +33,7 @@ int pthread_kill(pthread_t thread, int signal)
 
 int pthread_detach(pthread_t thread)
 {
-    CloseHandle(thread);
+    return CloseHandle(thread);
 }
 
 int pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t *attr)
@@ -45,6 +47,22 @@ int pthread_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t *attr)
     return 0;
 }
 
+int pthread_mutex_destroy(pthread_mutex_t *mutex)
+{
+    if (mutex == NULL)
+        return 1;
+    DeleteCriticalSection(mutex);
+    return 0;
+}
+
+int pthread_mutex_lock(pthread_mutex_t *mutex)
+{
+    if (mutex == NULL)
+        return 1;
+    EnterCriticalSection(mutex);
+    return 0;
+}
+
 int pthread_mutex_unlock(pthread_mutex_t *mutex)
 {
     if (mutex == NULL)
@@ -53,7 +71,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex)
     return 0;
 }
 
-int pthread_cond_init(thread_cond_t *cond, pthread_condattr_t *attr)
+int pthread_cond_init(pthread_cond_t *cond, pthread_condattr_t *attr)
 {
     (void)attr;
     if (cond == NULL)
@@ -62,44 +80,18 @@ int pthread_cond_init(thread_cond_t *cond, pthread_condattr_t *attr)
     return 0;
 }
 
-int pthread_cond_destroy(thread_cond_t *cond)
+int pthread_cond_destroy(pthread_cond_t *cond)
 {
     /* Windows does not have a destroy for conditionals */
     (void)cond;
     return 0;
 }
 
-int pthread_cond_wait(thread_cond_t *cond, pthread_mutex_t *mutex)
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
     if (cond == NULL || mutex == NULL)
         return 1;
-    return pthread_cond_timedwait(cond, mutex, NULL)
-}
-
-int pthread_cond_timedwait(thread_cond_t *cond, pthread_mutex_t *mutex,
-        const struct timespec *abstime)
-{
-    if (cond == NULL || mutex == NULL)
-        return 1;
-    if (!SleepConditionVariableCS(cond, mutex, timespec_to_ms(abstime)))
-        return 1;
-    return 0;
-}
-
-int pthread_cond_signal(thread_cond_t *cond)
-{
-    if (cond == NULL)
-        return 1;
-    WakeConditionVariable(cond);
-    return 0;
-}
-
-int pthread_cond_broadcast(thread_cond_t *cond)
-{
-    if (cond == NULL)
-        return 1;
-    WakeAllConditionVariable(cond);
-    return 0;
+    return pthread_cond_timedwait(cond, mutex, NULL);
 }
 
 static DWORD timespec_to_ms(const struct timespec *abstime)
@@ -115,6 +107,32 @@ static DWORD timespec_to_ms(const struct timespec *abstime)
     return t;
 }
 
+int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex,
+        const struct timespec *abstime)
+{
+    if (cond == NULL || mutex == NULL)
+        return 1;
+    if (!SleepConditionVariableCS(cond, mutex, timespec_to_ms(abstime)))
+        return 1;
+    return 0;
+}
+
+int pthread_cond_signal(pthread_cond_t *cond)
+{
+    if (cond == NULL)
+        return 1;
+    WakeConditionVariable(cond);
+    return 0;
+}
+
+int pthread_cond_broadcast(pthread_cond_t *cond)
+{
+    if (cond == NULL)
+        return 1;
+    WakeAllConditionVariable(cond);
+    return 0;
+}
+
 int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr)
 {
     (void)attr;
@@ -127,7 +145,7 @@ int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *at
 
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock)
 {
-    (void)rwlock;
+    return 0;
 }
 
 int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock)
@@ -135,6 +153,7 @@ int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock)
     if (rwlock == NULL)
         return 1;
     AcquireSRWLockShared(&(rwlock->lock));
+    return 0;
 }
 
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock)
@@ -150,6 +169,7 @@ int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock)
         return 1;
     AcquireSRWLockExclusive(&(rwlock->lock));
     rwlock->exclusive = true;
+    return 0;
 }
 
 int pthread_rwlock_trywrlock(pthread_rwlock_t  *rwlock)
@@ -176,10 +196,11 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock)
     } else {
         ReleaseSRWLockShared(&(rwlock->lock));
     }
+    return 0;
 }
 #endif
 
-#ifdef _WIN32
+#ifdef WIN32
 unsigned int pcthread_get_num_procs()
 {
     SYSTEM_INFO sysinfo;
@@ -196,11 +217,3 @@ unsigned int pcthread_get_num_procs()
     return (unsigned int)sysconf(_SC_NPROCESSORS_ONLN);
 }
 #endif
-
-void ms_to_timespec(struct timespec *ts, unsigned int ms)
-{
-    if (ts == NULL)
-        return;
-    ts->tv_sec = (ms / 1000) + time(NULL);
-    ts->tv_nsec = (ms % 1000) * 1000000;
-}

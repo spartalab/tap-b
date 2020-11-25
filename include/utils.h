@@ -37,8 +37,10 @@ Dividing a quantity by these values will convert it from standard units
 #define FEET       1.0
 #define INCHES     0.083333333
 
+#ifndef WIN32
 #define min(x,y)    ( ((x)<(y)) ? (x) : (y) )
 #define max(x,y)    ( ((x)>(y)) ? (x) : (y) )
+#endif
 #define swap(a,b) SWAP(&a, &b, sizeof(a))
 #define round2int(x)  (int)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
 #define round2long(x)  (long)((x) < 0 ? ((x) - 0.5) : ((x) + 0.5))
