@@ -7,7 +7,7 @@
 
 #include "tap.h"
 #if PARALLELISM
-    #include "pthread.h"
+    #include "cpthread.h"
 #endif
 
 //////////////////////////////////
@@ -253,7 +253,7 @@ double conicDer(struct arc_type *arc) {
     /* Add unsignalized delay */
     der += arc->u * x_prime;
     if (isnan(der)) displayMessage(FULL_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
-//    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);    
+//    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
     return der;
 }
 

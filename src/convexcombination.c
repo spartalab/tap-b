@@ -11,7 +11,7 @@
 
 #if PARALLELISM
 #include "thpool.h"
-#include <pthread.h>
+#include "cpthread.h"
 #endif
 
 #if PARALLELISM
@@ -37,7 +37,7 @@ void allOrNothingPool(void* pVoid) {
     args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
 //    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
 }
-threadpool thpool;
+thpool_t thpool;
 #endif
 /* Initializes convex combination algorithm parameters.  Argument is a
  * CCalgorithm_type enum that sets default search direction and line search
@@ -132,8 +132,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     while (converged == FALSE) {
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
+#ifdef WIN32
+        timespec_get(&tick, TIME_UTC);
+#else
         clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
-
+#endif
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
                                     oldOldStepSize, &sptt, parameters);
@@ -143,7 +146,11 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
         tstt = TSTT(network);
         displayMessage(DEBUG, "TSTT: %f SPTT: %f\n", tstt, sptt);
         gap = parameters->gapFunction(network, tstt, sptt);
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+#ifdef WIN32
+        timespec_get(&tock, TIME_UTC);
+#else
+        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+#endif
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
 
         if(parameters->calculateBeckmann == TRUE)
@@ -395,7 +402,7 @@ void AONdirection(network_type *network, double **direction,
     *sptt = 0; /* calculate incrementally */
 
 #if PARALLELISM
-    struct thread_args args[network->numZones];
+    struct thread_args args[10000];
     for (r = 0; r < network->numZones; ++r) {
         args[r].id = r;
         args[r].network = network;

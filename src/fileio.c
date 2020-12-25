@@ -1,4 +1,8 @@
+#ifdef WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include "fileio.h"
 
@@ -347,8 +351,8 @@ void readNCTCOGTrips(network_type *network, char *tripFileName, int *table) {
 }
 
 void streamNCTCOGTrips(network_type *network, int *table) {
-    ssize_t n;
-    ssize_t off = 0;
+    unsigned int n;
+    unsigned int off = 0;
     int r, s;
 //    char initial[6];
     // char *buffer = (char *) calloc(48, sizeof(char));
@@ -357,7 +361,11 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     int count = 0;
     do {
+#ifdef WIN32
+        n = _read(_fileno( stdin ), ((char*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
+#else
         n = read(STDIN_FILENO, ((char*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
+#endif
         off += n;
         if (n < 0) {
             fatalError("Issue reading from stdin");

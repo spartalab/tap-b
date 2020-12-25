@@ -3,10 +3,13 @@
  * License:     MIT
  *
  * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
+ * 11/23/20: @ribsthakkar Adapted to cpthread.h for threading
+ *
  **********************************/
 
 #ifndef _THPOOL_
 #define _THPOOL_
+#include "cpthread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,7 +19,7 @@ extern "C" {
 
 
 typedef struct thpool_* threadpool;
-
+typedef threadpool thpool_t;
 
 /**
  * @brief  Initialize threadpool
@@ -190,7 +193,5 @@ int thpool_num_threads_working(threadpool);
 	int prctl(int, ...);
 #elif defined(__APPLE__) && defined(__MACH__)
 int pthread_setname_np(const char*);
-#else
-err("thread_do(): pthread_setname_np is not supported on this system");
 #endif
 #endif

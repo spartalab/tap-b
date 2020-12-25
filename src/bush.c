@@ -5,14 +5,13 @@
  * See comments on bush.h for descriptions of the data structures used for
  * bushes.
  */
-#include "bush.h"
-#include <time.h>
-#include "fileio.h"
 
+#include <time.h>
 #if PARALLELISM
     #include "thpool.h"
-    #include <pthread.h> 
     #include "parallel_bush.h"
+#else
+    #include "bush.h"
 #endif
 
 #if PARALLELISM
@@ -42,7 +41,7 @@ void updateFlowsPool(void* pVoid) {
     algorithmBParameters_type *parameters = args->parameters;
     args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
 }
-threadpool thpool;
+thpool_t thpool;
 #endif
 
 /*
@@ -90,12 +89,17 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         writeNCTCOGFlows(network, outFile);
 #else
         writeNetworkFlows(network, outFile);
-#endif        
+#endif
 
 
         gap = 0; /* Will accumulate total gap across batches for averaging */
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
+#ifdef _WIN32
+            timespec_get(&tick, TIME_UTC);
+#else
+            clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+#endif
             /* Do main work for this batch */
 #if NCTCOG_ENABLED
             //displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
@@ -120,7 +124,13 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             //displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
 #endif
             /* Check gap and report progress. */
+#ifdef _WIN32
+            timespec_get(&tock, TIME_UTC);
+#else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+#endif
+            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
+            displayMessage(LOW_NOTIFICATIONS, "Calculating batch relative gap...\n");
             elapsedTime = (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
 #if NCTCOG_ENABLED
@@ -131,7 +141,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             //displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
 #endif
             gap += batchGap;
-            if (parameters->includeGapTime == FALSE) stopTime = clock(); 
+            if (parameters->includeGapTime == FALSE) stopTime = clock();
             if (parameters->calculateBeckmann == TRUE) {
                 sprintf(beckmannString, "obj %.15g, ",
                         BeckmannFunction(network));
@@ -323,7 +333,7 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
 }
 
 void updateBatchBushes(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
-                              
+
 #if PARALLELISM
     struct thread_args args[network->batchSize];
     for (int j = 0; j < network->batchSize; ++j) {
@@ -791,7 +801,7 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
     }
 
     /* Ensure costs are up to date */
-    // TODO: updateAllCosts in the non-exactCostUpdate will not work in parallel with the current fixed cost mechanism    
+    // TODO: updateAllCosts in the non-exactCostUpdate will not work in parallel with the current fixed cost mechanism
     // if (parameters->linkShiftB != &exactCostUpdate) updateAllCosts(network);
 
 

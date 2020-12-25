@@ -7,18 +7,25 @@
  *//** @file thpool.h *//*
  * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
  *
+* 11/23/20: @ribsthakkar Adapted to use the cpthreads implementation
+ *
  ********************************/
 
 #define _POSIX_C_SOURCE 200809L
+#include "thpool.h"
+#include <stdio.h>
+ #ifdef WIN32
+#include <io.h>
+#include <BaseTsd.h>
+#else
 #include <unistd.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <errno.h>
 #include <time.h>
+#endif
 
-#include "thpool.h"
+
 
 #ifdef THPOOL_DEBUG
 #define THPOOL_DEBUG 1
@@ -225,8 +232,12 @@ void thpool_destroy(thpool_* thpool_p){
     /* Poll remaining threads */
     while (thpool_p->num_threads_alive){
         bsem_post_all(thpool_p->jobqueue.has_jobs);
+#ifdef WIN32
+        Sleep(1000);
+#else
         sleep(1);
-    }
+#endif
+}
 
     /* Job queue cleanup */
     jobqueue_destroy(&thpool_p->jobqueue);
@@ -244,7 +255,11 @@ void thpool_destroy(thpool_* thpool_p){
 void thpool_pause(thpool_* thpool_p) {
     int n;
     for (n=0; n < thpool_p->num_threads_alive; n++){
+#ifdef WIN32
+        SuspendThread(thpool_p->threads[n]->pthread);
+#else
         pthread_kill(thpool_p->threads[n]->pthread, SIGUSR1);
+#endif
     }
 }
 
@@ -255,8 +270,14 @@ void thpool_resume(thpool_* thpool_p) {
     // implemented yet, meanwhile this supresses
     // the warnings
     (void)thpool_p;
-
+#ifdef WIN32
+    int n;
+    for (n=0; n < thpool_p->num_threads_alive; n++){
+        ResumeThread(thpool_p->threads[n]->pthread);
+    }
+#else
     threads_on_hold = 0;
+#endif
 }
 
 
@@ -299,7 +320,11 @@ static void thread_hold(int sig_id) {
     (void)sig_id;
     threads_on_hold = 1;
     while (threads_on_hold){
+#ifdef WIN32
+        Sleep(1000);
+#else
         sleep(1);
+#endif
     }
 }
 
@@ -331,14 +356,15 @@ static void* thread_do(struct thread* thread_p){
     thpool_* thpool_p = thread_p->thpool_p;
 
     /* Register signal handler */
-    struct sigaction act;
-    sigemptyset(&act.sa_mask);
-    act.sa_flags = 0;
-    act.sa_handler = thread_hold;
-    if (sigaction(SIGUSR1, &act, NULL) == -1) {
-        err("thread_do(): cannot handle SIGUSR1");
-    }
-
+    #ifndef WIN32
+        struct sigaction act;
+        sigemptyset(&act.sa_mask);
+        act.sa_flags = 0;
+        act.sa_handler = thread_hold;
+        if (sigaction(SIGUSR1, &act, NULL) == -1) {
+            err("thread_do(): cannot handle SIGUSR1");
+        }
+    #endif
     /* Mark thread as alive (initialized) */
     pthread_mutex_lock(&thpool_p->thcount_lock);
     thpool_p->num_threads_alive += 1;

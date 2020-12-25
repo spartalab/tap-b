@@ -13,3 +13,4 @@ batch*
 matrix*
 *.condor
 *.log
+*.exe
