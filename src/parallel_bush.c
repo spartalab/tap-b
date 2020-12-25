@@ -650,8 +650,16 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
 void exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
     network->arcs[ij].classFlow[class] += shift;
     network->arcs[ij].flow += shift;
-    network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
-    network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    if (network->arcs[ij].hasParallel) {
+        network->arcs[ij].cost =
+            network->arcs[ij].calculateCostPD(&network->arcs[ij], 
+                                              &network->arcs[network->arcs[ij].parallelIndex]);
+        network->arcs[ij].der = network->arcs[ij].calculateDerPD(&network->arcs[ij], 
+                                                                 &network->arcs[network->arcs[ij].parallelIndex]);
+    } else {
+        network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
+        network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    }
 }
 
 void classUpdate_par(int hi, int class, double shift,  network_type *network) {

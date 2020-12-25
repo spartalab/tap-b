@@ -248,10 +248,16 @@ void updateLinks(network_type *network, bool rectifyFlows) {
     }
 
     for (ij = 0; ij < network->numArcs; ij++) {
-        network->arcs[ij].cost =
-                network->arcs[ij].calculateCost(&network->arcs[ij]);
-        network->arcs[ij].der =
-                network->arcs[ij].calculateDer(&network->arcs[ij]);
+        if (network->arcs[ij].hasParallel) {
+            network->arcs[ij].cost =
+                network->arcs[ij].calculateCostPD(&network->arcs[ij], 
+                                                  &network->arcs[network->arcs[ij].parallelIndex]);
+            network->arcs[ij].der = network->arcs[ij].calculateDerPD(&network->arcs[ij], 
+                                                                     &network->arcs[network->arcs[ij].parallelIndex]);
+        } else {
+            network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
+            network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+        }
     }
     
 }

@@ -131,6 +131,20 @@ double generalBPRcost(struct arc_type *arc) {
 }
 
 /*
+ * generalBPRcostPD -- Evaluates the BPR function for an arbitrary polynomial.
+ * Uses the sum of two links that are passed in!
+ */
+double generalBPRcostPD(struct arc_type *arc1, struct arc_type *arc2) {
+    double totalFlow = arc1->flow + arc2->flow;
+    if (totalFlow <= 0)
+   // Protect against negative flow values and 0^0 errors
+       return arc1->freeFlowTime + arc1->fixedCost;
+
+   return arc1->fixedCost + arc1->freeFlowTime *
+       (1 + arc1->alpha * pow(totalFlow / arc1->capacity, arc1->beta));
+}
+
+/*
  * generalBPRder -- Evaluate derivative of an arbitrary polynomial BPR
  * function.
  */
@@ -144,6 +158,19 @@ double generalBPRder(struct arc_type *arc) {
    }
     return arc->freeFlowTime * arc->alpha * arc->beta / arc->capacity
               * pow(arc->flow / arc->capacity, arc->beta - 1);
+}
+
+double generalBPRderPD(struct arc_type *arc1, struct arc_type *arc2) {
+   double totalFlow = arc1->flow + arc2->flow;
+   if (totalFlow <= 0) { /* Protect against negative flow values and 0^0
+                            errors */
+      if (arc1->beta != 1)
+         return 0;
+      else
+         return arc1->freeFlowTime * arc1->alpha / arc1->capacity;
+   }
+    return arc1->freeFlowTime * arc1->alpha * arc1->beta / arc1->capacity
+              * pow(totalFlow / arc1->capacity, arc1->beta - 1);
 }
 
 /*
@@ -182,12 +209,27 @@ double quarticBPRcost(struct arc_type *arc) {
    return arc->fixedCost + arc->freeFlowTime * (1 + arc->alpha * y);
 }
 
+double quarticBPRcostPD(struct arc_type *arc1, struct arc_type *arc2) {
+   double totalFlow = arc1->flow + arc2->flow;
+   double y = totalFlow / arc1->capacity;
+   y *= y;
+   y *= y;
+   return arc1->fixedCost + arc1->freeFlowTime * (1 + arc1->alpha * y);
+}
+
 double quarticBPRder(struct arc_type *arc) {
    double y = arc->flow / arc->capacity / arc->capacity;
    y *= y;
    y *= arc->flow;
    return 4 * arc->freeFlowTime * arc->alpha * y;
+}
 
+double quarticBPRderPD(struct arc_type *arc1, struct arc_type *arc2) {
+   double totalFlow = arc1->flow + arc2->flow;
+   double y = totalFlow / arc1->capacity / arc1->capacity;
+   y *= y;
+   y *= arc1->flow;
+   return 4 * arc1->freeFlowTime * arc1->alpha * y;
 }
 
 double quarticBPRint(struct arc_type *arc, bool includeFixedCost) {
@@ -355,8 +397,14 @@ according to costFunction
 */
 void updateAllCosts(network_type *network) {
     int i;
-    for (i = 0; i < network->numArcs; i++)
-      network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
+    for (i = 0; i < network->numArcs; i++) {
+      if (network->arcs[i].hasParallel) {
+        network->arcs[i].cost =
+            network->arcs[i].calculateCostPD(&network->arcs[i], &network->arcs[network->arcs[i].parallelIndex]);
+      } else {
+            network->arcs[i].cost=network->arcs[i].calculateCost(&network->arcs[i]);
+      }
+    }
 }
 
 /*

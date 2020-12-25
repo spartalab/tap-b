@@ -580,7 +580,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             i--;
             continue;
         }
-        numParams=sscanf(trimmedLine,"%d %d %lf %lf %lf %lf %lf %lf %lf %d",
+        numParams=sscanf(trimmedLine,"%d %d %lf %lf %lf %lf %lf %lf %lf %d %d %d",
             &network->arcs[i].tail,
             &network->arcs[i].head,
             &network->arcs[i].capacity,
@@ -590,8 +590,10 @@ void readOBANetwork(network_type *network, char *linkFileName,
             &network->arcs[i].beta,
             &network->arcs[i].speedLimit,
             &network->arcs[i].toll,
-            &network->arcs[i].linkType);
-        if (numParams != 10) 
+            &network->arcs[i].linkType,
+            &network->arcs[i].hasParallel,
+            &network->arcs[i].parallelIndex);
+        if (numParams != 12) 
             fatalError("Link file %s has an error in this line:\n\"%s\"",
                     linkFileName, fullLine);
         if (network->arcs[i].tail < 1 
@@ -600,8 +602,8 @@ void readOBANetwork(network_type *network, char *linkFileName,
                     i, linkFileName);
         if (network->arcs[i].head < 1 
                 || network->arcs[i].head > network->numNodes) 
-            fatalError("Arc head %d out of range in network file %s.", 
-                    i, linkFileName);
+            fatalError("Arc head %d out of range (%d, head=%d) in network file %s.", 
+                    i, network->numNodes, network->arcs[i].head, linkFileName);
         if (network->arcs[i].length < 0) 
             warning(FULL_NOTIFICATIONS, 
                     "Arc length %d negative in network file %s.\n%s", i,
@@ -630,12 +632,20 @@ void readOBANetwork(network_type *network, char *linkFileName,
            network->arcs[i].calculateDer = &linearBPRder;           
            network->arcs[i].calculateInt = &linearBPRint;           
         } else if (network->arcs[i].beta == 4) {
+           if (network->arcs[i].hasParallel) {
+               network->arcs[i].calculateCostPD = &quarticBPRcostPD;
+               network->arcs[i].calculateDerPD = &quarticBPRderPD;    
+           }
            network->arcs[i].calculateCost = &quarticBPRcost;
            network->arcs[i].calculateDer = &quarticBPRder;           
            network->arcs[i].calculateInt = &quarticBPRint;           
         } else {
+           if (network->arcs[i].hasParallel) {
+               network->arcs[i].calculateCostPD = &generalBPRcostPD;
+               network->arcs[i].calculateDerPD = &generalBPRderPD;    
+           }
            network->arcs[i].calculateCost = &generalBPRcost;
-           network->arcs[i].calculateDer = &generalBPRder;           
+           network->arcs[i].calculateDer = &generalBPRder;   
            network->arcs[i].calculateInt = &generalBPRint;           
         }           
         network->arcs[i].classFlow = newVector(network->numClasses, double);
@@ -825,10 +835,10 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
         fprintf(outFile, "(%d,%d) %f \n", network->arcs[ij].tail + 1,
                                             network->arcs[ij].head + 1,
                                             network->arcs[ij].flow);
-        for (c = 0; c < network->numClasses; ++c) {
-            fprintf(outFile, "%f ", network->arcs[ij].classFlow[c]);
-        }
-        fprintf(outFile, "\n");
+        // for (c = 0; c < network->numClasses; ++c) {
+        //     fprintf(outFile, "%f ", network->arcs[ij].classFlow[c]);
+        // }
+        // sfprintf(outFile, "\n");
     }
     
     fclose(outFile);

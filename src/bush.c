@@ -267,8 +267,15 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
             for (ij = 0; ij < network->numArcs; ij++) {
                 network->arcs[ij].flow += (*bushes)->flow[ij];
                 network->arcs[ij].classFlow[c] += (*bushes)->flow[ij];
-                network->arcs[ij].cost =
-                    network->arcs[ij].calculateCost(&network->arcs[ij]);
+                if (network->arcs[ij].hasParallel) {
+                    // printf("we have parallel link! arc: %d\n", network->arcs[network->arcs[ij].parallelIndex].head);
+                    network->arcs[ij].cost =
+                        network->arcs[ij].calculateCostPD(&network->arcs[ij], 
+                                                          &network->arcs[network->arcs[ij].parallelIndex]);
+                } else {
+                    network->arcs[ij].cost =
+                        network->arcs[ij].calculateCost(&network->arcs[ij]);
+                }
             }
         }
         sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
@@ -1502,8 +1509,16 @@ void checkFlows(network_type *network, bushes_type *bushes) {
  */
 void exactCostUpdate(int ij, double shift, network_type *network) {
     network->arcs[ij].flow += shift;
-    network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
-    network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    if (network->arcs[ij].hasParallel) {
+        network->arcs[ij].cost =
+            network->arcs[ij].calculateCostPD(&network->arcs[ij], 
+                                              &network->arcs[network->arcs[ij].parallelIndex]);
+        network->arcs[ij].der = network->arcs[ij].calculateDerPD(&network->arcs[ij], 
+                                                                 &network->arcs[network->arcs[ij].parallelIndex]);
+    } else {
+        network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
+        network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
+    }
 }
 
 /*

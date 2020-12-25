@@ -98,9 +98,15 @@ typedef struct arc_type {
     double  speedLimit;
     int     linkType;
 
+    /* Stuff for PD electrification */
+    int hasParallel;
+    int parallelIndex;
+    
     double  fixedCost; /* Reflects toll and distance */
     double  (*calculateCost)(struct arc_type *arc);
+    double  (*calculateCostPD)(struct arc_type *arc1, struct arc_type *arc2);
     double  (*calculateDer)(struct arc_type *der);
+    double  (*calculateDerPD)(struct arc_type *arc1, struct arc_type *arc2);
     double  (*calculateInt)(struct arc_type *der, bool);
 } arc_type;
 

@@ -44,14 +44,23 @@ void updateAllCosts(network_type *network);
 void updateAllCostDers(network_type *network);
 
 double generalBPRcost(struct arc_type *arc);
+double generalBPRcostPD(struct arc_type *arc1, struct arc_type *arc2);
 double generalBPRder(struct arc_type *arc);
+double generalBPRderPD(struct arc_type *arc1, struct arc_type *arc2);
 double generalBPRint(struct arc_type *arc, bool includeFixedCost);
+
 double linearBPRcost(struct arc_type *arc);
+double linearBPRcostPD(struct arc_type *arc1, struct arc_type *arc2);
 double linearBPRder(struct arc_type *arc);
+double linearBPRderPD(struct arc_type *arc1, struct arc_type *arc2);
 double linearBPRint(struct arc_type *arc, bool includeFixedCost);
+
 double quarticBPRcost(struct arc_type *arc);
+double quarticBPRcostPD(struct arc_type *arc1, struct arc_type *arc2);
 double quarticBPRder(struct arc_type *arc);
+double quarticBPRderPD(struct arc_type *arc1, struct arc_type *arc2);
 double quarticBPRint(struct arc_type *arc, bool includeFixedCost);
+
 double conicCost(struct arc_type *arc);
 double conicDer(struct arc_type *arc);
 double conicInt(struct arc_type *arc, bool includeFixedCost);
