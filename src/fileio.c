@@ -1,5 +1,6 @@
 #ifdef WIN32
 #include <io.h>
+#include <fcntl.h>
 #else
 #include <unistd.h>
 #endif
@@ -367,6 +368,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
     int count = 0;
     do {
 #ifdef WIN32
+        _setmode(_fileno(stdin), _O_BINARY);
         n = _read(_fileno( stdin ), ((char*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
 #else
         n = read(STDIN_FILENO, ((char*)buffer) + off, 48 - off);  /* Break in middle when out of lines */
@@ -379,16 +381,16 @@ void streamNCTCOGTrips(network_type *network, int *table) {
         } else if (off != 48){
             continue;
         }
-//        displayMessage(FULL_NOTIFICATIONS, "read the following bytes %d\n", off);
+        displayMessage(FULL_DEBUG, "read the %d bytes\n", off);
         off = 0;
-//        displayMessage(FULL_NOTIFICATIONS, "Printing before initial conversion\n");
-//        displayMessage(FULL_NOTIFICATIONS, "r: %d, s: %d, SOLO_35: %f, SOLO_90: %f, HOV_35: %f, HOV_90: %f, SOLO_17: %f, SOLO_45: %f, HOV_17: %f, HOV_45: %f, MED_TRUCKS: %f, HVY_TRUCKS: %f\n",
-//                       ((int *)buffer)[0], ((int *) buffer)[1],
-//                       ((float *) buffer)[2], ((float *) buffer)[3],
-//                       ((float *) buffer)[4], ((float *) buffer)[5],
-//                       ((float *) buffer)[6], ((float *) buffer)[7],
-//                       ((float *) buffer)[8], ((float *) buffer)[9],
-//                       ((float *) buffer)[10], ((float *) buffer)[11]);
+        displayMessage(FULL_DEBUG, "Printing before initial conversion\n");
+        displayMessage(FULL_DEBUG, "r: %d, s: %d, SOLO_35: %f, SOLO_90: %f, HOV_35: %f, HOV_90: %f, SOLO_17: %f, SOLO_45: %f, HOV_17: %f, HOV_45: %f, MED_TRUCKS: %f, HVY_TRUCKS: %f\n",
+                       ((int *)buffer)[0], ((int *) buffer)[1],
+                       ((float *) buffer)[2], ((float *) buffer)[3],
+                       ((float *) buffer)[4], ((float *) buffer)[5],
+                       ((float *) buffer)[6], ((float *) buffer)[7],
+                       ((float *) buffer)[8], ((float *) buffer)[9],
+                       ((float *) buffer)[10], ((float *) buffer)[11]);
         count += 1;
         r = convert(((int *)buffer)[0], table, NCTCOG_MAX_NODE_ID);
         s = convert(((int *)buffer)[1], table, NCTCOG_MAX_NODE_ID);
@@ -1020,6 +1022,6 @@ void parseCSV(char field[][STRING_SIZE], char *fullLine, int numFields) {
         comma = strchr(position, ',');
     }
     /* Copy last field */
-    strncpy(field[curField], position, STRING_SIZE);
+//    strncpy(field[curField], position, STRING_SIZE);
 }
 
