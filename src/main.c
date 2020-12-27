@@ -134,17 +134,19 @@ void main_TNTP(int argc, char* argv[]) {
 void main_NCTCOG(int argc, char* argv[]) {
     network_type *network = newScalar(network_type);
     algorithmBParameters_type Bparameters = initializeAlgorithmBParameters();
-
 #if PARALLELISM
    int numOfThreads = 0;
-   if (argc != 5) {
+   if (argc == 4) {
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s\n", argv[1], argv[2], argv[3]);
        displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
        displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", pcthread_get_num_procs());
        numOfThreads = pcthread_get_num_procs();
-   } else {
+   } else if (argc == 5){
        displayMessage(FULL_NOTIFICATIONS, "arg1: %s, arg2: %s, arg3: %s, arg4: %s\n", argv[1], argv[2], argv[3], argv[4]);
        numOfThreads = atoi(argv[argc - 1]);
+   } else {
+       fatalError("Must specify four or five arguments\n\nUsage: tap nctcog_networkfile "
+                  "nctcog_demandfile nctcog_convertertable [num_threads]\n");
    }
 
     Bparameters.numThreads = numOfThreads;

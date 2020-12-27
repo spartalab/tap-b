@@ -7,6 +7,7 @@
  */
 
 #include <time.h>
+#include "fileio.h"
 #if PARALLELISM
     #include "thpool.h"
     #include "parallel_bush.h"
@@ -78,18 +79,18 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     
     /* Iterate */
     parameters->innerIterations = 1;
+#ifdef _WIN32
+    timespec_get(&tick, TIME_UTC);
+#else
     clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+#endif
     while (elapsedTime < parameters->maxTime
              && iteration < parameters->maxIterations
              && (iteration == 0 || gap > parameters->convergenceGap)) {
         iteration++;
 
         sprintf(outFile, "flows_iteration_%d.txt", iteration);
-#if NCTCOG_ENABLED
         writeNCTCOGFlows(network, outFile);
-#else
-        writeNetworkFlows(network, outFile);
-#endif
 
 
         gap = 0; /* Will accumulate total gap across batches for averaging */
@@ -100,29 +101,20 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #else
             clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
 #endif
+
             /* Do main work for this batch */
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Loading Batch...\n");
             for (ij = 0; ij < network->numArcs; ij++) {
                 network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij], batch);
             }
             loadBatch(batch, network, &bushes, parameters);
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Loaded Batch...\nUpdating Batch Bush...\n");
             updateBatchBushes(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Updated Batch Bush...\nUpdating Batch Flows...\n");
             updateBatchFlows(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Updated Batch Flows...\nStoring batch ...\n");
             storeBatch(batch, network, bushes, parameters);
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
-#endif
+            displayMessage(FULL_DEBUG, "Stored Batch\n");
             /* Check gap and report progress. */
 #ifdef _WIN32
             timespec_get(&tock, TIME_UTC);
@@ -130,16 +122,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
 #endif
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
-            displayMessage(LOW_NOTIFICATIONS, "Calculating batch relative gap...\n");
+            displayMessage(FULL_DEBUG, "Calculating batch relative gap...\n");
             elapsedTime = (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Calculating batch relative gap...\n");
             batchGap = bushRelativeGap(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            //displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
-#endif
+            displayMessage(FULL_DEBUG, "Calculated batch relative gap...\n");
             gap += batchGap;
             if (parameters->includeGapTime == FALSE) stopTime = clock();
             if (parameters->calculateBeckmann == TRUE) {
@@ -335,7 +323,11 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
 void updateBatchBushes(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
 
 #if PARALLELISM
+#ifdef _WIN32
+    struct thread_args args[10000]; // Hard-coded 100000 because compiler needs a fixed allocation size on Windows
+#else
     struct thread_args args[network->batchSize];
+#endif
     for (int j = 0; j < network->batchSize; ++j) {
         args[j].id = j;
         args[j].network = network;
@@ -375,7 +367,11 @@ void updateBatchFlows(network_type *network, bushes_type *bushes, algorithmBPara
         doneAny = FALSE;
             
  #if PARALLELISM
-         struct thread_args args[network->batchSize];
+#ifdef _WIN32
+        struct thread_args args[10000]; // Hard-coded 100000 because compiler needs a fixed allocation size on Windows
+#else
+        struct thread_args args[network->batchSize];
+#endif
          for (int j = 0; j < network->batchSize; ++j) {
              args[j].id = j;
              args[j].network = network;
@@ -383,7 +379,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes, algorithmBPara
              args[j].bushes = bushes;
              args[j].update_flows_ret = FALSE;
          }
-    
+
          for (int j = 0; j < network->batchSize; ++j) {
              if (outOfOrigins(network, j) == TRUE) break;
              if (bushes->updateBush[j] == FALSE) continue;

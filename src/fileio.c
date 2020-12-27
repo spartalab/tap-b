@@ -42,7 +42,7 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
         network->demand = newMatrix(network->numOrigins, network->numZones,
                                     double);
     }
-
+    displayMessage(FULL_NOTIFICATIONS, "Allocated initial demand matrix\n");
     network->tollFactor = newVector(network->numClasses, double);
     network->distanceFactor = newVector(network->numClasses, double);
 
@@ -99,7 +99,11 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
     /* Now read files */
     readConverterFile(converterFileName, NCTCOG2SDB, network->numNodes,
                       sizeof(NCTCOG2SDB)/sizeof(NCTCOG2SDB[0]), FALSE);
+    displayMessage(FULL_NOTIFICATIONS, "Read Converter File\n");
+
     readNCTCOGLinks(network, networkFileName, NCTCOG2SDB);
+    displayMessage(FULL_NOTIFICATIONS, "Read Network File\n");
+
     if (tripFileName != NULL && strcmp("STREAM", tripFileName) == 0) {
         streamNCTCOGTrips(network, NCTCOG2SDB);
     } else if (tripFileName != NULL) {
@@ -181,6 +185,7 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
     int e, ij;
     char lineData[NUM_NCTCOG_NET_COLUMNS][STRING_SIZE];
     char fullLine[STRING_SIZE];
+    displayMessage(FULL_NOTIFICATIONS, "Allocated Stack\n");
     FILE *networkFile = openFile(networkFileName, "r");
 
     /* Skip header row */
@@ -357,7 +362,7 @@ void streamNCTCOGTrips(network_type *network, int *table) {
 //    char initial[6];
     // char *buffer = (char *) calloc(48, sizeof(char));
     char buffer[12*sizeof(float)];
-    displayMessage(FULL_NOTIFICATIONS, "Starting to read...\n");
+    displayMessage(FULL_NOTIFICATIONS, "Starting to read streamed demand...\n");
     displayMessage(FULL_NOTIFICATIONS, "Printing before the tight loop\n");
     int count = 0;
     do {
