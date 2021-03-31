@@ -386,8 +386,12 @@ void deleteMergeDLLelt(mergeDLL *list, mergeDLLelt *elt);
 void displayMergeDLL(int minVerbosity, mergeDLL *list);
 
 /**** Batching ****/
+#define WRONG_BATCH_SIZE -1
+#define WRONG_BATCH_ORIGIN -2
+#define MISSING_BATCH_FILE -3
+
 void writeBushes(network_type *network, bushes_type *bushes, char *filename);
-void readBushes(network_type *network, bushes_type **bushes, char *filename);
+int readBushes(network_type *network, bushes_type **bushes, char *filename);
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters);
 #endif

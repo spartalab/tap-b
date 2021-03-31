@@ -5,7 +5,11 @@
  * See comments on bush.h for descriptions of the data structures used for
  * bushes.
  */
-
+#ifdef WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <time.h>
 #include "fileio.h"
 #if PARALLELISM
@@ -219,7 +223,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
 void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters) {
 
-    int batch, c, ij, origin;
+    int batch, c, ij, origin, ret;
     char batchFileName[STRING_SIZE];    
     displayMessage(FULL_NOTIFICATIONS, "Initializing Algorithm B\n");
     /* 1. Initialize flows to zero and costs to free-flow */
@@ -257,9 +261,15 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
         /* Form bush structure: either read from file or recreate */
         if (parameters->warmStart == TRUE) { /* Read file and rectify */
             displayMessage(FULL_NOTIFICATIONS, "Reading batch %d\n", batch);
-            readBushes(network, bushes, batchFileName);
-            displayMessage(FULL_NOTIFICATIONS, "Read batch %d\n", batch);
-        } else { /* No warm start, have to re-initialize */
+            ret = readBushes(network, bushes, batchFileName);
+            if (ret < 0) {
+                displayMessage(FULL_NOTIFICATIONS, "Issue reading batch for warm-start, will regenerate batch %d\n", batch);
+            } else {
+                displayMessage(FULL_NOTIFICATIONS, "Read batch %d\n", batch);
+            }
+        }
+
+        if (parameters->warmStart == FALSE || ret < 0) { /* No warm start or issue during warm-starting, have to re-initialize */
             /* Do we have to create a bush from scratch, or can we reuse
              * the first? */
             displayMessage(FULL_NOTIFICATIONS, "Creating batch %d\n", batch);
@@ -296,6 +306,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
 
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters) {
+    int ret = 0;
     char batchFileName[STRING_SIZE];
     
     network->curBatch = batch;
@@ -303,7 +314,10 @@ void loadBatch(int batch, network_type *network, bushes_type **bushes,
     if (network->numBatches > 1) {
         /* Even if storeBushes == TRUE, if there is only one batch
          * there is no point in reading it again */
-        readBushes(network, bushes, batchFileName);
+        ret = readBushes(network, bushes, batchFileName);
+        if (ret < 0) {
+            fatalError("Error loading batch %d\n", batch);
+        }
     }
     if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
         readBinaryMatrix(network, parameters);
@@ -1658,16 +1672,27 @@ void writeBushes(network_type *network, bushes_type *bushes, char *filename) {
     fclose(batchFile);
 }
 
-void readBushes(network_type *network, bushes_type **bushes, char *filename) {
+int readBushes(network_type *network, bushes_type **bushes, char *filename) {
     int m, origin, check, numApproaches;
     merge_type *merge;
+#ifdef WIN32
+    if(_access(filename, 0) != 0) {
+        warning(LOW_NOTIFICATIONS, "Batch File %s is missing\n", filename);
+        return MISSING_BATCH_FILE;
+    }
+#else
+    if (access(filename, F_OK) != 0) {
+        warning(LOW_NOTIFICATIONS, "Batch File %s is missing\n", filename);
+        return MISSING_BATCH_FILE;
+    }
+#endif
     FILE *batchFile = openFile(filename, "rb");
     
     /* First do a check */
     my_fread(&check, sizeof(check), 1, batchFile);
     if (check != network->batchSize) {
-        fatalError("File %s has the wrong batch size for this network.",
-                   filename);
+        warning(LOW_NOTIFICATIONS, "File %s has the wrong batch size for this network.", filename);
+        return WRONG_BATCH_SIZE;
     }
     
     /* First clear out all existing bush data */
@@ -1680,7 +1705,8 @@ void readBushes(network_type *network, bushes_type **bushes, char *filename) {
         /* First read the origin ID and check */
         my_fread(&check, sizeof(check), 1, batchFile);
         if (check != origin + network->batchSize * network->curBatch) {
-            fatalError("Reading wrong origin from file %s.", filename);
+            warning(LOW_NOTIFICATIONS, "Reading wrong origin from file %s.", filename);
+            return WRONG_BATCH_ORIGIN;
         }        
         
         /* Now read last merge and number of merges*/
@@ -1718,6 +1744,7 @@ void readBushes(network_type *network, bushes_type **bushes, char *filename) {
     }
             
     fclose(batchFile);
+    return 0;
 }
 
 /*
