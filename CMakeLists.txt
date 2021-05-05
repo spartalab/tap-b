@@ -67,7 +67,7 @@ target_compile_definitions(tap_nctcog_par PRIVATE -DPARALLELISM -DNCTCOG_ENABLED
 target_compile_definitions(tap_nctcog PRIVATE -DNCTCOG_ENABLED)
 target_compile_definitions(tap_par PRIVATE -DPARALLELISM)
 
-if(!WIN32)
+if(NOT WIN32)
 target_link_libraries(tap_nctcog_par ${CMAKE_THREAD_LIBS_INIT} m)
 target_link_libraries(tap_nctcog ${CMAKE_THREAD_LIBS_INIT} m)
 target_link_libraries(tap_par ${CMAKE_THREAD_LIBS_INIT} m)
