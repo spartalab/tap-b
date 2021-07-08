@@ -3,6 +3,7 @@ obj/
 .depend/
 bin/
 cmake-build-debug/
+cmake-build-release/
 full_log.txt
 net/Sydney*
 results/
@@ -13,4 +14,3 @@ batch*
 matrix*
 *.condor
 *.log
-CMakeLists.txt

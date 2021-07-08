@@ -76,6 +76,7 @@ typedef enum {
     TOLL_HEAVY_TRUCK_PM_AB,
     TOLL_HEAVY_TRUCK_PM_BA,
     FLAG_EXCLUDE_DA,
+    DIR,
     NUM_NCTCOG_NET_COLUMNS
 } NCTCOG_net_columns;
 

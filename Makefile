@@ -59,6 +59,11 @@ nctcog: $(BINDIR)/$(PROJECT)
 nctcog-par: CFLAGS += $(RELEASEFLAGS) -DPARALLELISM=1 -DNCTCOG_ENABLED=1 
 nctcog-par: $(BINDIR)/$(PROJECT)
 
+# ------- nctcog-deb: debug nctcog ------
+.PHONY: nctcog-deb
+nctcog-deb: CFLAGS += $(DEBUGFLAGS) -DNCTCOG_ENABLED=1 
+nctcog-deb: $(BINDIR)/$(PROJECT)
+
 # ---------- release target: extra optimization ----
 
 .PHONY: release

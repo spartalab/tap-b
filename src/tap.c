@@ -220,7 +220,7 @@ double conicCost(struct arc_type *arc) {
     }
 
     /* Add unsignalized delay */
-    time += arc->m + arc->u * x;
+    if (arc->u > 0) time += arc->m + arc->u * x;
 
     return time;
 }
@@ -248,8 +248,7 @@ double conicDer(struct arc_type *arc) {
 
     /* Add unsignalized delay */
     der += arc->u * x_prime;
-    if (isnan(der)) displayMessage(FULL_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
-//    if (der <= 0) displayMessage(FULL_NOTIFICATIONS, "negative derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
+    if (isnan(der)) displayMessage(LOW_NOTIFICATIONS, "Infinite derivative %f resulted on link with idx: %d and flow: %f\n", der, arc->ID, arc->flow);
     return der;
 }
 

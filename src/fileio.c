@@ -8,15 +8,15 @@
 
 /* These routines are HARD-CODED for the NCTCOG network.  They cannot read
  * any other network or file.  Dimensions, etc. will be wrong.*/
-#define NCTCOG_NODES 32782
-#define NCTCOG_DIRECTED_LINKS 85089
-#define NCTCOG_UNDIRECTED_LINKS 50295
+#define NCTCOG_NODES 32752
+#define NCTCOG_DIRECTED_LINKS 85088
+#define NCTCOG_UNDIRECTED_LINKS 50166
 #define NCTCOG_ZONES 5352
 #define NCTCOG_MAX_NODE_ID 77429
 #define NCTCOG_NUM_CLASSES 10
 void readNCTCOGNetwork(network_type *network, char *networkFileName,
                        char *tripFileName, char *converterFileName) {
-    int r, s, c;
+    int i, r, s, c;
     int NCTCOG2SDB[NCTCOG_MAX_NODE_ID+1]; /* Conversion table */
 
     /* Set up network and data structures */
@@ -52,16 +52,16 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
 
     for (c = 0; c < network->numClasses; c++) network->distanceFactor[c] = 0;
     /* Toll factors are *inverse* of VOT */
-    network->tollFactor[SOLO_17] = 60.0 / 10.5; 
-    network->tollFactor[SOLO_35] = 60.0 / 21.0;
-    network->tollFactor[SOLO_45] = 60.0 / 27.0;
-    network->tollFactor[SOLO_90] = 60.0 / 54.0;
-    network->tollFactor[HOV_17] = 60.0 / 10.5;
-    network->tollFactor[HOV_35] = 60.0 / 21.0;
-    network->tollFactor[HOV_45] = 60.0 / 27.0;
-    network->tollFactor[HOV_90] = 60.0 / 54.0;
-    network->tollFactor[MED_TRUCKS] = 60.0 / 60.0;
-    network->tollFactor[HVY_TRUCKS] = 60.0 / 60.0;
+    network->tollFactor[SOLO_17] = 60.0 / 30.0; 
+    network->tollFactor[SOLO_35] = 60.0 / 48.0;
+    network->tollFactor[SOLO_45] = 60.0 / 60.0;
+    network->tollFactor[SOLO_90] = 60.0 / 102.0;
+    network->tollFactor[HOV_17] = 60.0 / 30.0;
+    network->tollFactor[HOV_35] = 60.0 / 48.0;
+    network->tollFactor[HOV_45] = 60.0 / 60.0;
+    network->tollFactor[HOV_90] = 60.0 / 102.0;
+    network->tollFactor[MED_TRUCKS] = 60.0 / 90.0;
+    network->tollFactor[HVY_TRUCKS] = 60.0 / 90.0;
 
     /* Now read files */
     readConverterFile(converterFileName, NCTCOG2SDB, network->numNodes,
@@ -73,6 +73,10 @@ void readNCTCOGNetwork(network_type *network, char *networkFileName,
         /* If you give a NULL tripFileName, we assume a warm start and skip
          * this file. */
         readNCTCOGTrips(network, tripFileName, NCTCOG2SDB);
+    }
+    for (i = 0; i < NCTCOG_MAX_NODE_ID; i++) {
+        if (NCTCOG2SDB[i] >= 0 && NCTCOG2SDB[i] < network->numNodes)
+            network->nodes[NCTCOG2SDB[i]].NCTCOG_ID = i;
     }
 
     finalizeNetwork(network);
@@ -151,11 +155,12 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
 
     /* Now read for each link */
     ij = 0; /* ij counts directional links, e undirected links */
-    for (e = 1; e < NCTCOG_UNDIRECTED_LINKS; e++) {
+    for (e = 0; e < NCTCOG_UNDIRECTED_LINKS; e++) {
         if (fgets(fullLine, STRING_SIZE, networkFile) == NULL)
             fatalError("Link file done before all links read.");
         parseCSV(lineData, fullLine, NUM_NCTCOG_NET_COLUMNS);
-        if (atof(lineData[PMCAP_AB]) > 0) { /* Create AB link (handles '--')*/
+        if (strcmp(lineData[DIR], "FALSE") == 0) { /* Create AB link */
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s AB", lineData[ID]);
             makeLink(network, ij++, table, lineData[ID], lineData[FROM_NODE],
                 lineData[TO_NODE], lineData[PMCAP_AB], lineData[LENGTH],
                 lineData[PKFRTIME_AB], lineData[A_PK_CONICAL],
@@ -166,8 +171,20 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
                 lineData[TOLL_AUTO_SR_PM_AB],
                 lineData[TOLL_MEDIUM_TRUCK_PM_AB],
                 lineData[TOLL_HEAVY_TRUCK_PM_AB], lineData[FLAG_EXCLUDE_DA]);
-        }
-        if (atof(lineData[PMCAP_BA]) > 0) { /* Create BA link */
+        } else if (strcmp(lineData[DIR], "TRUE") == 0) { /* Create AB and BA links */
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s AB", lineData[ID]);
+            makeLink(network, ij++, table, lineData[ID], lineData[FROM_NODE],
+                lineData[TO_NODE], lineData[PMCAP_AB], lineData[LENGTH],
+                lineData[PKFRTIME_AB], lineData[A_PK_CONICAL],
+                lineData[VDF_SHIFT], lineData[SPAR_AB], lineData[PMSATFLOW_AB],
+                lineData[CA_AB], lineData[CB_AB], lineData[CC_AB],
+                lineData[CD_AB], lineData[UNSIG_MINDELAY], lineData[UPAR_AB],
+                lineData[OPERCOSTPM_AB], lineData[TOLL_AUTO_DA_PM_AB],
+                lineData[TOLL_AUTO_SR_PM_AB],
+                lineData[TOLL_MEDIUM_TRUCK_PM_AB],
+                lineData[TOLL_HEAVY_TRUCK_PM_AB], lineData[FLAG_EXCLUDE_DA]);
+
+            sprintf(network->arcs[ij].NCTCOG_ID, "%s BA", lineData[ID]);        
             makeLink(network, ij++, table, lineData[ID], lineData[TO_NODE],
                 lineData[FROM_NODE], lineData[PMCAP_BA], lineData[LENGTH],
                 lineData[PKFRTIME_BA], lineData[A_PK_CONICAL],
@@ -178,6 +195,8 @@ void readNCTCOGLinks(network_type *network, char *networkFileName, int *table){
                 lineData[TOLL_AUTO_SR_PM_BA],
                 lineData[TOLL_MEDIUM_TRUCK_PM_BA],
                 lineData[TOLL_HEAVY_TRUCK_PM_BA], lineData[FLAG_EXCLUDE_DA]);
+        } else {
+            fatalError("Unreadable direction parameter '%s'", lineData[DIR]);
         }
     }
     fclose(networkFile);
@@ -199,7 +218,10 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     arc->der = 0;
     arc->freeFlowTime = atof(freeFlow);
     arc->capacity = atof(cap);
-    arc->a = atof(conical);
+    if (strcmp(conical,"--") == 0)
+        arc->a = 12;
+    else
+        arc->a = atof(conical);
     arc->e = atof(shift);
     arc->sParam = atof(sPar);
     arc->saturationFlow = atof(satFlow);
@@ -215,13 +237,14 @@ void makeLink(network_type *network, int ij, int *table, char *ID, char *from,
     arc->toll_Med = atof(medToll);
     arc->toll_Heavy = atof(heavyToll);
     arc->length = atof(len);
-    if (strcmp(exclude, "TRUE") == 0) {
+    if (strcmp(exclude, "TRUE") == 0 || strcmp(exclude, "1") == 0) {
         arc->excludeDA = TRUE;
-    } else if (strcmp(exclude, "FALSE") == 0) {
+    } else if (strcmp(exclude, "FALSE") == 0 || strcmp(exclude, "0") == 0) {
         arc->excludeDA = FALSE;
     } else {
         fatalError("Unreadable exclude parameter '%s'", exclude);
     }
+    arc->b = (2 * arc->a - 1) / (2 * arc->a - 2);
     arc->h0 = 1 + sqrt(arc->a * arc->a * (1 + arc->e) * (1 + arc->e) + arc->b * arc->b) - arc->a * (1 + arc->e) - arc->b;
     arc->alpha = 0.15;
     arc->beta = 4;

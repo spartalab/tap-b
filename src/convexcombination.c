@@ -58,15 +58,15 @@ CCparameters_type initializeCCparameters(CCalgorithm_type algo) {
         break;
     case FRANK_WOLFE:
         parameters.searchDirection = &AONdirection;
-        parameters.lineSearch = &bisection;
+        parameters.lineSearch = &NewtonSearch;
         break;
     case CONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &CFWdirection;
-        parameters.lineSearch = &bisection;
+        parameters.lineSearch = &NewtonSearch;
         break;
     case BICONJUGATE_FRANK_WOLFE:
         parameters.searchDirection = &BFWdirection;
-        parameters.lineSearch = &bisection;
+        parameters.lineSearch = &NewtonSearch;
         break;
     default:
         warning(LOW_NOTIFICATIONS, "Unknown algorithm type for CC "
