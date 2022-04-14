@@ -12,6 +12,7 @@
     #include "thpool.h"
     #include <pthread.h> 
     #include "parallel_bush.h"
+    #include <omp.h>
 #endif
 
 #if PARALLELISM
@@ -53,6 +54,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
     pthread_mutex_init(&shift_lock, NULL);
     thpool = thpool_init(parameters->numThreads);
+
+    #pragma omp parallel
+    {
+        printf("This is Thread %d\n", omp_get_thread_num());
+    }
+
 #endif
     /* Strong connectivity check */
     makeStronglyConnectedNetwork(network);
@@ -314,38 +321,41 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
     
 #if PARALLELISM
     int c; 
-    struct thread_args args[network->batchSize];
+    // struct thread_args args[network->batchSize];
+    // for (int j = 0; j < network->batchSize; ++j) {
+    //     args[j].id = j;
+    //     args[j].network = network;
+    //     args[j].parameters = parameters;
+    //     args[j].bushes = bushes;
+    //     args[j].update_flows_ret = FALSE;
+    // }
+    #pragma omp parallel for private(c) schedule(dynamic)
     for (int j = 0; j < network->batchSize; ++j) {
-        args[j].id = j;
-        args[j].network = network;
-        args[j].parameters = parameters;
-        args[j].bushes = bushes;
-        args[j].update_flows_ret = FALSE;
-    }
-
-    for (int j = 0; j < network->batchSize; ++j) {
-        if (outOfOrigins(network, j) == TRUE) break;
+        if (outOfOrigins(network, j) == TRUE) continue;
         bushes->updateBush[j] = TRUE;
         c = origin2class(network, j);
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        updateBushB_par(j, network, bushes, parameters);
+        // thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
         *lastClass = c;
     }
-    thpool_wait(thpool);
-
+    // thpool_wait(thpool);
+    
+    #pragma omp parallel for private(c) schedule(dynamic)
     for (int j = 0; j < network->batchSize; ++j) {
-        if (outOfOrigins(network, j) == TRUE) break;
+        if (outOfOrigins(network, j) == TRUE) continue;
         bushes->updateBush[j] = TRUE;
         c = origin2class(network, j);
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        updateFlowsB_par(j, network, bushes, parameters);
+        // thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
         *lastClass = c;
     }
-    thpool_wait(thpool);
+    // thpool_wait(thpool);
 #else
     int origin, c;
     for (origin = 0; origin < network->batchSize; origin++) {
@@ -370,29 +380,31 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
         doneAny = FALSE;
             
  #if PARALLELISM
-         struct thread_args args[network->batchSize];
+        //  struct thread_args args[network->batchSize];
+        //  for (int j = 0; j < network->batchSize; ++j) {
+        //      args[j].id = j;
+        //      args[j].network = network;
+        //      args[j].parameters = parameters;
+        //      args[j].bushes = bushes;
+        //      args[j].update_flows_ret = FALSE;
+        //  }
+
+        #pragma omp parallel for reduction(|: doneAny) private(c) schedule(dynamic)
          for (int j = 0; j < network->batchSize; ++j) {
-             args[j].id = j;
-             args[j].network = network;
-             args[j].parameters = parameters;
-             args[j].bushes = bushes;
-             args[j].update_flows_ret = FALSE;
-         }
-    
-         for (int j = 0; j < network->batchSize; ++j) {
-             if (outOfOrigins(network, j) == TRUE) break;
+             if (outOfOrigins(network, j) == TRUE) continue;
              if (bushes->updateBush[j] == FALSE) continue;
              c = origin2class(network, j);
              if (c != *lastClass) {
                  changeFixedCosts(network, c);
              }
-             thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+            doneAny = doneAny | updateFlowsB_par(j, network, bushes, parameters);
+            //  thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
          }
-         thpool_wait(thpool);
+        //  thpool_wait(thpool);
 
-         for (int j = 0; j < network->batchSize; ++j) {
-             doneAny |= args[j].update_flows_ret;
-         }
+        //  for (int j = 0; j < network->batchSize; ++j) {
+        //      doneAny |= args[j].update_flows_ret;
+        //  }
 #else
         int origin;
         for (origin = 0; origin < network->batchSize; origin++) {

@@ -18,15 +18,15 @@ INCLUDES := $(wildcard $(INCLUDEDIR)/*.h)
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 RM = rm -f
 
-CC = gcc
-CFLAGS = -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
+CC = icc
+CFLAGS = -qopenmp -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
-CFLAGS += -Wpedantic -Warray-bounds
+# CFLAGS += -Wpedantic -Warray-bounds
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O3
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
-LINKER = gcc
-LFLAGS = -Wall -pthread -lm $(INCLUDEFLAG)
+LINKER = icc
+LFLAGS = -qopenmp -Wall -pthread -lm $(INCLUDEFLAG)
 MACFLAGS = -Wall -lm $(INCLUDEFLAG)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
