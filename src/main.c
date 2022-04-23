@@ -68,7 +68,7 @@ void main_FWtest(int argc, char* argv[]) {
 #if PARALLELISM
     int numOfThreads = 0;
    if (argc != 4) {
-       displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
+    //    displayMessage(FULL_NOTIFICATIONS, "Threads were not defined, we will define the num of threads based on the number of available cores.\n");
        displayMessage(FULL_NOTIFICATIONS, "Number of available cores: %d\n", getNumCores());
        numOfThreads = getNumCores();
    } else {
@@ -133,7 +133,7 @@ void main_TNTP(int argc, char* argv[]) {
        fatalError("Invalid number of threads: %d must be between 1 and 64", Bparameters.numThreads);
    }
    else {
-      displayMessage(FULL_NOTIFICATIONS, "Number of threads: %d\n", numOfThreads);
+    //   displayMessage(FULL_NOTIFICATIONS, "Number of threads: %d\n", numOfThreads);
    }
 #else
    if (argc < 5)

@@ -1,0 +1,496 @@
++ set -e
++ make clean
++ make parallel
+icc -qopenmp -Wall -I include -MT obj/parallel_bush.o -MMD -MP -MF .depend/parallel_bush.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/parallel_bush.c -I include -o obj/parallel_bush.o
+remark #11074: Inlining inhibited by limit max-size 
+remark #11076: To get full report use -qopt-report=4 -qopt-report-phase ipo
+icc -qopenmp -Wall -I include -MT obj/networks.o -MMD -MP -MF .depend/networks.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/networks.c -I include -o obj/networks.o
+icc -qopenmp -Wall -I include -MT obj/convexcombination.o -MMD -MP -MF .depend/convexcombination.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/convexcombination.c -I include -o obj/convexcombination.o
+remark #11074: Inlining inhibited by limit max-size 
+remark #11076: To get full report use -qopt-report=4 -qopt-report-phase ipo
+icc -qopenmp -Wall -I include -MT obj/datastructures.o -MMD -MP -MF .depend/datastructures.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/datastructures.c -I include -o obj/datastructures.o
+icc -qopenmp -Wall -I include -MT obj/bush.o -MMD -MP -MF .depend/bush.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/bush.c -I include -o obj/bush.o
+src/bush.c(391): warning #188: enumerated type mixed with another type
+              doneAny = doneAny | updateFlowsB_par(j, network, bushes, parameters);
+                      ^
+
+remark #11074: Inlining inhibited by limit max-size 
+remark #11076: To get full report use -qopt-report=4 -qopt-report-phase ipo
+icc -qopenmp -Wall -I include -MT obj/fileio.o -MMD -MP -MF .depend/fileio.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/fileio.c -I include -o obj/fileio.o
+remark #11074: Inlining inhibited by limit max-size 
+remark #11076: To get full report use -qopt-report=4 -qopt-report-phase ipo
+icc -qopenmp -Wall -I include -MT obj/thpool.o -MMD -MP -MF .depend/thpool.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/thpool.c -I include -o obj/thpool.o
+icc -qopenmp -Wall -I include -MT obj/main.o -MMD -MP -MF .depend/main.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/main.c -I include -o obj/main.o
+src/main.c(157): warning #188: enumerated type mixed with another type
+     setBatches(network, network->numOrigins, atoi(argv[2]) == 0);
+                                              ^
+
+icc -qopenmp -Wall -I include -MT obj/tap.o -MMD -MP -MF .depend/tap.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/tap.c -I include -o obj/tap.o
+remark #11074: Inlining inhibited by limit max-size 
+remark #11076: To get full report use -qopt-report=4 -qopt-report-phase ipo
+icc -qopenmp -Wall -I include -MT obj/utils.o -MMD -MP -MF .depend/utils.Td -Wextra -Wwrite-strings -Wno-parentheses -Winline -O3 -DPARALLELISM=1 -c src/utils.c -I include -o obj/utils.o
+icc obj/parallel_bush.o obj/networks.o obj/convexcombination.o obj/datastructures.o obj/bush.o obj/fileio.o obj/thpool.o obj/main.o obj/tap.o obj/utils.o -qopenmp -Wall -pthread -lm -I include -o bin/tap
++ echo 'Static Scheduling varying thread nums'
+Static Scheduling varying thread nums
++ export OMP_SCHEDULE=static
++ OMP_SCHEDULE=static
++ export OMP_NUM_THREADS=1
++ OMP_NUM_THREADS=1
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 0
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 9.210 s.
+Iteration 1: gap 0.150270628932329, obj 32042864.165298, time 125.267, 3580 shifts
+Iteration 2: gap 0.048410927103127, obj 31454333.3160929, time 147.848, 4362 shifts
+Iteration 3: gap 0.014278197032335, obj 31076014.3190087, time 184.856, 5778 shifts
+Iteration 4: gap 0.004917297921976, obj 30889189.9343494, time 225.343, 7844 shifts
+Iteration 5: gap 0.001863230125605, obj 30826429.9594289, time 257.802, 10121 shifts
+Iteration 6: gap 0.000688917440689, obj 30804632.7558297, time 286.104, 12643 shifts
+Iteration 7: gap 0.000301736768431, obj 30796913.9416795, time 313.822, 15628 shifts
+Iteration 8: gap 0.000121527425146, obj 30794287.2525292, time 343.432, 18859 shifts
+Iteration 9: gap 0.000052501713692, obj 30793307.3666388, time 380.450, 22929 shifts
+Iteration 10: gap 0.000024813014085, obj 30792905.1367671, time 427.939, 27886 shifts
+Iteration 11: gap 0.000012698768795, obj 30792744.9869681, time 484.420, 33393 shifts
+Iteration 12: gap 0.000006529553678, obj 30792674.0336621, time 544.071, 38928 shifts
+Iteration 13: gap 0.000003828969951, obj 30792642.5805557, time 613.496, 45182 shifts
+Iteration 14: gap 0.000001851141297, obj 30792626.0238549, time 683.169, 51126 shifts
+Iteration 15: gap 0.000000970842758, obj 30792616.9084149, time 772.068, 58609 shifts
+Iteration 16: gap 0.000000457121033, obj 30792611.9631037, time 870.405, 66764 shifts
+Iteration 17: gap 0.000000279016053, obj 30792611.6069696, time 990.306, 76362 shifts
+Iteration 18: gap 0.000000174871077, obj 30792611.498063, time 1110.374, 85632 shifts
+Iteration 19: gap 0.000000119809613, obj 30792611.4506148, time 1229.087, 94598 shifts
+Iteration 20: gap 0.000000075999272, obj 30792611.4302733, time 1344.571, 102902 shifts
+Iteration 21: gap 0.000000049730374, obj 30792611.4165741, time 1463.677, 111537 shifts
+Iteration 22: gap 0.000000040517725, obj 30792611.4027987, time 1602.090, 121560 shifts
+Iteration 23: gap 0.000000028206524, obj 30792611.3975668, time 1724.566, 130169 shifts
+Iteration 24: gap 0.000000017087141, obj 30792611.3940407, time 1855.916, 139409 shifts
+Iteration 25: gap 0.000000014664182, obj 30792611.3914261, time 2019.205, 150881 shifts
+Iteration 26: gap 0.000000011344675, obj 30792611.389698, time 2144.658, 159480 shifts
+Iteration 27: gap 0.000000008005168, obj 30792611.3889327, time 2268.761, 167838 shifts
+Average Bush Update time 21.960887
+Average Flow Update time 62.067285
++ export OMP_NUM_THREADS=2
++ OMP_NUM_THREADS=2
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 0
+This is Thread 1
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 9.370 s.
+Iteration 1: gap 0.149521630252286, obj 32041085.4304368, time 66.311, 3580 shifts
+Iteration 2: gap 0.047675597080496, obj 31450958.5110365, time 80.777, 4368 shifts
+Iteration 3: gap 0.014110106900114, obj 31072665.1802682, time 101.751, 5808 shifts
+Iteration 4: gap 0.004830545537309, obj 30887119.8110131, time 124.213, 7892 shifts
+Iteration 5: gap 0.001917503173631, obj 30825865.5923743, time 141.321, 10130 shifts
+Iteration 6: gap 0.000702464854813, obj 30804469.4598601, time 156.873, 12586 shifts
+Iteration 7: gap 0.000299302405590, obj 30796850.2503466, time 173.022, 15430 shifts
+Iteration 8: gap 0.000118960332574, obj 30794220.1819192, time 191.775, 18687 shifts
+Iteration 9: gap 0.000054588505377, obj 30793243.0602782, time 216.130, 22711 shifts
+Iteration 10: gap 0.000025101469870, obj 30792886.9297731, time 245.547, 27264 shifts
+Iteration 11: gap 0.000012283442644, obj 30792718.4310952, time 282.929, 32639 shifts
+Iteration 12: gap 0.000006079770362, obj 30792653.0142829, time 326.674, 38399 shifts
+Iteration 13: gap 0.000003067769014, obj 30792626.4566076, time 375.629, 44581 shifts
+Iteration 14: gap 0.000001655846485, obj 30792615.4402272, time 439.147, 52082 shifts
+Iteration 15: gap 0.000000941188345, obj 30792612.6341246, time 507.148, 59730 shifts
+Iteration 16: gap 0.000000549863128, obj 30792611.9648306, time 576.195, 67383 shifts
+Iteration 17: gap 0.000000327864100, obj 30792611.6093934, time 655.667, 76083 shifts
+Iteration 18: gap 0.000000218562361, obj 30792611.4844893, time 735.127, 84590 shifts
+Iteration 19: gap 0.000000133862296, obj 30792611.4467593, time 812.652, 92159 shifts
+Iteration 20: gap 0.000000081068501, obj 30792611.4204651, time 897.817, 100803 shifts
+Iteration 21: gap 0.000000052413775, obj 30792611.405233, time 991.524, 110329 shifts
+Iteration 22: gap 0.000000039276928, obj 30792611.3969108, time 1090.648, 120298 shifts
+Iteration 23: gap 0.000000028187317, obj 30792611.3926625, time 1184.986, 128984 shifts
+Iteration 24: gap 0.000000021135331, obj 30792611.3901062, time 1279.464, 138019 shifts
+Iteration 25: gap 0.000000015687283, obj 30792611.3883651, time 1373.432, 147221 shifts
+Iteration 26: gap 0.000000009960265, obj 30792611.3876641, time 1461.664, 155333 shifts
+Average Bush Update time 12.712005
+Average Flow Update time 43.505849
++ export OMP_NUM_THREADS=4
++ OMP_NUM_THREADS=4
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 1
+This is Thread 0
+This is Thread 2
+This is Thread 3
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 9.690 s.
+Iteration 1: gap 0.147875527116569, obj 32021048.6690018, time 36.606, 3580 shifts
+Iteration 2: gap 0.046902059479526, obj 31443020.4570962, time 45.792, 4400 shifts
+Iteration 3: gap 0.014138654168761, obj 31068550.5393093, time 58.441, 5881 shifts
+Iteration 4: gap 0.005210808067154, obj 30886790.6582048, time 70.513, 7932 shifts
+Iteration 5: gap 0.001911272768035, obj 30826843.0618377, time 79.738, 10011 shifts
+Iteration 6: gap 0.000735213924111, obj 30804660.4637696, time 89.304, 12489 shifts
+Iteration 7: gap 0.000297331193496, obj 30796969.0315452, time 99.685, 15268 shifts
+Iteration 8: gap 0.000122915160765, obj 30794137.6196849, time 112.201, 18515 shifts
+Iteration 9: gap 0.000051556880919, obj 30793201.6085141, time 128.975, 22413 shifts
+Iteration 10: gap 0.000024304211540, obj 30792811.8429773, time 152.067, 27239 shifts
+Iteration 11: gap 0.000011291656287, obj 30792687.7247945, time 179.437, 32359 shifts
+Iteration 12: gap 0.000005390914569, obj 30792642.5921414, time 213.209, 38395 shifts
+Iteration 13: gap 0.000002299329663, obj 30792622.4925677, time 249.967, 44860 shifts
+Iteration 14: gap 0.000001158836549, obj 30792613.4472022, time 296.524, 53250 shifts
+Iteration 15: gap 0.000000690718766, obj 30792612.1244167, time 347.022, 61465 shifts
+Iteration 16: gap 0.000000392699564, obj 30792611.7405715, time 398.149, 69239 shifts
+Iteration 17: gap 0.000000236012020, obj 30792611.5508377, time 450.421, 77545 shifts
+Iteration 18: gap 0.000000158958875, obj 30792611.465358, time 504.055, 85943 shifts
+Iteration 19: gap 0.000000108778972, obj 30792611.4219358, time 558.827, 93940 shifts
+Iteration 20: gap 0.000000078632002, obj 30792611.4037379, time 612.723, 101862 shifts
+Iteration 21: gap 0.000000050187662, obj 30792611.3975224, time 660.694, 108790 shifts
+Iteration 22: gap 0.000000034562765, obj 30792611.3931784, time 713.570, 117000 shifts
+Iteration 23: gap 0.000000027286845, obj 30792611.3908759, time 769.257, 125760 shifts
+Iteration 24: gap 0.000000018358846, obj 30792611.3893395, time 823.065, 132406 shifts
+Iteration 25: gap 0.000000013084170, obj 30792611.388493, time 878.041, 140189 shifts
+Iteration 26: gap 0.000000019009366, obj 30792611.3876145, time 940.719, 149214 shifts
+Iteration 27: gap 0.000000013430419, obj 30792611.387265, time 980.293, 153277 shifts
+Iteration 28: gap 0.000000010016681, obj 30792611.3870285, time 1030.101, 158706 shifts
+Iteration 29: gap 0.000000007694626, obj 30792611.3868607, time 1082.218, 165252 shifts
+Average Bush Update time 7.078700
+Average Flow Update time 30.239163
++ export OMP_NUM_THREADS=8
++ OMP_NUM_THREADS=8
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 5
+This is Thread 4
+This is Thread 1
+This is Thread 6
+This is Thread 2
+This is Thread 0
+This is Thread 7
+This is Thread 3
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 10.450 s.
+Iteration 1: gap 0.147726744643291, obj 32025206.2377757, time 19.271, 3580 shifts
+Iteration 2: gap 0.042476068762303, obj 31411433.438728, time 24.782, 4417 shifts
+Iteration 3: gap 0.013297897489763, obj 31050715.3614004, time 31.859, 5945 shifts
+Iteration 4: gap 0.004522788186904, obj 30880681.6603168, time 38.423, 7999 shifts
+Iteration 5: gap 0.001684382032779, obj 30823007.4865024, time 44.072, 10240 shifts
+Iteration 6: gap 0.000702668251744, obj 30803464.0391891, time 49.642, 12786 shifts
+Iteration 7: gap 0.000279512119979, obj 30796683.7406212, time 55.589, 15519 shifts
+Iteration 8: gap 0.000116056885891, obj 30794170.1636048, time 62.970, 18720 shifts
+Iteration 9: gap 0.000048105437235, obj 30793222.3166736, time 72.411, 22534 shifts
+Iteration 10: gap 0.000023792761028, obj 30792863.1858426, time 85.843, 27327 shifts
+Iteration 11: gap 0.000011288087920, obj 30792715.0750033, time 101.511, 32347 shifts
+Iteration 12: gap 0.000005792329199, obj 30792650.9682835, time 120.525, 38040 shifts
+Iteration 13: gap 0.000002523678848, obj 30792625.893458, time 143.231, 44419 shifts
+Iteration 14: gap 0.000001111168577, obj 30792614.0864534, time 169.271, 51828 shifts
+Iteration 15: gap 0.000000521345091, obj 30792611.9884782, time 199.052, 60540 shifts
+Iteration 16: gap 0.000000304945612, obj 30792611.598969, time 233.902, 70493 shifts
+Iteration 17: gap 0.000000194231114, obj 30792611.4874001, time 268.116, 79420 shifts
+Iteration 18: gap 0.000000104907826, obj 30792611.4442817, time 301.149, 87325 shifts
+Iteration 19: gap 0.000000066747853, obj 30792611.4128071, time 342.409, 97674 shifts
+Iteration 20: gap 0.000000046490394, obj 30792611.4017688, time 381.706, 107012 shifts
+Iteration 21: gap 0.000000029103167, obj 30792611.396033, time 420.561, 115605 shifts
+Iteration 22: gap 0.000000019062216, obj 30792611.3913654, time 465.106, 125798 shifts
+Iteration 23: gap 0.000000014226567, obj 30792611.3895009, time 509.061, 135417 shifts
+Iteration 24: gap 0.000000011392902, obj 30792611.388337, time 552.993, 144660 shifts
+Iteration 25: gap 0.000000006733393, obj 30792611.3876498, time 592.960, 152906 shifts
+Average Bush Update time 3.985809
+Average Flow Update time 19.732600
++ export OMP_NUM_THREADS=16
++ OMP_NUM_THREADS=16
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 2
+This is Thread 1
+This is Thread 4
+This is Thread 5
+This is Thread 3
+This is Thread 6
+This is Thread 0
+This is Thread 11
+This is Thread 12
+This is Thread 9
+This is Thread 14
+This is Thread 15
+This is Thread 8
+This is Thread 10
+This is Thread 13
+This is Thread 7
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 11.600 s.
+Iteration 1: gap 0.147322112481521, obj 32019149.9397004, time 9.875, 3580 shifts
+Iteration 2: gap 0.043797732179410, obj 31428191.5870397, time 12.893, 4372 shifts
+Iteration 3: gap 0.014364196806380, obj 31056835.3009198, time 17.020, 5903 shifts
+Iteration 4: gap 0.004909058854042, obj 30886596.4788662, time 20.840, 7869 shifts
+Iteration 5: gap 0.001846221811536, obj 30824965.8083273, time 24.033, 10017 shifts
+Iteration 6: gap 0.000703691381807, obj 30803958.8487539, time 27.431, 12534 shifts
+Iteration 7: gap 0.000276197346786, obj 30796741.645812, time 31.240, 15314 shifts
+Iteration 8: gap 0.000121849638492, obj 30794113.9700311, time 36.269, 18735 shifts
+Iteration 9: gap 0.000054230813818, obj 30793225.6799852, time 43.596, 22692 shifts
+Iteration 10: gap 0.000024400270509, obj 30792857.6126379, time 52.156, 27199 shifts
+Iteration 11: gap 0.000011378460175, obj 30792714.4441588, time 62.822, 32400 shifts
+Iteration 12: gap 0.000005203644317, obj 30792653.7951947, time 74.312, 37714 shifts
+Iteration 13: gap 0.000002660856152, obj 30792629.2714061, time 90.708, 44359 shifts
+Iteration 14: gap 0.000001204945416, obj 30792619.5798543, time 106.490, 51216 shifts
+Iteration 15: gap 0.000000803975232, obj 30792612.2459224, time 127.196, 59635 shifts
+Iteration 16: gap 0.000000313076033, obj 30792611.6684322, time 142.659, 66183 shifts
+Iteration 17: gap 0.000000170572973, obj 30792611.4748352, time 167.732, 77062 shifts
+Iteration 18: gap 0.000000091591946, obj 30792611.4264951, time 191.187, 86537 shifts
+Iteration 19: gap 0.000000071332478, obj 30792611.4060919, time 217.249, 96056 shifts
+Iteration 20: gap 0.000000042956515, obj 30792611.3996317, time 240.793, 103840 shifts
+Iteration 21: gap 0.000000028153289, obj 30792611.3938754, time 266.712, 113603 shifts
+Iteration 22: gap 0.000000016839800, obj 30792611.3913977, time 292.824, 123125 shifts
+Iteration 23: gap 0.000000012067507, obj 30792611.3891952, time 324.000, 134377 shifts
+Iteration 24: gap 0.000000008679042, obj 30792611.3885031, time 348.264, 143392 shifts
+Average Bush Update time 2.237448
+Average Flow Update time 12.273552
++ export OMP_NUM_THREADS=32
++ OMP_NUM_THREADS=32
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 4
+This is Thread 16
+This is Thread 18
+This is Thread 30
+This is Thread 29
+This is Thread 19
+This is Thread 2
+This is Thread 0
+This is Thread 1
+This is Thread 15
+This is Thread 3
+This is Thread 24
+This is Thread 7
+This is Thread 25
+This is Thread 26
+This is Thread 28
+This is Thread 6
+This is Thread 8
+This is Thread 5
+This is Thread 12
+This is Thread 17
+This is Thread 31
+This is Thread 13
+This is Thread 9
+This is Thread 11
+This is Thread 14
+This is Thread 10
+This is Thread 27
+This is Thread 20
+This is Thread 22
+This is Thread 21
+This is Thread 23
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 13.560 s.
+Iteration 1: gap 0.146846279921079, obj 32016074.1651431, time 7.879, 3579 shifts
+Iteration 2: gap 0.043264541336890, obj 31432815.948673, time 10.403, 4380 shifts
+Iteration 3: gap 0.013195994051543, obj 31053597.6809088, time 13.692, 5900 shifts
+Iteration 4: gap 0.004447283646142, obj 30879860.1684706, time 17.348, 7953 shifts
+Iteration 5: gap 0.001752755623062, obj 30822272.3129821, time 20.241, 10190 shifts
+Iteration 6: gap 0.000646729161672, obj 30803393.3843921, time 23.391, 12652 shifts
+Iteration 7: gap 0.000260561030420, obj 30796454.1794051, time 26.727, 15519 shifts
+Iteration 8: gap 0.000113440033515, obj 30794042.6469239, time 31.749, 18869 shifts
+Iteration 9: gap 0.000047461950158, obj 30793147.6434192, time 38.322, 22740 shifts
+Iteration 10: gap 0.000023169083088, obj 30792807.3110944, time 47.748, 27577 shifts
+Iteration 11: gap 0.000010796014961, obj 30792685.2800817, time 58.244, 32369 shifts
+Iteration 12: gap 0.000005492272319, obj 30792634.3079915, time 70.453, 38303 shifts
+Iteration 13: gap 0.000002625582613, obj 30792618.5563771, time 84.332, 44497 shifts
+Iteration 14: gap 0.000001352312416, obj 30792614.1081875, time 100.059, 51674 shifts
+Iteration 15: gap 0.000000683121824, obj 30792612.0699959, time 116.931, 59131 shifts
+Iteration 16: gap 0.000000405276364, obj 30792611.6632377, time 135.930, 67963 shifts
+Iteration 17: gap 0.000000271043829, obj 30792611.5146172, time 155.008, 76152 shifts
+Iteration 18: gap 0.000000182656982, obj 30792611.4554441, time 173.608, 83773 shifts
+Iteration 19: gap 0.000000121315150, obj 30792611.4260372, time 192.897, 91562 shifts
+Iteration 20: gap 0.000000080241152, obj 30792611.408202, time 213.019, 99694 shifts
+Iteration 21: gap 0.000000055537625, obj 30792611.3982948, time 232.413, 107851 shifts
+Iteration 22: gap 0.000000040789802, obj 30792611.3936087, time 252.366, 116006 shifts
+Iteration 23: gap 0.000000028151933, obj 30792611.3901528, time 272.080, 124026 shifts
+Iteration 24: gap 0.000000018912430, obj 30792611.3882115, time 292.374, 132540 shifts
+Iteration 25: gap 0.000000014089344, obj 30792611.3874435, time 312.402, 140863 shifts
+Iteration 26: gap 0.000000009548294, obj 30792611.3870048, time 332.392, 149445 shifts
+Average Bush Update time 1.685534
+Average Flow Update time 11.098753
++ export OMP_NUM_THREADS=56
++ OMP_NUM_THREADS=56
++ numactl --cpunodebind=0 --preferred=0 ./bin/tap 1e-8 1 net/ChicagoRegional_net.txt net/ChicagoRegional_trips.txt
+Threads were not defined, we will define the num of threads based on the number of available cores.
+Number of available cores: 56
+Nodes, arcs, zones, thrunode: 12982 39018 1790 1790
+Distance factor, toll factor: 0.250000 0.100000
+12982 nodes, 39018 arcs, and 1790 zones
+File read and memory allocated.
+Forward and reverse star lists generated.
+Starting Algorithm B...
+This is Thread 1
+This is Thread 48
+This is Thread 44
+This is Thread 46
+This is Thread 32
+This is Thread 0
+This is Thread 18
+This is Thread 20
+This is Thread 4
+This is Thread 2
+This is Thread 49
+This is Thread 3
+This is Thread 47
+This is Thread 33
+This is Thread 5
+This is Thread 17
+This is Thread 34
+This is Thread 45
+This is Thread 52
+This is Thread 50
+This is Thread 13
+This is Thread 12
+This is Thread 35
+This is Thread 16
+This is Thread 14
+This is Thread 24
+This is Thread 27
+This is Thread 22
+This is Thread 23
+This is Thread 26
+This is Thread 28
+This is Thread 21
+This is Thread 38
+This is Thread 37
+This is Thread 19
+This is Thread 31
+This is Thread 8
+This is Thread 25
+This is Thread 39
+This is Thread 6
+This is Thread 42
+This is Thread 7
+This is Thread 54
+This is Thread 15
+This is Thread 51
+This is Thread 29
+This is Thread 41
+This is Thread 40
+This is Thread 11
+This is Thread 10
+This is Thread 30
+This is Thread 53
+This is Thread 43
+This is Thread 9
+This is Thread 36
+This is Thread 55
+Warning: Creating 15 artifical arcs to ensure strong connectivity.
+Finalizing network setup
+Finalized network setup
+Creating Initial bushes
+Initializing Algorithm B
+Initialized flows
+Read matrix 0
+Creating batch 0
+Created batch 0
+Initialization done in 13.020 s.
+Iteration 1: gap 0.148866250493517, obj 32023235.3077484, time 8.826, 3580 shifts
+Iteration 2: gap 0.046704018377927, obj 31434085.2201988, time 11.399, 4384 shifts
+Iteration 3: gap 0.013268446037428, obj 31064668.8979461, time 14.959, 5827 shifts
+Iteration 4: gap 0.004581678659840, obj 30879747.7608972, time 18.949, 7933 shifts
+Iteration 5: gap 0.001724278661315, obj 30823207.4389391, time 22.852, 10118 shifts
+Iteration 6: gap 0.000648379859005, obj 30803163.5472773, time 26.903, 12620 shifts
+Iteration 7: gap 0.000247912582885, obj 30796314.3644129, time 31.097, 15452 shifts
+Iteration 8: gap 0.000104118668718, obj 30793964.4010598, time 36.467, 18760 shifts
+Iteration 9: gap 0.000042688219742, obj 30793105.0204765, time 43.873, 22726 shifts
+Iteration 10: gap 0.000017941224404, obj 30792779.650649, time 52.712, 27575 shifts
+Iteration 11: gap 0.000007967946269, obj 30792669.4694057, time 64.223, 33327 shifts
+Iteration 12: gap 0.000003882580221, obj 30792630.9799592, time 77.442, 39514 shifts
+Iteration 13: gap 0.000001756013930, obj 30792619.8857859, time 92.136, 46021 shifts
+Iteration 14: gap 0.000000821740536, obj 30792612.3643587, time 107.380, 53711 shifts
+Iteration 15: gap 0.000000392528192, obj 30792611.673346, time 124.553, 62782 shifts
+Iteration 16: gap 0.000000210071369, obj 30792611.4888418, time 143.179, 72027 shifts
+Iteration 17: gap 0.000000132710027, obj 30792611.4312052, time 161.506, 80984 shifts
+Iteration 18: gap 0.000000085446847, obj 30792611.4076355, time 179.670, 89396 shifts
+Iteration 19: gap 0.000000048775675, obj 30792611.3968546, time 198.101, 98196 shifts
+Iteration 20: gap 0.000000032740966, obj 30792611.3915286, time 217.227, 107780 shifts
+Iteration 21: gap 0.000000019330679, obj 30792611.3889503, time 236.560, 117125 shifts
+Iteration 22: gap 0.000000013496438, obj 30792611.3880877, time 255.687, 126120 shifts
+Iteration 23: gap 0.000000009583032, obj 30792611.3875729, time 274.408, 134494 shifts
+Average Bush Update time 1.816943
+Average Flow Update time 10.113832

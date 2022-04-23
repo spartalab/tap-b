@@ -53,7 +53,7 @@ threadpool thpool;
 void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 #if PARALLELISM
     pthread_mutex_init(&shift_lock, NULL);
-    thpool = thpool_init(parameters->numThreads);
+    // thpool = thpool_init(parameters->numThreads);
 
     #pragma omp parallel
     {
@@ -68,10 +68,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     int batch, iteration = 0, lastClass = IS_MISSING;
     displayMessage(FULL_NOTIFICATIONS, "Creating Initial bushes\n");
     bushes_type *bushes = createBushes(network);
-    struct timespec tick, tock;
+    struct timespec tick, tock, innertick, innertock;
     char beckmannString[STRING_SIZE];
 
     double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
+    double bushUpdateTime = 0;
+    double flowUpdateTime = 0;
 
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
@@ -93,36 +95,26 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
-#endif
+
             loadBatch(batch, network, &bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
-#endif
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &innertick);
             updateBatchBushes(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
-#endif
+            clock_gettime(CLOCK_MONOTONIC_RAW, &innertock);
+            bushUpdateTime += (double)((1000000000 * (innertock.tv_sec - innertick.tv_sec) + innertock.tv_nsec - innertick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &innertick);
             updateBatchFlows(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
-#endif
+            clock_gettime(CLOCK_MONOTONIC_RAW, &innertock);
+            flowUpdateTime += (double)((1000000000 * (innertock.tv_sec - innertick.tv_sec) + innertock.tv_nsec - innertick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             storeBatch(batch, network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
-#endif
+
             /* Check gap and report progress. */
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-#endif
+
             batchGap = bushRelativeGap(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
-#endif
             gap += batchGap;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
             if (parameters->calculateBeckmann == TRUE) {
@@ -153,6 +145,8 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         parameters->thresholdAEC = 0.25 * gap; /* Tuneable parameter */
 
     } 
+    displayMessage(FULL_NOTIFICATIONS, "Average Bush Update time %.6f\n", bushUpdateTime/iteration);
+    displayMessage(FULL_NOTIFICATIONS, "Average Flow Update time %.6f\n", flowUpdateTime/iteration);
 
     /* Clean up */
     deleteBushes(network, bushes);
@@ -315,10 +309,7 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
     }
 }
 
-void updateBatchBushes(network_type *network, bushes_type *bushes,
-                       int *lastClass, algorithmBParameters_type *parameters) {
-                          
-    
+void updateBatchBushes(network_type *network, bushes_type *bushes, int *lastClass, algorithmBParameters_type *parameters) {   
 #if PARALLELISM
     int c; 
     // struct thread_args args[network->batchSize];
@@ -329,7 +320,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
     //     args[j].bushes = bushes;
     //     args[j].update_flows_ret = FALSE;
     // }
-    #pragma omp parallel for private(c) schedule(dynamic)
+    #pragma omp parallel for private(c) schedule(runtime)
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) continue;
         bushes->updateBush[j] = TRUE;
@@ -343,7 +334,7 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
     }
     // thpool_wait(thpool);
     
-    #pragma omp parallel for private(c) schedule(dynamic)
+    #pragma omp parallel for private(c) schedule(runtime)
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) continue;
         bushes->updateBush[j] = TRUE;
@@ -389,7 +380,7 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
         //      args[j].update_flows_ret = FALSE;
         //  }
 
-        #pragma omp parallel for reduction(|: doneAny) private(c) schedule(dynamic)
+        #pragma omp parallel for reduction(|: doneAny) private(c) schedule(runtime)
          for (int j = 0; j < network->batchSize; ++j) {
              if (outOfOrigins(network, j) == TRUE) continue;
              if (bushes->updateBush[j] == FALSE) continue;
