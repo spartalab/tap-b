@@ -20,25 +20,6 @@
 #define NOT_ALLOWED ARTIFICIAL /* Use same value if a class cannot use links*/
 
 typedef enum {
-    SOLO_17,
-    SOLO_35,
-    SOLO_45,
-    SOLO_90,
-    HOV_17,
-    HOV_35,
-    HOV_45,
-    HOV_90,
-    MED_TRUCKS,
-    HVY_TRUCKS,
-    NUM_NCTCOG_CLASSES
-} NCTCOG_classes;
-
-#define isHOV(c) ((c)==HOV_17 || (c)==HOV_35 || (c)==HOV_45 || (c)==HOV_90)
-#define isSolo(c) (!isHOV(c))
-#define isDA(c) ((c)==SOLO_17 || (c)==SOLO_35 || (c)==SOLO_45 || (c)==SOLO_90)
-
-
-typedef enum {
     FORWARD,
     REVERSE
 } direction_type;
@@ -47,8 +28,6 @@ typedef enum {
  * arc_type -- struct for storing all information for arcs.  Most of the
  * members are self-explanatory (tail, head, flow, cost, etc.) and store data
  * from TNTP files.  
- *
- * NOTE: This function is specialized now for the NCTCOG network.
  *
  * Of note are the the three function pointers at the end -- calculateCost,
  * calculateDer, and calculateInt.  These respectively calculate the cost on a
@@ -67,9 +46,19 @@ typedef struct arc_type {
     double  cost;
     double  der;
 
-    int     ID; /* NCTCOG ID */
+    /* Main link data */
     double  freeFlowTime;
     double  capacity;
+    double  length;
+    bool    excludeDA; /* Are drive-alone prohibited? */
+    double  toll;
+
+    /* BPR values */
+    double  alpha; 
+    double  beta;
+
+    /* Conic parameters */
+    int     ID; 
     double  a; /* Conical parameter */
     double  e; /* VDF shift */
     double  sParam; /* Signal parameter */
@@ -85,16 +74,12 @@ typedef struct arc_type {
     double  toll_SR;
     double  toll_Med;
     double  toll_Heavy;
-    double  length;
-    bool    excludeDA; /* Are drive-alone prohibited? */
 
     double  b; /* Experimental constants to reduce run time */
     double  h0;
     double oldRoot;
 
-    double  alpha; /* Vestigial BPR values */
-    double  beta;
-    double  toll;
+    /* Other data provided in TNTP format */
     double  speedLimit;
     int     linkType;
 
@@ -149,30 +134,29 @@ typedef struct {
 
 /* network_type -- data structure for the entire network, including arrays of
  * nodes, arcs, and OD pairs, and network size information.  The beckmann and
- * beckmannLB members are used in certain gap calculations. 
- *
- * Specialized to NCTCOG by not including class-specific VOT/VOD... for that
- * see the individual link classCosts
- * */
+ * beckmannLB members are used in certain gap calculations.
+ */
 typedef struct {
-    node_type*  nodes;
-    arc_type*   arcs;
-    pthread_mutex_t* arc_muts;
-    double**    demand;
-    int    numNodes;
-    int    numArcs;
-    int    numZones; /* Number of physical zones */
-    int    numOrigins; /* Number of origins (zones * classes) */
-    int    numClasses;
-    int    firstThroughNode;
+    node_type* nodes;
+    arc_type*  arcs;
+    double**   demand;
+    int numNodes;
+    int numArcs;
+    int numZones; /* Number of physical zones */
+    int numOrigins; /* Number of origins (zones * classes) */
+    int numClasses;
+    int firstThroughNode;
     double  totalODFlow;
     double  beckmann;
     double  beckmannLB;
     double *tollFactor; /* per class */
     double *distanceFactor; /* per class */
-    int    batchSize; /* Indicates number of batches per origin */
-    int    numBatches;
-    int    curBatch; /* Indicates which origin batch is current */
+    int batchSize; /* Indicates number of batches per origin */
+    int numBatches;
+    int curBatch; /* Indicates which origin batch is current */
+#ifdef PARALLELISM
+    pthread_mutex_t* arc_muts;
+#endif
 } network_type;
 
 /* Used to detect when we are at the end of all batches and must reset */
@@ -184,7 +168,6 @@ void BellmanFordNew(int origin, double *label, arc_type **backarc, int *order,
                  network_type *network, queueDiscipline q);
 void heapDijkstraNew(int origin, double *label, arc_type **backarc,
                   network_type *network);
-
    
 /* Older label-correcting shortest path implementations */
 void BellmanFord(int origin, double *label, int *backnode,
@@ -197,7 +180,6 @@ void BellmanFord_NoLabel(int origin, double *label, network_type *network,
                          queueDiscipline q, double *labelGuess, int *order);
 void heapDijkstra(int origin, double *label, int *backnode,
                   network_type *network);
-
 
 void changeFixedCosts(network_type *network, int class);
 
@@ -218,10 +200,9 @@ bool checkIfCurrentNodeClass(network_type *network, int originNode, int class);
 bool checkIfCurrentOrigin(network_type *network, int origin);
 bool outOfOrigins(network_type *network, int origin);
 
-/* Not needed for NCTCOG */
-/* void setWeights(network_type *network, int class, double *timeFactor,
+void setWeights(network_type *network, int class, double *timeFactor,
                 double *tollFactor, double *distanceFactor);
-*/
+
 
 /////////////////////////////////
 // Custom linked lists for TAP //

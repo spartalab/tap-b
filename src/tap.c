@@ -24,7 +24,7 @@ int arcNumber(network_type *network, arc_type *arc) {
 
 /*
 BeckmannFunction calculates the Beckmann function for a network given its
-current class-flows.  Specialized for NCTCOG.
+current class-flows.  
 */
 double BeckmannFunction(network_type *network) {
     double Beckmann = 0;
@@ -531,13 +531,17 @@ void makeStronglyConnectedNetwork(network_type *network) {
         }
     }
     deleteVector(network->arcs);
+#ifdef PARALLELISM
     for(i = 0; i < network->numArcs; i++) {
         pthread_mutex_destroy(&network->arc_muts[i]);
     }
     deleteVector(network->arc_muts);
+#endif
     network->numArcs += newArcs;
     network->arcs = newArcVector;
+#ifdef PARALLELISM
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
+#endif
    /* Regenerate forward/reverse star lists */
     for (j = 0; j < network->numNodes; j++) {
         clearArcList(&(network->nodes[j].forwardStar));

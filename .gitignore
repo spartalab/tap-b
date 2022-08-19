@@ -7,10 +7,11 @@ full_log.txt
 net/Sydney*
 results/
 flows.txt
-matrix0.bin
 .DS_Store
 batch*
 matrix*
 *.condor
 *.log
 CMakeLists.txt
+todo-nosync.txt
+*.swp

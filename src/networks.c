@@ -510,11 +510,15 @@ void changeFixedCosts(network_type *network, int class) {
     double oldCost;
 
     for (ij = 0; ij < network->numArcs; ij++) {
+#ifdef PARALLELISM
         pthread_mutex_lock(&network->arc_muts[ij]);
+#endif
         oldCost = network->arcs[ij].fixedCost;
         network->arcs[ij].fixedCost = network->arcs[ij].classCost[class];
         network->arcs[ij].cost += (network->arcs[ij].fixedCost - oldCost);
+#ifdef PARALLELISM
         pthread_mutex_unlock(&network->arc_muts[ij]);
+#endif
     }
 }
 
@@ -530,7 +534,9 @@ void finalizeNetwork(network_type *network) {
         initializeArcList(&(network->nodes[i].reverseStar));
     }
     for (i = 0; i < network->numArcs; i++) {
+#ifdef PARALLELISM
         pthread_mutex_init(&network->arc_muts[i], NULL);
+#endif
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);
@@ -813,7 +819,9 @@ void deleteNetwork(network_type *network) {
    deleteMatrix(network->demand, network->batchSize);
    deleteVector(network->nodes);
    deleteVector(network->arcs);
+#ifdef PARALLELISM
    deleteVector(network->arc_muts);
+#endif
    deleteVector(network->tollFactor);
    deleteVector(network->distanceFactor);
    deleteScalar(network);

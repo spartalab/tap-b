@@ -1,3 +1,4 @@
+#ifdef PARALLELISM
 #include "parallel_bush.h"
 
 /*
@@ -659,3 +660,23 @@ void classUpdate_par(int hi, int class, double shift,  network_type *network) {
     pthread_mutex_lock(&network->arc_muts[hi]);
 }
 
+void updateBushPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    updateBushB_par(id, network, bushes, parameters);
+}
+
+void updateFlowsPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
+}
+#else
+int empty_var = 0;  /* Empty statement to avoid compiler warning */
+#endif
