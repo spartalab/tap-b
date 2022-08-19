@@ -68,23 +68,28 @@ int main(int argc, char* argv[]) {
       displayMessage(FULL_NOTIFICATIONS,"Number of threads: %d\n",numOfThreads);
     }
 
-   readOBANetwork(network, argv[3], argv + 4, atoi(argv[2]),
-                  Bparameters.demandMultiplier);
-   displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
-   Bparameters.convergenceGap = atof(argv[1]);
-   Bparameters.maxIterations = 200;
-   Bparameters.maxTime = 10000;
-   // Bparameters.storeBushes = TRUE; // Uncomment if you want to save bushes for future warm start use
-   Bparameters.warmStart = FALSE; //Set to true if you want to warm start. Batch size must be set to the size used when first storing the bush
-   Bparameters.gapFunction = RELATIVE_GAP_1;
-   Bparameters.calculateBeckmann = TRUE; /* Expensive with conic functions */
+    readOBANetwork(network, argv[3], argv + 4, atoi(argv[2]),
+                   Bparameters.demandMultiplier);
+    displayMessage(FULL_NOTIFICATIONS, "Starting Algorithm B...\n");
+    Bparameters.convergenceGap = atof(argv[1]);
+    Bparameters.maxIterations = 200;
+    Bparameters.maxTime = 10000;
+    // Bparameters.storeBushes = TRUE; // Uncomment if you want to save bushes for future warm start use
+    Bparameters.warmStart = FALSE; //Set to true if you want to warm start. Batch size must be set to the size used when first storing the bush
+    Bparameters.gapFunction = RELATIVE_GAP_1;
+    Bparameters.calculateBeckmann = TRUE; /* Expensive with conic functions */
 
-   /* Default: one batch */
-   setBatches(network, network->numOrigins, atoi(argv[2]) == 0);
+    /* Default: one batch */
+    setBatches(network, network->numOrigins, atoi(argv[2]) == 0);
 
-   AlgorithmB(network, &Bparameters);
-   writeNetworkFlows(network, Bparameters.flowsFile);
-   deleteNetwork(network);
+    AlgorithmB(network, &Bparameters);
+    writeNetworkFlows(network, Bparameters.flowsFile);
+    for (int c = 0; c < network->numClasses; c++) {
+       displayMessage(FULL_NOTIFICATIONS,
+                      "Class %d TSTT: %f\n", c+1, classGeneralizedCost(network, c));
+    }
+    displayMessage(FULL_NOTIFICATIONS, "Aggregate TSTT: %f\n", TSTT(network));
+    deleteNetwork(network);
 
     #ifdef DEBUG_MODE
         fclose(debugFile);
