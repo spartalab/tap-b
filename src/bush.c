@@ -100,7 +100,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     /* Clean up */
     deleteBushes(network, bushes);
-
+#if PARALLELISM
+    thpool_destroy(thpool);
+#endif
 }
 
 /*
@@ -114,6 +116,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.convergenceGap = 0;
     parameters.maxTime = INFINITY;
     parameters.maxIterations = INT_MAX;
+    parameters.calculateBeckmann = TRUE;
 
     parameters.innerIterations = 20;
     parameters.shiftReps = 1;
@@ -158,7 +161,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters) {
 
     int batch, c, ij, origin;
-    char batchFileName[STRING_SIZE];    
+    char batchFileName[2*STRING_SIZE];    
     displayMessage(FULL_NOTIFICATIONS, "Initializing Algorithm B\n");
     /* 1. Initialize flows to zero and costs to free-flow */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -183,7 +186,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
     for (batch = 0; batch < network->numBatches; batch++) {
         /* Set up new batch */
         network->curBatch = batch;
-        sprintf(batchFileName, "%s%d.bin", parameters->batchStem,
+        snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
                 network->curBatch);
 
         if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
@@ -223,7 +226,8 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                     network->arcs[ij].calculateCost(&network->arcs[ij]);
             }
         }
-        sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+        snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin",
+                 parameters->batchStem, batch);
         if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
             writeBushes(network, *bushes, batchFileName);
         }
@@ -236,10 +240,11 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
 
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters) {
-    char batchFileName[STRING_SIZE];
+    char batchFileName[2*STRING_SIZE];
     
     network->curBatch = batch;
-    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+    snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
+            batch);
     if (network->numBatches > 1) {
         /* Even if storeBushes == TRUE, if there is only one batch
          * there is no point in reading it again */
@@ -252,9 +257,10 @@ void loadBatch(int batch, network_type *network, bushes_type **bushes,
 
 void storeBatch(int batch, network_type *network, bushes_type *bushes,
                 algorithmBParameters_type *parameters) {
-    char batchFileName[STRING_SIZE];
+    char batchFileName[2*STRING_SIZE];
     
-    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);                
+    snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
+            batch);                
     if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
         writeBushes(network, bushes, batchFileName);
     }
@@ -1696,10 +1702,11 @@ void readBushes(network_type *network, bushes_type **bushes, char *filename) {
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters) {
     int check, r;
-    char filename[STRING_SIZE];
+    char filename[2*STRING_SIZE];
     FILE* matrixFile;
 
-    sprintf(filename, "%s%d.bin", parameters->matrixStem, network->curBatch);
+    snprintf(filename, 2*STRING_SIZE, "%s%d.bin", parameters->matrixStem,
+            network->curBatch);
     matrixFile = openFile(filename, "rb");
     my_fread(&check, sizeof(check), 1, matrixFile);
     if (check != network->curBatch) fatalError("Reading wrong binary matrix.");

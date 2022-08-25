@@ -257,8 +257,8 @@ typedef struct algorithmBParameters_type{
    bool     storeBushes;
    bool     reuseFirstBush;
    bool     includeGapTime;
-   char     batchStem[STRING_SIZE-20]; /* Leave space for index */
-   char     matrixStem[STRING_SIZE-20];
+   char     batchStem[STRING_SIZE];
+   char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 

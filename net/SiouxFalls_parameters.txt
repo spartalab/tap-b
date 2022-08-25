@@ -1,0 +1,50 @@
+~ Parameters can be in any order; they are split up like this for readbility
+~ Boolean parameters are false unless given here (in which case they take no argument)
+
+~ Mandatory parameters
+<NETWORK FILE> SiouxFalls_net.txt
+<TRIPS FILE> SiouxFalls_trips.txt
+~ Trips files are in order of the class number
+
+~ Semi-mandatory; at least one of these must be provided or the code won't stop
+<CONVERGENCE GAP> 1e-6
+<MAX ITERATIONS> 100
+<MAX RUN TIME> 60
+
+~ Optional parameters (input data)
+~ Default values given here
+<FILE PATH> net/
+<FLOWS FILE> flows.txt
+<GAP FUNCTION> RELATIVE GAP
+<DEMAND MULTIPLIER> 1 
+<STORE MATRICES> ~ bool
+<DATA PATH> net/~ path for storing binary OD matrices & bushes
+<NUMBER OF BATCHES> 1
+<BATCH STEM> batch
+<MATRIX STEM> matrix
+~<WARM START> ~ If provided, reads matrices and batches from stored values (named as above)
+~<OMIT BECKMANN>
+
+~ Algorithm B parameters
+<NUMBER OF THREADS> 1 ~ If this parameter is not specified, use all available cores
+<INNER ITERATIONS> 20
+<SHIFT REPETITIONS> 1
+<RESCAN AFTER SHIFT> ~ bool
+<THRESHOLD GAP> 0
+<THRESHOLD AEC> 0
+<MIN COST DIFFERENCE> 0
+<MIN LINK FLOW SHIFT> 0
+<MIN LINK FLOW> 1e-14
+<MIN DERIVATIVE> 1e-6
+<NEWTON STEP> 1
+<NEWTON SHIFTS> 1
+<SHORTEST PATH QUEUE DISCIPLINE> DEQUE~ other choices: FIFO, LIFO
+<LINK COST UPDATE> EXACT~ other choices: LINEAR, NONE
+<STORE BUSHES> ~ bool
+<REUSE FIRST BUSH> ~ bool
+<EXCLUDE GAP TIME> ~ boolean
+
+~ Future-proofing: right now these don't do anything, but they might later on
+<INITIAL BUSH> SP_TREE
+<TOPOLOGICAL ORDER> STANDARD
+

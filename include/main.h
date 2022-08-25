@@ -16,10 +16,4 @@
 /* Comment out this line to disable debug logs */
 #define DEBUG_MODE
 
-void setBatches(network_type *network, int batchSize, bool warmStart);
-
-#ifdef PARALLELISM
-int getNumCores();
-#endif
-
 #endif

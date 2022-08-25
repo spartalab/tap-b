@@ -15,3 +15,6 @@ matrix*
 CMakeLists.txt
 todo-nosync.txt
 *.swp
+*.bin
+valgrind.txt
+
