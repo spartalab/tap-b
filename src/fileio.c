@@ -212,7 +212,7 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
         free(tripsFiles[c]);
     }
     free(tripsFiles);
-    setBatches(network, network->numZones / numBatches, thisRun->warmStart,
+    setBatches(network, network->numOrigins / numBatches, thisRun->warmStart,
                thisRun->storeMatrices, thisRun->matrixStem);
     return network;
 }
