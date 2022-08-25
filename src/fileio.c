@@ -30,6 +30,7 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
        here. */
     networkFileName[0] = '\0';
     strcpy(filePath, "net/");
+    strcpy(dataPath, "net/");
     strcpy(thisRun->flowsFile, "flows.txt");
     network->numClasses = 0;
 

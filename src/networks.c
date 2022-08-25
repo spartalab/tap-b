@@ -626,7 +626,6 @@ void search(int origin, int* order, int *backnode, network_type *network,
         }
     }
     deleteQueue(&LIST);
-    if (verbosity >= FULL_DEBUG) waitForKey();
     return;
 }
 

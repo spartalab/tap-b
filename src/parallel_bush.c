@@ -9,7 +9,7 @@
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters, scan_type LPrule) {
-//    displayMessage(FULL_NOTIFICATIONS, "Top of scan %d\n", t_id);
+    displayMessage(FULL_NOTIFICATIONS, "Top of scan for origin %d\n", origin);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
@@ -39,7 +39,6 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     merge->SPlink = curarc;
                 }
             }
-
             /* Find longest (need to separate out depending on LPrule) */
             if (LPrule == NO_LONGEST_PATH) continue;
             for (curarc = 0; curarc < merge->numApproaches; curarc++) {
@@ -63,8 +62,10 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
             h = network->arcs[hi].tail;
             bushes->LPcost_par[origin][i] = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
             bushes->SPcost_par[origin][i] = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
+            displayMessage(FULL_DEBUG, "#%d: SP cost to %d is %f = %f + %f\n", origin, i, bushes->SPcost_par[origin][i], bushes->SPcost_par[origin][h], network->arcs[hi].cost);
         }
     }
+    displayMessage(FULL_NOTIFICATIONS, "End of scan for origin %d\n", origin);
 }
 
 /*
@@ -80,12 +81,15 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters) {
 
+    displayMessage(FULL_NOTIFICATIONS, "Top of update for origin %d\n", origin);
     int ij, i, j, newArcs = 0;
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
     scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
     calculateBushFlows_par(origin, network, bushes);
+    //if (origin == 9) verbosity = FULL_DEBUG; else verbosity = DEBUG;
+    printBush(DEBUG, origin, network, bushes);
 
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -93,8 +97,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
          * exactly zero */
         if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) {
             if (isInBush(origin, ij, network, bushes) == TRUE)
-                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
-                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
+                displayMessage(FULL_DEBUG, "*%d%: Attempting to delete (%d,%d) from [%d]\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
             bushes->flow_par[origin][ij] = 0;
         }
         if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
@@ -111,12 +114,14 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
         {
             bushes->flow_par[origin][ij] = NEW_LINK;
             newArcs++;
+            displayMessage(FULL_DEBUG, "#%d:: Attempting to add (%d,%d)\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
             /* Never delete shortest path tree... should be OK with floating point
              * comparison since this is how SPcost is calculated */
         } else if (bushes->SPcost_par[origin][i]+network->arcs[ij].cost==bushes->SPcost_par[origin][j]
                    && bushes->flow_par[origin][ij] == 0
                    && isInBush(origin, ij, network, bushes) == TRUE) {
             bushes->flow_par[origin][ij] = NEW_LINK;
+            displayMessage(FULL_DEBUG, "#%d:: Preserving (%d,%d)\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
         }
     }
 
@@ -132,6 +137,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                     || network->arcs[ij].tail >= network->firstThroughNode))
             {
                 bushes->flow_par[origin][ij] = NEW_LINK;
+                displayMessage(FULL_DEBUG, "#%d:: Attempting to add (%d,%d)\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
             }
         }
     }
@@ -140,6 +146,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
      * topological order, rectify approach proportions */
     reconstructMerges_par(origin, network, bushes);
     parameters->topologicalOrder(origin, network, bushes, parameters);
+    displayMessage(FULL_NOTIFICATIONS, "End of update for origin %d\n", origin);
 }
 
 /*
@@ -178,7 +185,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
         }
         if (numApproaches == 0)
             fatalError("Cannot have non-origin node %d in bush %d without"
-                       "incoming contributing links", i, origin);
+                       "incoming contributing links", i+1, origin+1);
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
         } else { /* Must create a merge */

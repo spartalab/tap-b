@@ -98,9 +98,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     } 
 
-    /*for (int i = 0; i < network->numZones; i++) {
-        printBush(FULL_NOTIFICATIONS, i, network, bushes);
-    }*/
+    for (int i = 0; i < network->numZones; i++) {
+        printBush(DEBUG, i, network, bushes);
+    }
     /* Clean up */
     deleteBushes(network, bushes);
 #if PARALLELISM
@@ -842,7 +842,9 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
 void updateBushB(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters) {
     int ij, i, j, newArcs = 0;
-   
+  
+    if (origin == 3) verbosity = FULL_DEBUG; else verbosity = DEBUG;
+    printBush(FULL_DEBUG, origin, network, bushes);
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
     scanBushes(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
@@ -937,7 +939,7 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
         }
       
         if (numApproaches == 0)
-            fatalError("Cannot have non-origin node %d in bush %d without"
+            fatalError("Cannot have non-origin node %d in bush %d without "
                        "incoming contributing links", i, origin);
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
@@ -1450,20 +1452,26 @@ void checkFlows(network_type *network, bushes_type *bushes) {
 
 void printBush(int minVerbosity, int origin, network_type *network,
                bushes_type *bushes) {
+    /* TODO: function still under development, only works for the
+     * current bush (in both serial and parallel versions) */
     if (verbosity < minVerbosity) return;
 #if PARALLELISM
     int a, i, ij, m, curnode;
     merge_type *merge;
-    displayMessage(minVerbosity, "Printing bush information for bush %d\n",
-                    origin + 1);
-    displayMessage(minVerbosity, "%d %f %f [1]\n",
+    displayMessage(minVerbosity, "#%d: Printing bush information for bush %d\n",
+                    origin + 1, origin + 1);
+    displayMessage(minVerbosity, "#%d: %d %f %f %f [1]\n",
                    origin + 1,
+                   origin + 1,
+                   bushes->nodeFlow[origin],
                    bushes->SPcost_par[origin][origin],
                    bushes->LPcost_par[origin][origin]);
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
-        displayMessage(minVerbosity, "Node %d %f %f [%d]\n", 
+        displayMessage(minVerbosity, "#%d: Node %d %f %f %f [%d]\n", 
+                       origin + 1,
                        i + 1,
+                       bushes->nodeFlow[i],
                        bushes->SPcost_par[origin][i],
                        bushes->LPcost_par[origin][i],
                        curnode + 1);
@@ -1472,7 +1480,8 @@ void printBush(int minVerbosity, int origin, network_type *network,
             merge = bushes->merges[origin][m];
             for (a = 0; a < merge->numApproaches; a++) {
                 ij = merge->approach[a];
-                displayMessage(minVerbosity, "(%d,%d) %f %f %c%c\n",
+                displayMessage(minVerbosity, "#%d: (%d,%d) %f %f %c%c\n",
+                               origin + 1,
                                network->arcs[ij].tail + 1,
                                network->arcs[ij].head + 1,
                                bushes->flow_par[origin][ij],
@@ -1482,7 +1491,8 @@ void printBush(int minVerbosity, int origin, network_type *network,
             }
         } else {
             ij = bushes->pred[origin][i];
-            displayMessage(minVerbosity, "(%d,%d) %f %f\n",
+            displayMessage(minVerbosity, "#%d: (%d,%d) %f %f\n",
+                           origin + 1,
                            network->arcs[ij].tail + 1,
                            network->arcs[ij].head + 1,
                            bushes->flow_par[origin][ij],
@@ -1491,7 +1501,7 @@ void printBush(int minVerbosity, int origin, network_type *network,
     }
 #else
     warning(DEBUG, "Without parallelism, the origin argument in printBush "
-                   "is ignored.");
+                   "is ignored.  Still need to implement bush logging.");
 #endif
 }
 
