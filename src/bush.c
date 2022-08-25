@@ -27,7 +27,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     /* Allocate memory for bushes */
     int batch, iteration = 0, lastClass = IS_MISSING;
-    displayMessage(FULL_NOTIFICATIONS, "Creating Initial bushes\n");
+    displayMessage(FULL_NOTIFICATIONS, "Creating initial bushes\n");
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
@@ -98,6 +98,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     } 
 
+    /*for (int i = 0; i < network->numZones; i++) {
+        printBush(FULL_NOTIFICATIONS, i, network, bushes);
+    }*/
     /* Clean up */
     deleteBushes(network, bushes);
 #if PARALLELISM
@@ -268,8 +271,6 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
 
 void updateBatchBushes(network_type *network, bushes_type *bushes,
                        int *lastClass, algorithmBParameters_type *parameters) {
-                          
-    
 #if PARALLELISM
     int c; 
     struct thread_args args[network->batchSize];
@@ -288,7 +289,8 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateBushPool,
+                        (void*)&args[j]);
         *lastClass = c;
     }
     thpool_wait(thpool);
@@ -300,7 +302,8 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, 
+                        (void*)&args[j]);
         *lastClass = c;
     }
     thpool_wait(thpool);
@@ -1252,7 +1255,7 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
  * one class with another's OD matrix... it will keep the same proportions
  * but with new demand.
  */
-void rectifyBushFlows(int origin,network_type *network,bushes_type *bushes) {
+void rectifyBushFlows(int origin, network_type *network,bushes_type *bushes) {
     int i, j, ij, m, node;
     merge_type *merge;
 
@@ -1445,6 +1448,52 @@ void checkFlows(network_type *network, bushes_type *bushes) {
     deleteVector(flowCheck);
 }
 
+void printBush(int minVerbosity, int origin, network_type *network,
+               bushes_type *bushes) {
+    if (verbosity < minVerbosity) return;
+#if PARALLELISM
+    int a, i, ij, m, curnode;
+    merge_type *merge;
+    displayMessage(minVerbosity, "Printing bush information for bush %d\n",
+                    origin + 1);
+    displayMessage(minVerbosity, "%d %f %f [1]\n",
+                   origin + 1,
+                   bushes->SPcost_par[origin][origin],
+                   bushes->LPcost_par[origin][origin]);
+    for (curnode = 1; curnode < network->numNodes; curnode++) {
+        i = bushes->bushOrder[origin][curnode];
+        displayMessage(minVerbosity, "Node %d %f %f [%d]\n", 
+                       i + 1,
+                       bushes->SPcost_par[origin][i],
+                       bushes->LPcost_par[origin][i],
+                       curnode + 1);
+        if (isMergeNode(origin, i, bushes) == TRUE) {
+            m = pred2merge(bushes->pred[origin][i]);
+            merge = bushes->merges[origin][m];
+            for (a = 0; a < merge->numApproaches; a++) {
+                ij = merge->approach[a];
+                displayMessage(minVerbosity, "(%d,%d) %f %f %c%c\n",
+                               network->arcs[ij].tail + 1,
+                               network->arcs[ij].head + 1,
+                               bushes->flow_par[origin][ij],
+                               network->arcs[ij].cost,
+                               a == merge->SPlink ? 'S' : ' ',
+                               a == merge->LPlink ? 'L' : ' ');
+            }
+        } else {
+            ij = bushes->pred[origin][i];
+            displayMessage(minVerbosity, "(%d,%d) %f %f\n",
+                           network->arcs[ij].tail + 1,
+                           network->arcs[ij].head + 1,
+                           bushes->flow_par[origin][ij],
+                           network->arcs[ij].cost);
+        }
+    }
+#else
+    warning(DEBUG, "Without parallelism, the origin argument in printBush "
+                   "is ignored.");
+#endif
+}
 
 /*
  * exactCostUpdate -- The most precise way to update the cost on a link after

@@ -119,13 +119,13 @@ typedef struct bushes_type {
    int      *lastMerge; /* [origin] */
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
+#if PARALLELISM
    double   **LPcost_par; /* [thread][node] */
    double   **SPcost_par; /* [thread][node] */
    double   **flow_par; /* [thread][node] */
    double   **nodeFlow_par; /* [thread][node] */
    double   **nodeFlowshift_par; /* [origin][shift] */
-
-
+#endif
    network_type *network; /* Points back to the corresponding network */
 } bushes_type;
 
@@ -350,6 +350,8 @@ void exactCostUpdate(int ij, double shift, network_type *network);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);
+void printBush(int minVerbosity, int origin, network_type *network,
+               bushes_type *bushes);
 
 /**** Merges and merge-doubly linked lists ****/
 
