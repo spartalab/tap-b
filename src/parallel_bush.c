@@ -9,8 +9,6 @@
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters, scan_type LPrule) {
-    displayMessage(FULL_DEBUG, "%d: Start scan\n", origin);
-    displayMessage(FULL_DEBUG, "%d: Link (138,137) flow: %f\n", origin + 1, bushes->flow_par[3][211]);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
@@ -27,7 +25,6 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
     bushes->LPcost_par[origin][origin2node(network, origin)] = 0;
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
-        displayMessage(FULL_DEBUG, "#%d: Scanning node %d\n", origin + 1, i + 1);
         /* Iterate over incoming links */
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
@@ -64,11 +61,8 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
             h = network->arcs[hi].tail;
             bushes->LPcost_par[origin][i] = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
             bushes->SPcost_par[origin][i] = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
-            displayMessage(FULL_DEBUG, "#%d: SP cost to %d is %f = %f + %f from %d (%d)\n", origin+1, i+1, bushes->SPcost_par[origin][i], bushes->SPcost_par[origin][h], network->arcs[hi].cost, h+1, network->arcs[hi].head+1);
         }
     }
-    displayMessage(FULL_DEBUG, "%d: end scan\n", origin);
-    displayMessage(FULL_DEBUG, "%d: Link (138,137) flow: %f\n", origin + 1, bushes->flow_par[3][211]);
 }
 
 /*
@@ -85,15 +79,10 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters) {
 
     int ij, i, j, newArcs = 0;
-    displayMessage(FULL_DEBUG, "%d: start update\n", origin + 1);
-    displayMessage(FULL_DEBUG, "%d: Link (138,137) flow: %f\n", origin + 1, bushes->flow_par[3][211]);
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    //if (origin == 9) verbosity = FULL_DEBUG; else verbosity = DEBUG;
     calculateBushFlows_par(origin, network, bushes);
-    printBush(DEBUG, origin, network, bushes);
-
 
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -101,7 +90,6 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
          * exactly zero */
         if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) {
             if (isInBush(origin, ij, network, bushes) == TRUE)
-                displayMessage(FULL_DEBUG, "%d%: Attempting to delete (%d,%d) from [%d]\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
             bushes->flow_par[origin][ij] = 0;
         }
         if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
@@ -118,15 +106,12 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
         {
             bushes->flow_par[origin][ij] = NEW_LINK;
             newArcs++;
-            displayMessage(FULL_DEBUG, "#%d: Attempting to add (%d,%d) based on SP %f %f, LP %f %f, linkcost %f\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1,
-                            bushes->SPcost_par[origin][i], bushes->SPcost_par[origin][j], bushes->LPcost_par[origin][i], bushes->LPcost_par[origin][j], network->arcs[ij].cost);
             /* Never delete shortest path tree... should be OK with floating point
              * comparison since this is how SPcost is calculated */
         } else if (bushes->SPcost_par[origin][i]+network->arcs[ij].cost==bushes->SPcost_par[origin][j]
                    && bushes->flow_par[origin][ij] == 0
                    && isInBush(origin, ij, network, bushes) == TRUE) {
             bushes->flow_par[origin][ij] = NEW_LINK;
-            displayMessage(FULL_DEBUG, "#%d: Preserving (%d,%d)\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1);
         }
     }
 
@@ -142,8 +127,6 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
                     || network->arcs[ij].tail >= network->firstThroughNode))
             {
                 bushes->flow_par[origin][ij] = NEW_LINK;
-                displayMessage(FULL_DEBUG, "#%d: Attempting to loose-add (%d,%d) based on SP %f %f, LP %f %f, linkcost %f\n", origin+1, network->arcs[ij].tail+1, network->arcs[ij].head+1,
-                            bushes->SPcost_par[origin][i], bushes->SPcost_par[origin][j], bushes->LPcost_par[origin][i], bushes->LPcost_par[origin][j], network->arcs[ij].cost);
             }
         }
     }
@@ -152,8 +135,6 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
      * topological order, rectify approach proportions */
     reconstructMerges_par(origin, network, bushes);
     parameters->topologicalOrder(origin, network, bushes, parameters);
-    displayMessage(FULL_DEBUG, "%d: End update\n", origin);
-    displayMessage(FULL_DEBUG, "%d: Link (138,137) flow: %f\n", origin + 1, bushes->flow_par[3][211]);
 }
 
 /*
@@ -186,7 +167,6 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
              curArc = curArc->next) {
             hi = ptr2arc(network, curArc->arc);
             if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
-                displayMessage(FULL_DEBUG, "#%d: Should add (%d,%d) based on its flow %f\n", origin+1, network->arcs[hi].tail+1, network->arcs[hi].head+1, bushes->flow_par[origin][hi]);
                 numApproaches++;
                 lastApproach = hi;
             }
@@ -197,13 +177,11 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
         } else { /* Must create a merge */
-            displayMessage(FULL_DEBUG, "#%d: Creating new merge at node %d\n", origin+1, i+1);
             merge = createMerge(numApproaches);
             arc = 0;
             for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                  curArc = curArc->next) {
                 hi = ptr2arc(network, curArc->arc);
-                displayMessage(FULL_DEBUG, "#%d: Adding (%d,%d)\n", origin+1, network->arcs[hi].tail+1, network->arcs[hi].head+1);
                 if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
                     if (bushes->flow_par[origin][hi] == NEW_LINK) bushes->flow_par[origin][hi] = 0;
                     merge->approach[arc] = hi;
@@ -310,10 +288,10 @@ bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
         bushExcess += bushes->flow_par[origin][ij] * (network->arcs[ij].cost +
                                           bushes->SPcost_par[origin][i] - bushes->SPcost_par[origin][j]);
     }
-    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
-                   bushExcess / bushSPTT);
-    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
-                   maxgap, parameters->thresholdGap, parameters->thresholdAEC);
+    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
+    //               bushExcess / bushSPTT);
+    //displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+    //               maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
     if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 

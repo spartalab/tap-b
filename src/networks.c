@@ -506,7 +506,6 @@ distance factors.
 
 */
 void changeFixedCosts(network_type *network, int class) {
-    displayMessage(FULL_NOTIFICATIONS, "Changing costs for class %d\n", class);
     int ij;
     double oldCost;
 

@@ -455,14 +455,10 @@ void genericTopologicalOrder(int origin, network_type *network,
         bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
     }
     for (i = 0; i < network->numNodes; i++) {
-        //displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming pre-merge\n", origin+1, i+1, indegree[i]);
         if (isMergeNode(origin, i, bushes) == TRUE) {
-            //displayMessage(FULL_DEBUG, "#%d: Its a merge\n", origin+1);
             m = pred2merge(bushes->pred[origin][i]);
             indegree[i] = bushes->merges[origin][m]->numApproaches;
-            displayMessage(FULL_DEBUG, "#%d: Node %d is a %d-merge\n", origin+1, i+1, bushes->merges[origin][m]->numApproaches);
         }
-        displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming to start\n", origin+1, i+1, indegree[i]);
     }
     indegree[origin2node(network, origin)] = 0;
 
@@ -483,17 +479,13 @@ void genericTopologicalOrder(int origin, network_type *network,
                 j = curArc->arc->head;
                 indegree[j]--;
                 if (indegree[j] == 0) enQueue(&LIST, j);
-                displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming left\n", origin+1, j+1, indegree[j]);
             }
         }
-        displayMessage(FULL_DEBUG, "#%d: Labeled %d as topo %d\n", origin+1, i+1, next);
     }
     if (next < network->numNodes) {
         displayMessage(LOW_NOTIFICATIONS, "origin: %d, next: %d, network->numNodes: %d\n", 
                            origin+1, next, network->numNodes);
-        if (origin == 3)
         fatalError("#%d: Graph given to bushTopologicalOrder contains a cycle.", origin+1);
-        else return;
     }
     bushes->lastMerge[origin] = highestMerge;
 
@@ -863,8 +855,6 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters) {
     int ij, i, j, newArcs = 0;
   
-    if (origin == 3) verbosity = FULL_DEBUG; else verbosity = DEBUG;
-    printBush(FULL_DEBUG, origin, network, bushes);
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
     scanBushes(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
@@ -876,8 +866,6 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
          * exactly zero */
         if (bushes->flow[ij] < parameters->minLinkFlow) {
             if (isInBush(origin, ij, network, bushes) == TRUE)
-                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
-                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
             bushes->flow[ij] = 0;
         }
         if (bushes->flow[ij] > 0) continue; /* Link is already in the bush, no
@@ -1084,7 +1072,6 @@ bool updateFlowsB(int origin, network_type *network, bushes_type *bushes,
     /* Update longest/shortest paths, check whether there is work to do */
     if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) {
         bushes->updateBush[origin] = FALSE;
-        displayMessage(DEBUG, "bailing out\n");
         return FALSE;
     }
 
@@ -1131,10 +1118,10 @@ bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
         bushExcess += bushes->flow[ij] * (network->arcs[ij].cost +
                         bushes->SPcost[i] - bushes->SPcost[j]);
     }
-    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
-                    bushExcess / bushSPTT);
-    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
-                    maxgap, parameters->thresholdGap, parameters->thresholdAEC);
+    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
+    //                bushExcess / bushSPTT);
+    //displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+    //                maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
     if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 
@@ -1480,16 +1467,18 @@ void printBush(int minVerbosity, int origin, network_type *network,
     merge_type *merge;
     displayMessage(minVerbosity, "#%d: Printing bush information for bush %d\n",
                     origin + 1, origin + 1);
-    displayMessage(minVerbosity, "#%d: %d %f %f [1]\n",
+    displayMessage(minVerbosity, "#%d: %d %f %f %f [1]\n",
                    origin + 1,
                    origin + 1,
+                   bushes->nodeFlow_par[origin][origin],
                    bushes->SPcost_par[origin][origin],
                    bushes->LPcost_par[origin][origin]);
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
-        displayMessage(minVerbosity, "#%d: Node %d %f %f [%d]\n", 
+        displayMessage(minVerbosity, "#%d: Node %d %f %f %f [%d]\n", 
                        origin + 1,
                        i + 1,
+                       bushes->nodeFlow_par[origin][i],
                        bushes->SPcost_par[origin][i],
                        bushes->LPcost_par[origin][i],
                        curnode + 1);
