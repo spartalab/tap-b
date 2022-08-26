@@ -284,18 +284,6 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
 
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
-        c = origin2class(network, j);
-        if (c != *lastClass) {
-            changeFixedCosts(network, c);
-        }
-        thpool_add_work(thpool, (void (*)(void *)) scanBushPool,
-                        (void*)&args[j]);
-        *lastClass = c;
-    }
-    thpool_wait(thpool);
-
-    for (int j = 0; j < network->batchSize; ++j) {
-        if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
         c = origin2class(network, j);
         if (c != *lastClass) {

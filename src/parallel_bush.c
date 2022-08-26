@@ -83,6 +83,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
     calculateBushFlows_par(origin, network, bushes);
+    scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_OR_SP);
 
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -235,7 +236,6 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
     /* Update longest/shortest paths, check whether there is work to do */
     if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) {
         bushes->updateBush[origin] = FALSE;
-        displayMessage(DEBUG, "bailing out\n");
         return FALSE;
     };
 
@@ -654,15 +654,6 @@ void classUpdate_par(int hi, int class, double shift,  network_type *network) {
     pthread_mutex_lock(&network->arc_muts[hi]);
     network->arcs[hi].classFlow[class] -= shift;
     pthread_mutex_lock(&network->arc_muts[hi]);
-}
-
-void scanBushPool(void *pVoid) {
-    struct thread_args *args = (struct thread_args *) pVoid;
-    int id = args->id;
-    bushes_type *bushes = args->bushes;
-    network_type *network = args->network;
-    algorithmBParameters_type *parameters = args->parameters;
-    scanBushes_par(id, network, bushes, parameters, LONGEST_USED_OR_SP);
 }
 
 void updateBushPool(void* pVoid) {

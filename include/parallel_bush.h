@@ -33,7 +33,6 @@ struct thread_args {
     algorithmBParameters_type *parameters;
 };
 
-void scanBushPool(void *pVoid);
 void updateBushPool(void* pVoid);
 void updateFlowsPool(void* pVoid);
 
