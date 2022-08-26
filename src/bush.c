@@ -284,6 +284,18 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
 
     for (int j = 0; j < network->batchSize; ++j) {
         if (outOfOrigins(network, j) == TRUE) break;
+        c = origin2class(network, j);
+        if (c != *lastClass) {
+            changeFixedCosts(network, c);
+        }
+        thpool_add_work(thpool, (void (*)(void *)) scanBushPool,
+                        (void*)&args[j]);
+        *lastClass = c;
+    }
+    thpool_wait(thpool);
+
+    for (int j = 0; j < network->batchSize; ++j) {
+        if (outOfOrigins(network, j) == TRUE) break;
         bushes->updateBush[j] = TRUE;
         c = origin2class(network, j);
         if (c != *lastClass) {
@@ -440,13 +452,17 @@ void genericTopologicalOrder(int origin, network_type *network,
     for (i = 0; i < network->numNodes; i++) {
         indegree[i] = 1; /* By default non-origin nodes are assumed to have 1
                             incoming link; merges and origin handled below */
-         bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
+        bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
     }
     for (i = 0; i < network->numNodes; i++) {
+        //displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming pre-merge\n", origin+1, i+1, indegree[i]);
         if (isMergeNode(origin, i, bushes) == TRUE) {
+            //displayMessage(FULL_DEBUG, "#%d: Its a merge\n", origin+1);
             m = pred2merge(bushes->pred[origin][i]);
             indegree[i] = bushes->merges[origin][m]->numApproaches;
+            displayMessage(FULL_DEBUG, "#%d: Node %d is a %d-merge\n", origin+1, i+1, bushes->merges[origin][m]->numApproaches);
         }
+        displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming to start\n", origin+1, i+1, indegree[i]);
     }
     indegree[origin2node(network, origin)] = 0;
 
@@ -467,13 +483,17 @@ void genericTopologicalOrder(int origin, network_type *network,
                 j = curArc->arc->head;
                 indegree[j]--;
                 if (indegree[j] == 0) enQueue(&LIST, j);
+                displayMessage(FULL_DEBUG, "#%d: Node %d has %d incoming left\n", origin+1, j+1, indegree[j]);
             }
         }
+        displayMessage(FULL_DEBUG, "#%d: Labeled %d as topo %d\n", origin+1, i+1, next);
     }
     if (next < network->numNodes) {
-        displayMessage(LOW_NOTIFICATIONS, "next: %d, network->numNodes: %d\n", 
-                           next, network->numNodes);
-        fatalError("Graph given to bushTopologicalOrder contains a cycle.");
+        displayMessage(LOW_NOTIFICATIONS, "origin: %d, next: %d, network->numNodes: %d\n", 
+                           origin+1, next, network->numNodes);
+        if (origin == 3)
+        fatalError("#%d: Graph given to bushTopologicalOrder contains a cycle.", origin+1);
+        else return;
     }
     bushes->lastMerge[origin] = highestMerge;
 
@@ -1460,18 +1480,16 @@ void printBush(int minVerbosity, int origin, network_type *network,
     merge_type *merge;
     displayMessage(minVerbosity, "#%d: Printing bush information for bush %d\n",
                     origin + 1, origin + 1);
-    displayMessage(minVerbosity, "#%d: %d %f %f %f [1]\n",
+    displayMessage(minVerbosity, "#%d: %d %f %f [1]\n",
                    origin + 1,
                    origin + 1,
-                   bushes->nodeFlow[origin],
                    bushes->SPcost_par[origin][origin],
                    bushes->LPcost_par[origin][origin]);
     for (curnode = 1; curnode < network->numNodes; curnode++) {
         i = bushes->bushOrder[origin][curnode];
-        displayMessage(minVerbosity, "#%d: Node %d %f %f %f [%d]\n", 
+        displayMessage(minVerbosity, "#%d: Node %d %f %f [%d]\n", 
                        origin + 1,
                        i + 1,
-                       bushes->nodeFlow[i],
                        bushes->SPcost_par[origin][i],
                        bushes->LPcost_par[origin][i],
                        curnode + 1);
