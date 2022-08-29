@@ -474,7 +474,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             if (strstr(trimmedLine, "Origin") != NULL) {
                 // i indexes current origin
                 sscanf(strstr(trimmedLine, "Origin")+6,"%d", &i);  
-                if (i <= 0 || i > network->numNodes) fatalError("Origin %d is"
+                if (i <= 0 || i > network->numZones) fatalError("Origin %d is"
                         "out of range in trips file %s", i, tripFileName[c]);
                 i--;
                 r = nodeclass2origin(network, i, c);
@@ -484,7 +484,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             while (token != NULL && strlen(token) > 1) {
                 numParams = sscanf(token, "%d : %lf", &j, &demand);
                 if (numParams < 2) break;
-                if (j <= 0 || j > network->numNodes) fatalError("Destination "
+                if (j <= 0 || j > network->numZones) fatalError("Destination "
                         "%d is out of range in trips file %s\n%s\n%s", j, 
                         tripFileName[c], fullLine, token);
                 j--;
