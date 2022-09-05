@@ -153,6 +153,10 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     
     parameters.includeGapTime = TRUE;
 
+    parameters.calculateBins = TRUE;
+    parameters.numBins = 70;
+    parameters.smallestBin = -60;
+
     parameters.createInitialBush = &initialBushShortestPath;
     parameters.topologicalOrder = &genericTopologicalOrder;
     parameters.linkShiftB = &exactCostUpdate;
@@ -563,11 +567,20 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
 
 /* 
  * bushSPTT -- specialized SPTT finding using bush structures as a warm start
+ *
+ * This function is also where reduced-cost bins are updated, because we
+ * already have exact shortest path labels.
  */
 double bushSPTT(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters) {
-    int r, j, c, lastClass = IS_MISSING, originNode;
+    int b, r, ij, i, j, c, lastClass = IS_MISSING, originNode;
+    double frac, rc;
     double sptt = 0;
+    if (parameters->calculateBins == TRUE) {
+        for (b = 0; b < parameters->numBins; b++) {
+            parameters->reducedCostBin[b] = 0;
+        }
+    }
     for (r = 0; r < network->batchSize; r++) {
         if (outOfOrigins(network, r) == TRUE) break;
         originNode = origin2node(network, r);
@@ -580,6 +593,23 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                             bushes->SPcost, bushes->bushOrder[r]);
         for (j = 0; j < network->numZones; j++) {
             sptt += network->demand[r][j] * bushes->SPcost[j];
+        }
+        if (parameters->calculateBins == TRUE) {
+            for (ij = 0; ij < network->numArcs; ij++) {
+                i = network->arcs[ij].tail;
+                j = network->arcs[ij].head;
+                rc = network->arcs[ij].cost + bushes->SPcost[i] 
+                    - bushes->SPcost[j];
+                if (rc == 0) { /* Map zero reduced costs to smallest bin */
+                    parameters->reducedCostBin[0]++;
+                } else {
+                    frac = frexp(rc, &b); /* Grab raw exponent in b */
+                    /* Now convert to bin index */
+                    b += parameters->smallestBin;
+                    b = max(min(b, parameters->numBins - 1), 0);
+                    parameters->reducedCostBin[b]++;
+                }
+            }
         }
         lastClass = c;
     }
