@@ -1,0 +1,1 @@
+This branch adds the option to compute reduced-cost information on all network links (in-bush and out-of-bush) at each master iteration.  These values can be used to compute acceptance and rejection gaps for checking path flow consistency, or adjusting numerical precision on-the-fly.
