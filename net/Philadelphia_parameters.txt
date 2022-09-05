@@ -1,5 +1,7 @@
-<NETWORK FILE> ChicagoRegional_net.txt
-<TRIPS FILE> ChicagoRegional_trips.txt
+<NETWORK FILE> Philadelphia_net.txt
+<TRIPS FILE> Philadelphia_trips.txt
+
+<DATA ROOT> ../../misc/fast-static/tap/
 
 ~ Trips files are in order of the class number
 
@@ -7,6 +9,4 @@
 <CONVERGENCE GAP> 1e-13
 ~<MAX ITERATIONS> 100
 ~<MAX RUN TIME> 60
-
-<NUMBER OF THREADS> 1
-
+    
