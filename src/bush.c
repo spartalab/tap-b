@@ -31,6 +31,10 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
+    if (parameters->calculateBins == TRUE) {
+        parameters->includedBin = newVector(parameters->numBins, int);
+        parameters->excludedBin = newVector(parameters->numBins, int);
+    }
 
     double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
 
@@ -103,6 +107,8 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     }
     /* Clean up */
     deleteBushes(network, bushes);
+    deleteVector(parameters->includedBin);
+    deleteVector(parameters->excludedBin);
 #if PARALLELISM
     thpool_destroy(thpool);
 #endif
@@ -156,6 +162,8 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.calculateBins = TRUE;
     parameters.numBins = 70;
     parameters.smallestBin = -60;
+    parameters.includedBin = NULL;
+    parameters.excludedBin = NULL;
 
     parameters.createInitialBush = &initialBushShortestPath;
     parameters.topologicalOrder = &genericTopologicalOrder;
@@ -574,11 +582,12 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
 double bushSPTT(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters) {
     int b, r, ij, i, j, c, lastClass = IS_MISSING, originNode;
-    double frac, rc;
+    double frac, rc, acceptanceGap = 0, rejectionGap = INFINITY, consistency;
     double sptt = 0;
     if (parameters->calculateBins == TRUE) {
         for (b = 0; b < parameters->numBins; b++) {
-            parameters->reducedCostBin[b] = 0;
+            parameters->includedBin[b] = 0;
+            parameters->excludedBin[b] = 0;
         }
     }
     for (r = 0; r < network->batchSize; r++) {
@@ -595,25 +604,76 @@ double bushSPTT(network_type *network, bushes_type *bushes,
             sptt += network->demand[r][j] * bushes->SPcost[j];
         }
         if (parameters->calculateBins == TRUE) {
+#ifdef PARALLELISM
+            /* Ensures bushes->flows has the right values */
+            memcpy(bushes->flow, bushes->flow_par[r],
+                   network->numArcs * sizeof(bushes->flow_par[0][0]));
+#endif
             for (ij = 0; ij < network->numArcs; ij++) {
                 i = network->arcs[ij].tail;
                 j = network->arcs[ij].head;
                 rc = network->arcs[ij].cost + bushes->SPcost[i] 
                     - bushes->SPcost[j];
+                if (isInBush(r, ij, network, bushes) == TRUE
+                        && bushes->flow[ij] > 0) {
+                    acceptanceGap = max(rc, acceptanceGap);
+                    /*if (rc > 15) {
+                        displayMessage(FULL_DEBUG, "High accept gap in bush %d\n", r);
+                        displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
+                               i+1, j+1, rc,
+                               bushes->SPcost[i], network->arcs[ij].cost,
+                               bushes->SPcost[j]); 
+                    }*/
+                } else if (isInBush(r, ij, network, bushes) == FALSE) {
+                    rejectionGap = min(rc, rejectionGap);
+                }
+                /* displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
+                               i+1, j+1, rc,
+                               bushes->SPcost[i], network->arcs[ij].cost,
+                               bushes->SPcost[j]); */
+
                 if (rc == 0) { /* Map zero reduced costs to smallest bin */
-                    parameters->reducedCostBin[0]++;
+                    if (isInBush(r, ij, network, bushes) == TRUE) {
+                        parameters->includedBin[0]++;
+                    } else {
+                        parameters->excludedBin[0]++;
+                    }
                 } else {
                     frac = frexp(rc, &b); /* Grab raw exponent in b */
+                    //displayMessage(FULL_DEBUG, "frac %f exp %d\n", frac, b);
                     /* Now convert to bin index */
-                    b += parameters->smallestBin;
+                    b -= parameters->smallestBin;
+                    //displayMessage(FULL_DEBUG, "bin offset %d\n", b);
                     b = max(min(b, parameters->numBins - 1), 0);
-                    parameters->reducedCostBin[b]++;
+                    //displayMessage(FULL_DEBUG, "trimed bin %d\n", b);
+                    if (isInBush(r, ij, network, bushes) == TRUE
+                        && bushes->flow[ij] > 0) {
+                        parameters->includedBin[b]++;
+                    } else {
+                        parameters->excludedBin[b]++;
+                    }
                 }
             }
         }
         lastClass = c;
     }
+    if (parameters->calculateBins == TRUE) {
+        displayMessage(DEBUG, "In,");
+        for (b = 0; b < parameters->numBins; b++) {
+            displayMessage(DEBUG, "%d,", parameters->includedBin[b]);
+        }
+        displayMessage(DEBUG, "Out,");
+        for (b = 0; b < parameters->numBins; b++) {
+            displayMessage(DEBUG, "%d,", parameters->excludedBin[b]);
+        }
+        consistency = rejectionGap / acceptanceGap;
+        displayMessage(DEBUG, "%e,%f,%f\n",
+                       acceptanceGap, rejectionGap, consistency);
+    }
     return sptt;
+    /* Suppress compiler warning... frac is never used but it must be
+     * set when calling frexp */
+    displayMessage(FULL_DEBUG, "%f", frac); 
 }
 
 double bushTSTT(network_type *network, bushes_type *bushes) {
@@ -752,7 +812,6 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     deleteMatrix(bushes->flow_par, network->batchSize);
     deleteMatrix(bushes->nodeFlow_par, network->batchSize);
 #endif
-
     deleteScalar(bushes);
 }
 
