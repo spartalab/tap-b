@@ -170,6 +170,9 @@ typedef struct bushes_type {
  *  minLinkFlow -- Parameter to guard against numerical errors in link flows;
  *                 any link flow smaller than this value is assumed to be zero.
  *                 Default value is 1e-14.
+ *  minReducedCost -- Parameter to guard against numerical errors when working
+ *                    with shortest paths; any reduced cost smaller than this
+ *                    value is assumed to be zero.  Default value is 1e-8.
  *  minDerivative -- Parameter to avoid dividing by zero in Newton's Method.
  *                   A zero denominator is replaced by minDerivative.
  *                   Default value is 1e-6.
@@ -237,6 +240,7 @@ typedef struct algorithmBParameters_type{
    double   minCostDifference;
    double   minLinkFlowShift;
    double   minLinkFlow;
+   double   minReducedCost;
    double   minDerivative;
    double   newtonStep;
    int      numNewtonShifts;

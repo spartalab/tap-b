@@ -102,9 +102,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     } 
 
-    for (int i = 0; i < network->numZones; i++) {
+    /*for (int i = 0; i < network->numZones; i++) {
         printBush(DEBUG, i, network, bushes);
-    }
+    }*/
     /* Clean up */
     deleteBushes(network, bushes);
     deleteVector(parameters->includedBin);
@@ -137,6 +137,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.minLinkFlowShift = 0;
 
     parameters.minLinkFlow = 1e-14;
+    parameters.minReducedCost = 1e-8;
     parameters.minDerivative = 1e-6;
     parameters.newtonStep = 1;
     parameters.numNewtonShifts = 1;
@@ -624,7 +625,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                                bushes->SPcost[i], network->arcs[ij].cost,
                                bushes->SPcost[j]); 
                     }*/
-                } else if (isInBush(r, ij, network, bushes) == FALSE) {
+                } else if (rc > parameters->minReducedCost) {
                     rejectionGap = min(rc, rejectionGap);
                 }
                 /* displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
@@ -667,7 +668,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
             displayMessage(DEBUG, "%d,", parameters->excludedBin[b]);
         }
         consistency = rejectionGap / acceptanceGap;
-        displayMessage(DEBUG, "%e,%f,%f\n",
+        displayMessage(DEBUG, "%e,%e,%e\n",
                        acceptanceGap, rejectionGap, consistency);
     }
     return sptt;

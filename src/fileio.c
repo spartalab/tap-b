@@ -110,6 +110,8 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
             thisRun->minLinkFlowShift = atof(metadataValue);
 		} else if (strcmp(metadataTag, "MIN LINK FLOW") == 0) {
             thisRun->minLinkFlow = atof(metadataValue);
+		} else if (strcmp(metadataTag, "MIN REDUCED COST") == 0) {
+            thisRun->minReducedCost = atof(metadataValue);
 		} else if (strcmp(metadataTag, "MIN DERIVATIVE") == 0) {
             thisRun->minDerivative = atof(metadataValue);
 		} else if (strcmp(metadataTag, "NEWTON STEP") == 0) {

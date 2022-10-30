@@ -14,7 +14,8 @@
 
 ~ Optional parameters (input data)
 ~ Default values given here
-<FILE PATH> net/
+<FILE PATH> net/ ~ Place to store raw inputs
+<DATA PATH> net/ ~ Place to store bushes and binary matrices
 <FLOWS FILE> flows.txt
 <GAP FUNCTION> RELATIVE GAP
 <DEMAND MULTIPLIER> 1 
