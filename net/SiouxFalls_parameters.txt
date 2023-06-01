@@ -4,6 +4,7 @@
 ~ Mandatory parameters
 <NETWORK FILE> SiouxFalls_net.txt
 <TRIPS FILE> SiouxFalls_trips.txt
+<PATH FLOWS FILE> SiouxFalls_pathflows.txt
 
 ~ Trips files are in order of the class number
 

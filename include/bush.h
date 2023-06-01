@@ -386,6 +386,6 @@ void readBushes(network_type *network, bushes_type **bushes, char *filename);
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters);
 void writePathFlows(network_type *network,
-                    algorithmBParameters_type *parameters,
-                    bushes_type *bushes);
+                    bushes_type *bushes,
+                    algorithmBParameters_type *parameters);
 #endif

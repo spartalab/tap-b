@@ -1782,12 +1782,14 @@ void readBinaryMatrix(network_type *network,
  * just calculate a path flow solution using current bushes.
  */
 void writePathFlows(network_type *network,
-                    algorithmBParameters_type *parameters,
-                    bushes_type *bushes) {
-    int i, r, s, arc, ij;
+                    bushes_type *bushes,
+                    algorithmBParameters_type *parameters) {
+    int i, m, r, s, arc, ij;
     int pathLen;
     double totalFlow;
-    FILE *pathFlowsFile = open_file(parameters->pathFlowsFile);
+    merge_type *merge;
+    bool done;
+    FILE *pathFlowsFile = openFile(parameters->pathFlowsFile, "w");
     if (network->numBatches > 0) {
         fatalError("writePathFlows does not yet support multiple batches.");
     }
@@ -1802,7 +1804,7 @@ void writePathFlows(network_type *network,
      * linkProportion precomputes fraction of incoming flow on each
      * approach node to avoid redundant calculations. */
     declareVector(int, mergeStack, network->numNodes);
-    declareVector(double, linkProportion, network->numLinks);
+    declareVector(double, linkProportion, network->numArcs);
 
     for (r = 0; r < network->numZones; r++) {
         /* Compute merge proportions for this bush */
@@ -1810,6 +1812,7 @@ void writePathFlows(network_type *network,
             totalFlow = 0;
             if (isMergeNode(r, i, bushes) == TRUE) {
                 totalFlow = 0;
+                merge = bushes->merges[r][pred2merge(bushes->pred[r][i])];
                 for (arc = 0; arc < merge->numApproaches; arc++) {
                     totalFlow += merge->approachFlow[arc];
                 }
@@ -1843,7 +1846,7 @@ void writePathFlows(network_type *network,
                         flowStack[pathLen] = flowStack[pathLen - 1];
                     } else {
                         /* Split flow proportionally */
-                        m = pred2merge(bushes->pred[origin][j]);
+                        m = pred2merge(bushes->pred[r][i]);
                         arc = mergeStack[i];
                         ij = merge->approach[arc];
                         nodeStack[pathLen] = network->arcs[ij].tail;
@@ -1862,13 +1865,13 @@ void writePathFlows(network_type *network,
                 /* Now find next path by backtracking; what is next
                  * merge that still has paths to explore? */
                 for (i = pathLen - 1; i >= 0; i--) {
-                    if (isMergeNode(r, j, bushes) == FALSE) continue;
-                    m = pred2merge(bushes->pred[origin][i]);
+                    if (isMergeNode(r, i, bushes) == FALSE) continue;
+                    m = pred2merge(bushes->pred[r][i]);
                     /* If we find a merge that has explored all paths,
                      * keep moving back, but reset its mergeStack so that
                      * it can be explored again if there is another path
                      * that uses it.  (A bush is not a tree!) */
-                    if (mergeStack[i] == bushes->merge[m].numApproaches) {
+                    if (mergeStack[i] == bushes->merges[r][m]->numApproaches) {
                         mergeStack[i] = 0;
                         continue;
                     }
