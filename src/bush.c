@@ -100,6 +100,9 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     for (int i = 0; i < network->numZones; i++) {
         printBush(DEBUG, i, network, bushes);
+        if (strlen(parameters->pathFlowsFile) > 0) {
+            writePathFlows(network, bushes, parameters);
+        }
     }
     /* Clean up */
     deleteBushes(network, bushes);
@@ -1771,3 +1774,118 @@ void readBinaryMatrix(network_type *network,
     fclose(matrixFile);
 }
 
+/*
+ * writePathFlows: determine path flows corresponding to current bush
+ * solutions and write to file.  No attempt is made to maximize entropy,
+ * just calculate a path flow solution using current bushes.
+ */
+void writePathFlows(network_type *network,
+                    algorithmBParameters_type *parameters,
+                    bushes_type *bushes) {
+    int i, r, s, arc, ij;
+    int pathLen;
+    double totalFlow;
+    FILE *pathFlowsFile = open_file(parameters->pathFlowsFile);
+    if (network->numBatches > 0) {
+        fatalError("writePathFlows does not yet support multiple batches.");
+    }
+
+    /* We will do depth-first search to find all the paths, these arrays
+     * will store the path we have found so far as well as the amount of
+     * flow on it. */
+    declareVector(int, nodeStack, network->numNodes);
+    declareVector(double, flowStack, network->numNodes);
+    /* mergeStack will store where we are in each merge; once all the 
+     * values equal the number of approaches we are done. 
+     * linkProportion precomputes fraction of incoming flow on each
+     * approach node to avoid redundant calculations. */
+    declareVector(int, mergeStack, network->numNodes);
+    declareVector(double, linkProportion, network->numLinks);
+
+    for (r = 0; r < network->numZones; r++) {
+        /* Compute merge proportions for this bush */
+        for (i = 0; i < network->numNodes; i++) {
+            totalFlow = 0;
+            if (isMergeNode(r, i, bushes) == TRUE) {
+                totalFlow = 0;
+                for (arc = 0; arc < merge->numApproaches; arc++) {
+                    totalFlow += merge->approachFlow[arc];
+                }
+                for (arc = 0; arc < merge->numApproaches; arc++) {
+                    ij = merge->approach[arc];
+                    linkProportion[ij] = merge->approachFlow[arc]
+                                         / totalFlow;
+                }
+            }
+        }
+        for (s = 0; s < network->numZones; s++) {
+            /* Set up stack variables for this OD pair */
+            for (i = 0; i < network->numNodes; i++) {
+                mergeStack[i] = 0;
+            }
+            pathLen = 0;
+            nodeStack[0] = s;
+            flowStack[0] = network->demand[r][s];
+            done = FALSE;
+            do { /* Outer loop to do depth-first search over all paths */
+                /* Inner loop to find flow on a specific path */
+                while (nodeStack[pathLen] != r && flowStack[pathLen] > 0) {
+                    i = nodeStack[pathLen];
+                    pathLen++;
+                    if (pathLen >= network->numNodes)
+                        fatalError("writePathFlows: path too long");
+                    if (isMergeNode(r, i, bushes) == FALSE) {
+                        /* Simple case, just push flow back and extend path */
+                        ij = bushes->pred[r][i];
+                        nodeStack[pathLen] = network->arcs[ij].tail;
+                        flowStack[pathLen] = flowStack[pathLen - 1];
+                    } else {
+                        /* Split flow proportionally */
+                        m = pred2merge(bushes->pred[origin][j]);
+                        arc = mergeStack[i];
+                        ij = merge->approach[arc];
+                        nodeStack[pathLen] = network->arcs[ij].tail;
+                        flowStack[pathLen] = flowStack[pathLen - 1]
+                                             * linkProportion[ij];
+                    }
+                }
+                if (nodeStack[pathLen] == r && flowStack[pathLen] > 0) {
+                    /* Found a path, print it */
+                    fprintf(pathFlowsFile, "[%d", nodeStack[pathLen]);
+                    for (i = pathLen - 1; i >= 0; i--) {
+                        fprintf(pathFlowsFile, ",%d", nodeStack[i]);
+                    }
+                    fprintf(pathFlowsFile, "] : %f\n", flowStack[pathLen]);
+                }
+                /* Now find next path by backtracking; what is next
+                 * merge that still has paths to explore? */
+                for (i = pathLen - 1; i >= 0; i--) {
+                    if (isMergeNode(r, j, bushes) == FALSE) continue;
+                    m = pred2merge(bushes->pred[origin][i]);
+                    /* If we find a merge that has explored all paths,
+                     * keep moving back, but reset its mergeStack so that
+                     * it can be explored again if there is another path
+                     * that uses it.  (A bush is not a tree!) */
+                    if (mergeStack[i] == bushes->merge[m].numApproaches) {
+                        mergeStack[i] = 0;
+                        continue;
+                    }
+                    /* If we reach this point, i is a merge node that
+                     * still has approaches left to explore; we can stop
+                     * backtracking. */
+                    break;
+                }
+                if (i != r) {
+                    pathLen = i;
+                } else {
+                    done = TRUE; /* Fully explored everything. */
+                }
+            } while (done == FALSE);
+        }
+    }
+    fclose(pathFlowsFile);
+    deleteVector(nodeStack);
+    deleteVector(flowStack);
+    deleteVector(mergeStack);
+    deleteVector(linkProportion);
+}
