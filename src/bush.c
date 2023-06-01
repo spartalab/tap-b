@@ -160,6 +160,8 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.topologicalOrder = &genericTopologicalOrder;
     parameters.linkShiftB = &exactCostUpdate;
 
+    parameters.pathFlowsFile[0] = '\0'; /* By default don't report this */    
+
     return parameters;
 }
 
