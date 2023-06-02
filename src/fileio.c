@@ -175,8 +175,10 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
         fatalError("Negative demand multiplier.");
     if (numBatches < 1)
         fatalError("Must use at least one batch.");
+#ifdef PARALELISM
     if (thisRun->numThreads < 1)
         fatalError("Must use at least one thread.");
+#endif
     if (thisRun->innerIterations < 0)
         warning(LOW_NOTIFICATIONS, "Negative number of inner iterations.");
     if (thisRun->shiftReps < 0)
