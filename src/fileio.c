@@ -10,17 +10,17 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
      * network data from the indicated files, and return the pointer
      * to the network data structure created in this way. */
 	int status;
-    int c;
+	int c;
 	char fullLine[STRING_SIZE * 2]; // Double-length to allow concatenation
-    char filePath[STRING_SIZE], dataPath[STRING_SIZE];
-    char networkFileName[STRING_SIZE];
-    stringList_type *tripsFile = NULL, *newTripsFile = NULL;
+	char filePath[STRING_SIZE], dataPath[STRING_SIZE];
+	char networkFileName[STRING_SIZE];
+	stringList_type *tripsFile = NULL, *newTripsFile = NULL;
 	char metadataTag[STRING_SIZE], metadataValue[STRING_SIZE];
 	FILE *parametersFile = openFile(filename, "r");
-    int numBatches = 1;
-    network_type *network = newScalar(network_type);
+	int numBatches = 1;
+	network_type *network = newScalar(network_type);
 #ifdef PARALLELISM
-    thisRun->numThreads = getNumCores();
+	thisRun->numThreads = getNumCores();
 #endif
 
 	/* Initialize (set mandatory values to missing, mandatory strings to length
