@@ -450,7 +450,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             if (status == BLANK_LINE || status == COMMENT) continue;
             if         (strcmp(metadataTag, "NUMBER OF ZONES") == 0) {
                 check = atoi(metadataValue);
-                if (check != network->numZones) fatalError("Number of zones in"
+                if (check != network->numZones) fatalError("Number of zones in "
                         "trip and link files do not match.");
             } else if (strcmp(metadataTag, "TOTAL OD FLOW") == 0) {
                 network->totalODFlow = atof(metadataValue);
@@ -478,7 +478,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             if (strstr(trimmedLine, "Origin") != NULL) {
                 // i indexes current origin
                 sscanf(strstr(trimmedLine, "Origin")+6,"%d", &i);  
-                if (i <= 0 || i > network->numZones) fatalError("Origin %d is"
+                if (i <= 0 || i > network->numZones) fatalError("Origin %d is "
                         "out of range in trips file %s", i, tripFileName[c]);
                 i--;
                 r = nodeclass2origin(network, i, c);
