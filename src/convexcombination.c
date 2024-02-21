@@ -132,7 +132,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
     while (converged == FALSE) {
         /* Find search direction with whatever algorithm and parameters are
          * relevant */
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+        clock_gettime(CLOCK_MONOTONIC, &tick);
 
         parameters->searchDirection(network, direction, oldDirection,
                                     oldOldDirection, oldStepSize,
@@ -142,7 +142,7 @@ void convexCombinations(network_type *network, CCparameters_type *parameters) {
          * convergence */
         tstt = TSTT(network);
         gap = parameters->gapFunction(network, tstt, sptt);
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+        clock_gettime(CLOCK_MONOTONIC, &tock);
         elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
 
         if(parameters->calculateBeckmann == TRUE)
