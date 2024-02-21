@@ -1,0 +1,332 @@
+<END OF METADATA>
+
+~ Number of sink node: Node 1 
+~ Number of origins (counties): 109 (Node 2-110)
+
+Origin 2 ~ Calhoun to the safe node
+1: 17859.0
+
+Origin 3 ~ Orange to the safe node
+1: 0.0
+
+Origin 4 ~ Gonzales to the safe node
+1: 0.0
+
+Origin 5 ~ Refugio to the safe node
+1: 9285.0
+
+Origin 6 ~ Jim Hogg to the safe node
+1: 0.0
+
+Origin 7 ~ Brazos to the safe node
+1: 0.0
+
+Origin 8 ~ Jefferson to the safe node
+1: 0.0
+
+Origin 9 ~ Hidalgo to the safe node
+1: 0.0
+
+Origin 10 ~ Delta to the safe node
+1: 0.0
+
+Origin 11 ~ Rockwall to the safe node
+1: 0.0
+
+Origin 12 ~ DeWitt to the safe node
+1: 0.0
+
+Origin 13 ~ Angelina to the safe node
+1: 0.0
+
+Origin 14 ~ McLennan to the safe node
+1: 0.0
+
+Origin 15 ~ Lamar to the safe node
+1: 0.0
+
+Origin 16 ~ Leon to the safe node
+1: 0.0
+
+Origin 17 ~ McMullen to the safe node
+1: 0.0
+
+Origin 18 ~ Fort Bend to the safe node
+1: 0.0
+
+Origin 19 ~ Fayette to the safe node
+1: 0.0
+
+Origin 20 ~ Harrison to the safe node
+1: 0.0
+
+Origin 21 ~ Washington to the safe node
+1: 0.0
+
+Origin 22 ~ Sabine to the safe node
+1: 0.0
+
+Origin 23 ~ Hopkins to the safe node
+1: 0.0
+
+Origin 24 ~ Houston to the safe node
+1: 0.0
+
+Origin 25 ~ Bexar to the safe node
+1: 0.0
+
+Origin 26 ~ Rusk to the safe node
+1: 0.0
+
+Origin 27 ~ Comal to the safe node
+1: 0.0
+
+Origin 28 ~ Aransas to the safe node
+1: 23336.0
+
+Origin 29 ~ San Jacinto to the safe node
+1: 0.0
+
+Origin 30 ~ Wharton to the safe node
+1: 0.0
+
+Origin 31 ~ Karnes to the safe node
+1: 0.0
+
+Origin 32 ~ Kaufman to the safe node
+1: 0.0
+
+Origin 33 ~ Duval to the safe node
+1: 0.0
+
+Origin 34 ~ Franklin to the safe node
+1: 0.0
+
+Origin 35 ~ Waller to the safe node
+1: 0.0
+
+Origin 36 ~ Kleberg to the safe node
+1: 11448.0
+
+Origin 37 ~ Bowie to the safe node
+1: 0.0
+
+Origin 38 ~ Caldwell to the safe node
+1: 0.0
+
+Origin 39 ~ Titus to the safe node
+1: 0.0
+
+Origin 40 ~ Hays to the safe node
+1: 0.0
+
+Origin 41 ~ Medina to the safe node
+1: 0.0
+
+Origin 42 ~ Victoria to the safe node
+1: 41218.0
+
+Origin 43 ~ Tyler to the safe node
+1: 0.0
+
+Origin 44 ~ Falls to the safe node
+1: 0.0
+
+Origin 45 ~ Willacy to the safe node
+1: 0.0
+
+Origin 46 ~ Henderson to the safe node
+1: 0.0
+
+Origin 47 ~ Walker to the safe node
+1: 0.0
+
+Origin 48 ~ Galveston to the safe node
+1: 0.0
+
+Origin 49 ~ Harris to the safe node
+1: 0.0
+
+Origin 50 ~ Nacogdoches to the safe node
+1: 0.0
+
+Origin 51 ~ Guadalupe to the safe node
+1: 0.0
+
+Origin 52 ~ Jackson to the safe node
+1: 9703.0
+
+Origin 53 ~ Frio to the safe node
+1: 0.0
+
+Origin 54 ~ Colorado to the safe node
+1: 0.0
+
+Origin 55 ~ Shelby to the safe node
+1: 0.0
+
+Origin 56 ~ Cass to the safe node
+1: 0.0
+
+Origin 57 ~ Ellis to the safe node
+1: 0.0
+
+Origin 58 ~ Williamson to the safe node
+1: 0.0
+
+Origin 59 ~ Van Zandt to the safe node
+1: 0.0
+
+Origin 60 ~ Grimes to the safe node
+1: 0.0
+
+Origin 61 ~ Navarro to the safe node
+1: 0.0
+
+Origin 62 ~ Brooks to the safe node
+1: 0.0
+
+Origin 63 ~ Wood to the safe node
+1: 0.0
+
+Origin 64 ~ Polk to the safe node
+1: 0.0
+
+Origin 65 ~ Lee to the safe node
+1: 0.0
+
+Origin 66 ~ Cherokee to the safe node
+1: 0.0
+
+Origin 67 ~ San Augustine to the safe node
+1: 0.0
+
+Origin 68 ~ Madison to the safe node
+1: 0.0
+
+Origin 69 ~ Milam to the safe node
+1: 0.0
+
+Origin 70 ~ Nueces to the safe node
+1: 155362.0
+
+Origin 71 ~ Camp to the safe node
+1: 0.0
+
+Origin 72 ~ Freestone to the safe node
+1: 0.0
+
+Origin 73 ~ Marion to the safe node
+1: 0.0
+
+Origin 74 ~ Liberty to the safe node
+1: 0.0
+
+Origin 75 ~ Jasper to the safe node
+1: 0.0
+
+Origin 76 ~ Chambers to the safe node
+1: 0.0
+
+Origin 77 ~ Hardin to the safe node
+1: 0.0
+
+Origin 78 ~ Brazoria to the safe node
+1: 0.0
+
+Origin 79 ~ Bastrop to the safe node
+1: 0.0
+
+Origin 80 ~ Limestone to the safe node
+1: 0.0
+
+Origin 81 ~ Red River to the safe node
+1: 0.0
+
+Origin 82 ~ Matagorda to the safe node
+1: 18611.0
+
+Origin 83 ~ Live Oak to the safe node
+1: 0.0
+
+Origin 84 ~ Atascosa to the safe node
+1: 0.0
+
+Origin 85 ~ Wilson to the safe node
+1: 0.0
+
+Origin 86 ~ Starr to the safe node
+1: 0.0
+
+Origin 87 ~ Dallas to the safe node
+1: 0.0
+
+Origin 88 ~ La Salle to the safe node
+1: 0.0
+
+Origin 89 ~ Austin to the safe node
+1: 0.0
+
+Origin 90 ~ Smith to the safe node
+1: 0.0
+
+Origin 91 ~ Robertson to the safe node
+1: 0.0
+
+Origin 92 ~ Kenedy to the safe node
+1: 0.0
+
+Origin 93 ~ Burleson to the safe node
+1: 0.0
+
+Origin 94 ~ Bee to the safe node
+1: 0.0
+
+Origin 95 ~ Trinity to the safe node
+1: 0.0
+
+Origin 96 ~ Gregg to the safe node
+1: 0.0
+
+Origin 97 ~ Lavaca to the safe node
+1: 0.0
+
+Origin 98 ~ Goliad to the safe node
+1: 0.0
+
+Origin 99 ~ Morris to the safe node
+1: 0.0
+
+Origin 100 ~ Upshur to the safe node
+1: 0.0
+
+Origin 101 ~ San Patricio to the safe node
+1: 29441.0
+
+Origin 102 ~ Webb to the safe node
+1: 0.0
+
+Origin 103 ~ Newton to the safe node
+1: 0.0
+
+Origin 104 ~ Panola to the safe node
+1: 0.0
+
+Origin 105 ~ Anderson to the safe node
+1: 0.0
+
+Origin 106 ~ Cameron to the safe node
+1: 0.0
+
+Origin 107 ~ Montgomery to the safe node
+1: 0.0
+
+Origin 108 ~ Jim Wells to the safe node
+1: 0.0
+
+Origin 109 ~ Zapata to the safe node
+1: 0.0
+
+Origin 110 ~ Travis to the safe node
+1: 0.0
+
