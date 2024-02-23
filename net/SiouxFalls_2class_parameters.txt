@@ -3,8 +3,7 @@
 
 ~ Mandatory parameters
 <NETWORK FILE> SiouxFalls_net.txt
-<TRIPS FILE> SiouxFalls_class1.txt
-<TRIPS FILE> SiouxFalls_class2.txt
+<TRIPS FILE> SiouxFalls_trips.txt
 
 ~ Trips files are in order of the class number
 

@@ -303,7 +303,7 @@ double TSTT(network_type *network) {
 
 /*
 classCost calculates cost, but ONLY for one specified class.  Note that the
-given time/toll/distanceFactords do NOT need to be the same as that for the
+given time/toll/distanceFactors do NOT need to be the same as that for the
 class.  This gives flexibility in calculating total toll paid, total travel
 time, total travel cost, etc.
 */

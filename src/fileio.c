@@ -197,7 +197,6 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
         if (tripsFiles[c] == NULL) fatalError("Can't setup trip file array.\n");
         snprintf(tripsFiles[c], 2*STRING_SIZE - 1, "%s%s",
                  filePath, tripsFile->string);
-        printf("Flows%d: %s (%s)\n", c, thisRun->flowsFile, tripsFiles[c]);
         newTripsFile = tripsFile; /* Save for garbage collection */
         tripsFile = tripsFile->prev;
         deleteScalar(newTripsFile);
@@ -247,7 +246,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
     int i, j, r = 0, c;
     int check;
     int numParams, status;
-    double demand, totalDemandCheck = 0;
+    double demand, totalDemandCheck = 0, statedDemand = 0;
     double defaultTollFactor, defaultDistanceFactor;
     double demandMultiplier = IS_MISSING;
 
@@ -324,10 +323,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
         fatalError("Link file %s does not contain a positive number of nodes.",
                 linkFileName);
 
-    displayMessage(MEDIUM_NOTIFICATIONS, "Nodes, arcs, zones, thrunode: "
-            "%ld %ld %ld %ld\n", network->numNodes, network->numArcs,
-            network->numZones, network->firstThroughNode);
-    displayMessage(MEDIUM_NOTIFICATIONS, "Distance factor, toll factor: "
+    displayMessage(MEDIUM_NOTIFICATIONS, "Global distance/toll factors: "
             "%lf %lf\n", defaultDistanceFactor, defaultTollFactor);
 
     network->numOrigins = network->numZones * network->numClasses;
@@ -432,10 +428,11 @@ void readOBANetwork(network_type *network, char *linkFileName,
     }
 
     for (c = 0; c < network->numClasses; c++) {
+        totalDemandCheck = 0; statedDemand = 0;
         tripFile = openFile(tripFileName[c], "r");
         /* Verify trip table metadata */
         endofMetadata = FALSE;
-        network->totalODFlow = IS_MISSING;
+        network->totalODFlow = 0;
         network->tollFactor[c] = defaultTollFactor;
         network->distanceFactor[c] = defaultDistanceFactor;
         do {
@@ -449,7 +446,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
                 if (check != network->numZones) fatalError("Number of zones in"
                         "trip and link files do not match.");
             } else if (strcmp(metadataTag, "TOTAL OD FLOW") == 0) {
-                network->totalODFlow = atof(metadataValue);
+                statedDemand = atof(metadataValue);
             } else if (strcmp(metadataTag, "DEMAND MULTIPLIER") == 0) {
                 demandMultiplier = atof(metadataValue);
             } else if (strcmp(metadataTag, "DISTANCE FACTOR") == 0) {
@@ -491,12 +488,23 @@ void readOBANetwork(network_type *network, char *linkFileName,
                 network->demand[r][j] = demand * demandMultiplier;
                 if (demand < 0) fatalError("Negative demand from origin %d to "
                         "destination %d in class %d", i, j, c);
-                totalDemandCheck += network->demand[r][j];
+                totalDemandCheck += demand;
+                network->totalODFlow += network->demand[r][j];
                 token = strtok(NULL, ";");
             }
             blankInputString(trimmedLine, STRING_SIZE);
         }
-
+        displayMessage(MEDIUM_NOTIFICATIONS, "Class %d distance/toll factors: "
+                                             "%f %f\n", c+1,
+                                             network->distanceFactor[c],
+                                             network->tollFactor[c]);
+        displayMessage(MEDIUM_NOTIFICATIONS,
+                       "Read %f trips for class %d (%f expected)\n",
+                       totalDemandCheck, c + 1, statedDemand);
+        if (fabs(totalDemandCheck / statedDemand - 1) > 0.01) {
+            warning(LOW_NOTIFICATIONS, "Class %d demand differs from stated "
+                                       "value by more than 1%\n", c+1);
+        }
         fclose(tripFile);
     }
 
@@ -618,6 +626,72 @@ void writeNetworkFlows(network_type *network, char *outputFileName) {
     
     fclose(outFile);
 }
+
+/*
+ * writeMulticlassFlows prints link IDs, total flows and costs, and then
+ * class-specific flows, followed by summary information on total time,
+ * distance, and toll paid by class and in total.
+ *
+ * Also includes a header row for multiclass.  (This is a "richer" version of
+ * writeNetworkFlows).  If there is just a single class, it is the same
+ * as writeNetworkFlows, but with time/distance/toll printed at bottom.
+ */
+void writeMulticlassFlows(network_type *network, char *outputFileName) {
+    if (network->numClasses == 1) { /* just call regular writeNetworkFlows */
+        writeNetworkFlows(network, outputFileName);
+        /* But add summary statistics at the end */
+        FILE *outFile = openFile(outputFileName, "a");
+        fprintf(outFile, "Total time: %f\n", classTravelTime(network, 0));
+        fprintf(outFile, "Total distance: %f\n", classDistance(network, 0));
+        fprintf(outFile, "Total toll: %f\n", classRevenue(network, 0));
+        fprintf(outFile, "Total generalized cost: %f\n", TSTT(network));
+        fclose(outFile);
+        return;
+    }
+    /* Usual case */
+    FILE *outFile = openFile(outputFileName, "w");
+    int c, ij;
+
+    fprintf(outFile, "Link TotalFlow TravelTime");
+    for (c = 0; c < network->numClasses; c++) {
+        fprintf(outFile, " Class%d", c+1);
+    }
+    fprintf(outFile, "\n");
+    for (ij = 0; ij < network->numArcs; ij++) {
+        fprintf(outFile, "(%d,%d) %f %f", network->arcs[ij].tail + 1,
+                                          network->arcs[ij].head + 1,
+                                          network->arcs[ij].flow,
+                                          network->arcs[ij].cost
+                                              - network->arcs[ij].fixedCost);
+        for (c = 0; c < network->numClasses; c++) {
+            fprintf(outFile, " %f", network->arcs[ij].classFlow[c]);
+        }
+        fprintf(outFile, "\n");
+    }
+
+    fprintf(outFile, "\n\nClass Time Distance Toll GeneralizedCost\n");
+    float classTime, classDist, classToll, classGC;
+    float totalTime = 0, totalDistance = 0, totalToll = 0, totalCost = 0;
+    for (c = 0; c < network->numClasses; c++) {
+        classTime = classTravelTime(network, c);
+        classDist = classDistance(network, c);
+        classToll = classRevenue(network, c);
+        classGC = classCost(network, c, 1, network->tollFactor[c],
+                                           network->distanceFactor[c]);
+        totalTime += classTime;
+        totalDistance += classDist;
+        totalToll += classToll;
+        totalCost += classGC;
+        fprintf(outFile, "%d %f %f %f %f\n", c+1, classTime, classDist,
+                                             classToll, classGC);
+    }
+    fprintf(outFile, "TOTAL %f %f %f %f\n", totalTime, totalDistance,
+                                            totalToll, totalCost);
+    fclose(outFile);
+}
+
+
+    
 
 ///////////////////////
 // String processing //

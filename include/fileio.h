@@ -55,6 +55,7 @@ void setBatches(network_type *network, int batchSize, bool warmStart,
                 bool storeMatrices, char *matrixStem);
 void writeOBANetwork(network_type *Network, char *linkfile, char *tripfile);
 void writeNetworkFlows(network_type *network, char *outputFileName);
+void writeMulticlassFlows(network_type *network, char *outputFileName);
 
 ///////////////////////
 // String processing //
