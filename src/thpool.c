@@ -1,3 +1,14 @@
+/* ********************************
+ * Author:       Johan Hanssen Seferidis
+ * License:	     MIT
+ * Description:  Library providing a threading pool where you can add
+ *               work. For usage, check the thpool.h file or README.md
+ *
+ *//** @file thpool.h *//*
+ * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
+ * Alex Vermeulen: Changed the file to work for Windows based platforms. this explicitly breaks linux/macos functionals for now
+ ********************************/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
