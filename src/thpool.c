@@ -38,18 +38,21 @@ static volatile int threads_on_hold;
 
 /* ========================== STRUCTURES ============================ */
 
+/* Binary semaphore */
 typedef struct bsem {
     CRITICAL_SECTION cs;
     HANDLE sem;
     int v;
 } bsem;
 
+/* Job */
 typedef struct job {
     struct job* prev;
     void (*function)(void* arg);
     void* arg;
 } job;
 
+/* Job queue */
 typedef struct jobqueue {
     CRITICAL_SECTION rwmutex;
     job* front;
@@ -58,6 +61,7 @@ typedef struct jobqueue {
     int len;
 } jobqueue;
 
+/* Thread */
 typedef struct thread {
     int id;
     HANDLE thread_handle;
@@ -65,6 +69,7 @@ typedef struct thread {
     struct thpool_* thpool_p;
 } thread;
 
+/* Threadpool */
 typedef struct thpool_ {
     thread** threads;
     volatile int num_threads_alive;
@@ -101,6 +106,7 @@ threadpool thpool_init(int num_threads) {
         num_threads = 0;
     }
 
+    /* Make new thread pool */
     thpool_* thpool_p = (thpool_*)malloc(sizeof(thpool_));
     if (thpool_p == NULL) {
         err("thpool_init(): Could not allocate memory for thread pool\n");
@@ -109,12 +115,14 @@ threadpool thpool_init(int num_threads) {
     thpool_p->num_threads_alive = 0;
     thpool_p->num_threads_working = 0;
 
+    /* Initialise the job queue */
     if (jobqueue_init(&thpool_p->jobqueue) == -1) {
         err("thpool_init(): Could not allocate memory for job queue\n");
         free(thpool_p);
         return NULL;
     }
 
+    /* Make threads in pool */
     thpool_p->threads = (thread**)malloc(num_threads * sizeof(thread*));
     if (thpool_p->threads == NULL) {
         err("thpool_init(): Could not allocate memory for threads\n");
@@ -123,6 +131,7 @@ threadpool thpool_init(int num_threads) {
         return NULL;
     }
 
+    /* Thread init */
     InitializeCriticalSection(&thpool_p->thcount_lock);
     thpool_p->threads_all_idle = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -136,7 +145,8 @@ threadpool thpool_init(int num_threads) {
         printf("THPOOL_DEBUG: Created thread %d in pool \n", n);
 #endif
     }
-
+    
+    /* Wait for threads to initialize */
     while (thpool_p->num_threads_alive != num_threads) {
         Sleep(1);
     }
@@ -144,20 +154,23 @@ threadpool thpool_init(int num_threads) {
     return thpool_p;
 }
 
+/* Add work to the thread pool */
 int thpool_add_work(threadpool thpool_p, void (*function_p)(void*), void* arg_p) {
     job* newjob = (job*)malloc(sizeof(job));
     if (newjob == NULL) {
         err("thpool_add_work(): Could not allocate memory for new job\n");
         return -1;
     }
+    /* add function and argument */
     newjob->function = function_p;
     newjob->arg = arg_p;
-
+    /* add job to queue */
     jobqueue_push(&thpool_p->jobqueue, newjob);
 
     return 0;
 }
 
+/* Wait until all jobs have finished */
 void thpool_wait(threadpool thpool_p) {
     EnterCriticalSection(&thpool_p->thcount_lock);
     while (thpool_p->jobqueue.len || thpool_p->num_threads_working) {
@@ -166,12 +179,16 @@ void thpool_wait(threadpool thpool_p) {
     LeaveCriticalSection(&thpool_p->thcount_lock);
 }
 
+/* Destroy the threadpool */
 void thpool_destroy(threadpool thpool_p) {
     if (thpool_p == NULL) return;
 
     volatile int threads_total = thpool_p->num_threads_alive;
-    threads_keepalive = 0;
 
+    /* End each thread 's infinite loop */
+    threads_keepalive = 0;
+    
+    /* Give one second to kill idle threads */
     double TIMEOUT = 1.0;
     time_t start, end;
     double tpassed = 0.0;
@@ -182,12 +199,16 @@ void thpool_destroy(threadpool thpool_p) {
         tpassed = difftime(end, start);
     }
 
+    /* Poll remaining threads */
     while (thpool_p->num_threads_alive) {
         bsem_post_all(thpool_p->jobqueue.has_jobs);
         Sleep(1000);
     }
 
+    /* Job queue cleanup */
     jobqueue_destroy(&thpool_p->jobqueue);
+
+    /* Deallocs */
     for (int n = 0; n < threads_total; n++) {
         thread_destroy(thpool_p->threads[n]);
     }
@@ -197,12 +218,17 @@ void thpool_destroy(threadpool thpool_p) {
     free(thpool_p);
 }
 
+/* Pause all threads in threadpool */
 void thpool_pause(threadpool thpool_p) {
     (void)thpool_p; // Silence the unused parameter warning
     threads_on_hold = 1;
 }
 
+/* Resume all threads in threadpool */
 void thpool_resume(threadpool thpool_p) {
+    // resuming a single threadpool hasn't been
+    // implemented yet, meanwhile this supresses
+    // the warnings    
     (void)thpool_p; // Silence the unused parameter warning
     threads_on_hold = 0;
 }
