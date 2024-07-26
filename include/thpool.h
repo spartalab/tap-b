@@ -190,6 +190,8 @@ int thpool_num_threads_working(threadpool);
 	int prctl(int, ...);
 #elif defined(__APPLE__) && defined(__MACH__)
 int pthread_setname_np(const char*);
+#elif defined(_WIN32) || defined(_WIN64)
+/* Nothing special set here!?*/
 #else
 err("thread_do(): pthread_setname_np is not supported on this system");
 #endif

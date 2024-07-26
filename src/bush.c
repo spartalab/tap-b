@@ -82,7 +82,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
              && (iteration == 0 || gap > parameters->convergenceGap)) {
         iteration++;
         gap = 0; /* Will accumulate total gap across batches for averaging */
-        clock_gettime(CLOCK_MONOTONIC_RAW, &tick);
+        clock_gettime(CLOCK_MONOTONIC, &tick);
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
@@ -106,7 +106,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
 #endif
             /* Check gap and report progress. */
-            clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+            clock_gettime(CLOCK_MONOTONIC, &tock);
             elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
             stopTime = clock();
 #if NCTCOG_ENABLED
