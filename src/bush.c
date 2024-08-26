@@ -1850,7 +1850,6 @@ void writePathFlows(network_type *network,
     declareVector(double, linkProportion, network->numArcs);
 
     for (r = 0; r < network->numZones; r++) {
-        //verbosity = r == 283 ? DEBUG : FULL_NOTIFICATIONS;
         /* Compute merge proportions for this bush */
         for (i = 0; i < network->numNodes; i++) {
             totalFlow = 0;
@@ -1883,7 +1882,6 @@ void writePathFlows(network_type *network,
                 while (nodeStack[pathLen] != r && flowStack[pathLen] > 0) {
                     i = nodeStack[pathLen];
                     pathLen++;
-                    //displayMessage(DEBUG, "Currently at %d (pos %d)\n", i+1, pathLen);
                     if (pathLen >= network->numNodes)
                         fatalError("writePathFlows: path too long");
                     if (isMergeNode(r, i, bushes) == FALSE) {
@@ -1898,12 +1896,10 @@ void writePathFlows(network_type *network,
                         if (arc >= bushes->merges[r][m]->numApproaches)
                             fatalError("writePathFlows: invalid merge access");
                         ij = bushes->merges[r][m]->approach[arc];
-                        //displayMessage(DEBUG, "Merging to %d %d (%d,%d)\n", arc, ij, network->arcs[ij].tail+1, network->arcs[ij].head+1);
                         nodeStack[pathLen] = network->arcs[ij].tail;
                         flowStack[pathLen] = flowStack[pathLen - 1]
                                              * linkProportion[ij];
                     }
-                    //displayMessage(DEBUG, "Appended %d %f at pos %d\n", nodeStack[pathLen] + 1, flowStack[pathLen], pathLen);
                 }
                 if (nodeStack[pathLen] == r && flowStack[pathLen] > 0) {
                     /* Found a path, print it */
@@ -1931,7 +1927,6 @@ void writePathFlows(network_type *network,
                      * that uses it.  (A bush is not a tree!) */
                     if (mergeStack[i] + 1
                             == bushes->merges[r][m]->numApproaches) {
-                        //displayMessage(DEBUG, "Resetting %d\n", i+1);
                         mergeStack[i] = 0;
                         continue;
                     }
@@ -1939,10 +1934,8 @@ void writePathFlows(network_type *network,
                      * still has approaches left to explore; we can stop
                      * backtracking and increment the approach. */
                     mergeStack[i]++;
-                    //displayMessage(DEBUG, "Bumping merge %d to %d\n", i+1, mergeStack[i]);
                     break;
                 }
-                //displayMessage(DEBUG, "Backed up to %d\n", pathLen);
             } while (done == FALSE);
             displayMessage(FULL_NOTIFICATIONS, "%d paths for %d->%d\n",
                            numPaths, r+1, s+1);
