@@ -1,6 +1,7 @@
 .idea/
 obj/
 .depend/
+scratch/
 bin/
 cmake-build-debug/
 full_log.txt
