@@ -6,42 +6,10 @@
  * bushes.
  */
 #include "bush.h"
-#include <time.h>
 
+/* Include this declarations hear to avoid nested header includes */
 #if PARALLELISM
-    #include "thpool.h"
-    #include <pthread.h> 
-    #include "parallel_bush.h"
-#endif
-
-#if PARALLELISM
-//Struct for thread arguments
-struct thread_args {
-    int id;
-    bool update_flows_ret;
-    bushes_type *bushes;
-    network_type *network;
-    algorithmBParameters_type *parameters;
-};
-
-void updateBushPool(void* pVoid) {
-    struct thread_args *args = (struct thread_args *) pVoid;
-    int id = args->id;
-    bushes_type *bushes = args->bushes;
-    network_type *network = args->network;
-    algorithmBParameters_type *parameters = args->parameters;
-    updateBushB_par(id, network, bushes, parameters);
-}
-
-void updateFlowsPool(void* pVoid) {
-    struct thread_args *args = (struct thread_args *) pVoid;
-    int id = args->id;
-    bushes_type *bushes = args->bushes;
-    network_type *network = args->network;
-    algorithmBParameters_type *parameters = args->parameters;
-    args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
-}
-threadpool thpool;
+#include "parallel_bush.h"
 #endif
 
 /*
@@ -59,7 +27,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
     /* Allocate memory for bushes */
     int batch, iteration = 0, lastClass = IS_MISSING;
-    displayMessage(FULL_NOTIFICATIONS, "Creating Initial bushes\n");
+    displayMessage(FULL_NOTIFICATIONS, "Creating initial bushes\n");
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
@@ -87,37 +55,20 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         /* Iterate over batches of origins */
         for (batch = 0; batch < network->numBatches; batch++) {
             /* Do main work for this batch */
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loading Batch...\n");
-#endif
             loadBatch(batch, network, &bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Loaded Batch...\nUpdating Batch Bush...\n");
-#endif
             updateBatchBushes(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Bush...\nUpdating Batch Flows...\n");
-#endif
             updateBatchFlows(network, bushes, &lastClass, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Updated Batch Flows...\nStoring batch ...\n");
-#endif
             storeBatch(batch, network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Stored Batch\n");
-#endif
             /* Check gap and report progress. */
             clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-            elapsedTime += (double)((1000000000 * (tock.tv_sec - tick.tv_sec) + tock.tv_nsec - tick.tv_nsec)) * 1.0/1000000000; /* Exclude gap calculations from run time */
-            stopTime = clock();
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculating batch relative gap...\n");
-#endif
+            elapsedTime += (double)((1e9 * (tock.tv_sec - tick.tv_sec)
+                                    + tock.tv_nsec - tick.tv_nsec)) * 1.0/1e9;
+            stopTime = clock(); /* Exclude gap calculations from run time */
+            displayMessage(DEBUG, "Calculating batch gap...\n");
+
             batchGap = bushRelativeGap(network, bushes, parameters);
             batchEntropy = bushEntropy(network, bushes, parameters);
-#if NCTCOG_ENABLED
-            displayMessage(FULL_NOTIFICATIONS, "Calculated batch relative gap...\n");
-#endif
+            displayMessage(DEBUG, "Calculated batch gap...\n");
             gap += batchGap;
             entropy += batchEntropy;
             if (parameters->includeGapTime == FALSE) stopTime = clock(); 
@@ -130,19 +81,18 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
             if (network->numBatches > 1) {
                 displayMessage(LOW_NOTIFICATIONS, "*Batch %ld: batchgap %.15f,"
-                       " %stime %.3f s.\n", batch, batchGap,
+                       "%stime %.3f s.\n", batch, batchGap,
                            beckmannString, elapsedTime);  
             }
                     
         }
         /* Report information from the entire iteration (all batches) */
         gap /= network->numBatches;
-        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, entropy %.15f, "
-                       "%stime %.3f,%d shifts\n",
+        displayMessage(LOW_NOTIFICATIONS, "Iteration %d:%s gap %.15f, "
+                       "%stime %.3f, %d shifts\n",
                         iteration, 
                         network->numBatches > 1 ? " est." : "",
                         gap,
-                        entropy,
                         beckmannString,
                         elapsedTime,
                         parameters->numFlowShifts);
@@ -150,10 +100,16 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         parameters->thresholdAEC = 0.25 * gap; /* Tuneable parameter */
 
     } 
+    displayMessage(FULL_NOTIFICATIONS, "Final entropy: %.15f\n", entropy);
 
+    for (int i = 0; i < network->numZones; i++) {
+        printBush(DEBUG, i, network, bushes);
+    }
     /* Clean up */
     deleteBushes(network, bushes);
-
+#if PARALLELISM
+    thpool_destroy(thpool);
+#endif
 }
 
 /*
@@ -167,6 +123,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.convergenceGap = 0;
     parameters.maxTime = INFINITY;
     parameters.maxIterations = INT_MAX;
+    parameters.calculateBeckmann = TRUE;
 
     parameters.innerIterations = 20;
     parameters.shiftReps = 1;
@@ -212,7 +169,7 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters) {
 
     int batch, c, ij, origin;
-    char batchFileName[STRING_SIZE];    
+    char batchFileName[2*STRING_SIZE];    
     displayMessage(FULL_NOTIFICATIONS, "Initializing Algorithm B\n");
     /* 1. Initialize flows to zero and costs to free-flow */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -237,14 +194,16 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
     for (batch = 0; batch < network->numBatches; batch++) {
         /* Set up new batch */
         network->curBatch = batch;
-        sprintf(batchFileName, "%s%d.bin", parameters->batchStem,
+        snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
                 network->curBatch);
 
         if (network->numBatches > 1 || parameters->storeMatrices == TRUE) {
-                displayMessage(FULL_NOTIFICATIONS, "Reading matrix %d\n", network->curBatch);
+                displayMessage(FULL_NOTIFICATIONS, "Reading matrix %d\n",
+                                                   network->curBatch);
             readBinaryMatrix(network, parameters);
         }
-        displayMessage(FULL_NOTIFICATIONS, "Read matrix %d\n", network->curBatch);
+        displayMessage(FULL_NOTIFICATIONS, "Read matrix %d\n",
+                                            network->curBatch);
 
         /* Form bush structure: either read from file or recreate */
         if (parameters->warmStart == TRUE) { /* Read file and rectify */
@@ -275,7 +234,8 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                     network->arcs[ij].calculateCost(&network->arcs[ij]);
             }
         }
-        sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+        snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin",
+                 parameters->batchStem, batch);
         if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
             writeBushes(network, *bushes, batchFileName);
         }
@@ -288,10 +248,11 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
 
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters) {
-    char batchFileName[STRING_SIZE];
+    char batchFileName[2*STRING_SIZE];
     
     network->curBatch = batch;
-    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);
+    snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
+            batch);
     if (network->numBatches > 1) {
         /* Even if storeBushes == TRUE, if there is only one batch
          * there is no point in reading it again */
@@ -304,9 +265,10 @@ void loadBatch(int batch, network_type *network, bushes_type **bushes,
 
 void storeBatch(int batch, network_type *network, bushes_type *bushes,
                 algorithmBParameters_type *parameters) {
-    char batchFileName[STRING_SIZE];
+    char batchFileName[2*STRING_SIZE];
     
-    sprintf(batchFileName, "%s%d.bin", parameters->batchStem, batch);                
+    snprintf(batchFileName, 2*STRING_SIZE, "%s%d.bin", parameters->batchStem,
+            batch);                
     if (network->numBatches > 1 || parameters->storeBushes == TRUE) {
         writeBushes(network, bushes, batchFileName);
     }
@@ -314,8 +276,6 @@ void storeBatch(int batch, network_type *network, bushes_type *bushes,
 
 void updateBatchBushes(network_type *network, bushes_type *bushes,
                        int *lastClass, algorithmBParameters_type *parameters) {
-                          
-    
 #if PARALLELISM
     int c; 
     struct thread_args args[network->batchSize];
@@ -334,7 +294,8 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateBushPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateBushPool,
+                        (void*)&args[j]);
         *lastClass = c;
     }
     thpool_wait(thpool);
@@ -346,7 +307,8 @@ void updateBatchBushes(network_type *network, bushes_type *bushes,
         if (c != *lastClass) {
             changeFixedCosts(network, c);
         }
-        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
+        thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, 
+                        (void*)&args[j]);
         *lastClass = c;
     }
     thpool_wait(thpool);
@@ -372,31 +334,31 @@ void updateBatchFlows(network_type *network, bushes_type *bushes,
     bool doneAny;
     for (i = 0; i < parameters->innerIterations; i++) {
         doneAny = FALSE;
-            
- #if PARALLELISM
-         struct thread_args args[network->batchSize];
-         for (int j = 0; j < network->batchSize; ++j) {
-             args[j].id = j;
-             args[j].network = network;
-             args[j].parameters = parameters;
-             args[j].bushes = bushes;
-             args[j].update_flows_ret = FALSE;
-         }
-    
-         for (int j = 0; j < network->batchSize; ++j) {
-             if (outOfOrigins(network, j) == TRUE) break;
-             if (bushes->updateBush[j] == FALSE) continue;
-             c = origin2class(network, j);
-             if (c != *lastClass) {
-                 changeFixedCosts(network, c);
-             }
-             thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool, (void*)&args[j]);
-         }
-         thpool_wait(thpool);
+#if PARALLELISM
+        struct thread_args args[network->batchSize];
+        for (int j = 0; j < network->batchSize; ++j) {
+            args[j].id = j;
+            args[j].network = network;
+            args[j].parameters = parameters;
+            args[j].bushes = bushes;
+            args[j].update_flows_ret = FALSE;
+        }
+   
+        for (int j = 0; j < network->batchSize; ++j) {
+            if (outOfOrigins(network, j) == TRUE) break;
+            if (bushes->updateBush[j] == FALSE) continue;
+            c = origin2class(network, j);
+            if (c != *lastClass) {
+                changeFixedCosts(network, c);
+            }
+            thpool_add_work(thpool, (void (*)(void *)) updateFlowsPool,
+                            (void*)&args[j]);
+        }
+        thpool_wait(thpool);
 
-         for (int j = 0; j < network->batchSize; ++j) {
-             doneAny |= args[j].update_flows_ret;
-         }
+        for (int j = 0; j < network->batchSize; ++j) {
+            doneAny |= args[j].update_flows_ret;
+        }
 #else
         int origin;
         for (origin = 0; origin < network->batchSize; origin++) {
@@ -427,7 +389,6 @@ void initialBushShortestPath(int origin, network_type *network,
     int ij, originNode = origin2node(network, origin);
     arcIndexBellmanFord(originNode, bushes->SPcost, bushes->pred[origin],
                         network, parameters->SPQueueDiscipline);
-//    displayMessage(FULL_NOTIFICATIONS, "Finished shortest path bush preds %d\n", origin);
     for (ij = 0; ij < network->numNodes; ij++) {
         if (ij != originNode && bushes->pred[origin][ij] == IS_MISSING) {
             if (verbosity >= DEBUG) {
@@ -480,25 +441,20 @@ void genericTopologicalOrder(int origin, network_type *network,
                              algorithmBParameters_type *parameters) {
     arcListElt *curArc;
     int i, j, m,  next, highestMerge = 0;
-//    displayMessage(FULL_NOTIFICATIONS, "Starting topo order with indegree vector\n");
     declareVector(int, indegree, network->numNodes);
     for (i = 0; i < network->numNodes; i++) {
         indegree[i] = 1; /* By default non-origin nodes are assumed to have 1
                             incoming link; merges and origin handled below */
-         bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
+        bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
     }
-    /*displayMessage(DEBUG, "Now working with origin %d, really %d\n",
-                  origin, origin2node(network, origin));*/
     for (i = 0; i < network->numNodes; i++) {
         if (isMergeNode(origin, i, bushes) == TRUE) {
             m = pred2merge(bushes->pred[origin][i]);
-            //displayMessage(LOW_NOTIFICATIONS, "Node %d is merge node %d\n", i, m);
             indegree[i] = bushes->merges[origin][m]->numApproaches;
         }
     }
     indegree[origin2node(network, origin)] = 0;
 
-//    displayMessage(FULL_NOTIFICATIONS, "Making topo order q\n");
     queue_type LIST = createQueue(network->numNodes, network->numNodes);
     next = 0;
     for (i = 0; i < network->numNodes; i++)
@@ -520,9 +476,9 @@ void genericTopologicalOrder(int origin, network_type *network,
         }
     }
     if (next < network->numNodes) {
-        displayMessage(LOW_NOTIFICATIONS, "next: %d, network->numNodes: %d\n", 
-                           next, network->numNodes);
-        fatalError("Graph given to bushTopologicalOrder contains a cycle.");
+        displayMessage(LOW_NOTIFICATIONS, "origin: %d, next: %d, network->numNodes: %d\n", 
+                           origin+1, next, network->numNodes);
+        fatalError("#%d: Graph given to bushTopologicalOrder contains a cycle.", origin+1);
     }
     bushes->lastMerge[origin] = highestMerge;
 
@@ -909,7 +865,7 @@ void scanBushes(int origin, network_type *network, bushes_type *bushes,
 void updateBushB(int origin, network_type *network, bushes_type *bushes,
                  algorithmBParameters_type *parameters) {
     int ij, i, j, newArcs = 0;
-   
+  
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
     scanBushes(origin, network, bushes, parameters, parameters->updateBushScanType);
@@ -921,8 +877,6 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
          * exactly zero */
         if (bushes->flow[ij] < parameters->minLinkFlow) {
             if (isInBush(origin, ij, network, bushes) == TRUE)
-                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
-                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
             bushes->flow[ij] = 0;
         }
         if (bushes->flow[ij] > 0) continue; /* Link is already in the bush, no
@@ -949,20 +903,20 @@ void updateBushB(int origin, network_type *network, bushes_type *bushes,
     }
    
     /* If strict criterion fails, try a looser one */
-     if (newArcs == 0 && parameters->updateBushScanType == LONGEST_BUSH_PATH) {
-         for (ij = 0; ij < network->numArcs; ij++) {
-             i = network->arcs[ij].tail;
-             j = network->arcs[ij].head;
-             if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
-                 continue; /* No path to extend */
-             if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
-                 && (network->arcs[ij].tail == origin2node(network, origin)
-                     || network->arcs[ij].tail >= network->firstThroughNode))
-             {
-                 bushes->flow[ij] = NEW_LINK;
-             }
-         }
-     }
+    if (newArcs == 0 && parameters->updateBushScanType == LONGEST_BUSH_PATH) {
+        for (ij = 0; ij < network->numArcs; ij++) {
+            i = network->arcs[ij].tail;
+            j = network->arcs[ij].head;
+            if (bushes->LPcost[i]==-INFINITY && bushes->LPcost[j]>-INFINITY)
+                continue; /* No path to extend */
+            if (bushes->flow[ij] == 0 && bushes->LPcost[i] < bushes->LPcost[j]
+                && (network->arcs[ij].tail == origin2node(network, origin)
+                    || network->arcs[ij].tail >= network->firstThroughNode))
+            {
+                bushes->flow[ij] = NEW_LINK;
+            }
+        }
+    }      
 
    /* Finally update bush data structures: delete/add merges, find a new
     * topological order, rectify approach proportions */
@@ -1004,7 +958,7 @@ void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
         }
       
         if (numApproaches == 0)
-            fatalError("Cannot have non-origin node %d in bush %d without"
+            fatalError("Cannot have non-origin node %d in bush %d without "
                        "incoming contributing links", i, origin);
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
@@ -1130,7 +1084,6 @@ bool updateFlowsB(int origin, network_type *network, bushes_type *bushes,
     /* Update longest/shortest paths, check whether there is work to do */
     if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) {
         bushes->updateBush[origin] = FALSE;
-        displayMessage(DEBUG, "bailing out\n");
         return FALSE;
     }
 
@@ -1177,10 +1130,10 @@ bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
         bushExcess += bushes->flow[ij] * (network->arcs[ij].cost +
                         bushes->SPcost[i] - bushes->SPcost[j]);
     }
-    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
-                    bushExcess / bushSPTT);
-    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
-                    maxgap, parameters->thresholdGap, parameters->thresholdAEC);
+    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
+    //                bushExcess / bushSPTT);
+    //displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+    //                maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
     if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 
@@ -1323,7 +1276,7 @@ void rectifyMerge(int j, merge_type *merge, bushes_type *bushes) {
  * one class with another's OD matrix... it will keep the same proportions
  * but with new demand.
  */
-void rectifyBushFlows(int origin,network_type *network,bushes_type *bushes) {
+void rectifyBushFlows(int origin, network_type *network,bushes_type *bushes) {
     int i, j, ij, m, node;
     merge_type *merge;
 
@@ -1516,6 +1469,60 @@ void checkFlows(network_type *network, bushes_type *bushes) {
     deleteVector(flowCheck);
 }
 
+void printBush(int minVerbosity, int origin, network_type *network,
+               bushes_type *bushes) {
+    /* TODO: function still under development, only works for the
+     * current bush (in both serial and parallel versions) */
+    if (verbosity < minVerbosity) return;
+#if PARALLELISM
+    int a, i, ij, m, curnode;
+    merge_type *merge;
+    displayMessage(minVerbosity, "#%d: Printing bush information for bush %d\n",
+                    origin + 1, origin + 1);
+    displayMessage(minVerbosity, "#%d: %d %f %f %f [1]\n",
+                   origin + 1,
+                   origin + 1,
+                   bushes->nodeFlow_par[origin][origin],
+                   bushes->SPcost_par[origin][origin],
+                   bushes->LPcost_par[origin][origin]);
+    for (curnode = 1; curnode < network->numNodes; curnode++) {
+        i = bushes->bushOrder[origin][curnode];
+        displayMessage(minVerbosity, "#%d: Node %d %f %f %f [%d]\n", 
+                       origin + 1,
+                       i + 1,
+                       bushes->nodeFlow_par[origin][i],
+                       bushes->SPcost_par[origin][i],
+                       bushes->LPcost_par[origin][i],
+                       curnode + 1);
+        if (isMergeNode(origin, i, bushes) == TRUE) {
+            m = pred2merge(bushes->pred[origin][i]);
+            merge = bushes->merges[origin][m];
+            for (a = 0; a < merge->numApproaches; a++) {
+                ij = merge->approach[a];
+                displayMessage(minVerbosity, "#%d: (%d,%d) %f %f %c%c\n",
+                               origin + 1,
+                               network->arcs[ij].tail + 1,
+                               network->arcs[ij].head + 1,
+                               bushes->flow_par[origin][ij],
+                               network->arcs[ij].cost,
+                               a == merge->SPlink ? 'S' : ' ',
+                               a == merge->LPlink ? 'L' : ' ');
+            }
+        } else {
+            ij = bushes->pred[origin][i];
+            displayMessage(minVerbosity, "#%d: (%d,%d) %f %f\n",
+                           origin + 1,
+                           network->arcs[ij].tail + 1,
+                           network->arcs[ij].head + 1,
+                           bushes->flow_par[origin][ij],
+                           network->arcs[ij].cost);
+        }
+    }
+#else
+    warning(DEBUG, "Without parallelism, the origin argument in printBush "
+                   "is ignored.  Still need to implement bush logging.");
+#endif
+}
 
 /*
  * exactCostUpdate -- The most precise way to update the cost on a link after
@@ -1773,18 +1780,18 @@ void readBushes(network_type *network, bushes_type **bushes, char *filename) {
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters) {
     int check, r;
-    char filename[STRING_SIZE];
+    char filename[2*STRING_SIZE];
     FILE* matrixFile;
 
-    sprintf(filename, "%s%d.bin", parameters->matrixStem, network->curBatch);
+    snprintf(filename, 2*STRING_SIZE, "%s%d.bin", parameters->matrixStem,
+            network->curBatch);
     matrixFile = openFile(filename, "rb");
     my_fread(&check, sizeof(check), 1, matrixFile);
     if (check != network->curBatch) fatalError("Reading wrong binary matrix.");
-//    displayMessage(FULL_NOTIFICATIONS, "Reading binary matrix %d\n", check);
     for (r = 0; r < network->batchSize; r++) {
         my_fread(network->demand[r], sizeof(network->demand[r][0]),
                   network->numZones, matrixFile);
     }
-//    displayMessage(FULL_NOTIFICATIONS, "finished reading binary matrix %d\n", check);
     fclose(matrixFile);
 }
+

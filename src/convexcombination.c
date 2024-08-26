@@ -645,9 +645,13 @@ double allOrNothing(network_type *network, double **flows, int originZone,
         if (SPTree[curnode] != NULL) { /* Usual case, can push vehicles back */
             backnode = SPTree[curnode]->tail;
             backarc = ptr2arc(network, SPTree[curnode]);
+#ifdef PARALLELISM
             pthread_mutex_lock(&network->arc_muts[backarc]);
+#endif
             flows[backarc][class] += remainingVehicles[curnode];
+#ifdef PARALLELISM
             pthread_mutex_unlock(&network->arc_muts[backarc]);
+#endif
             remainingVehicles[backnode] += remainingVehicles[curnode];
         } else { /* No path found... only an issue if there is demand */
             if (remainingVehicles[curnode] > 0) {

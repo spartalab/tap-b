@@ -1,3 +1,4 @@
+#ifdef PARALLELISM
 #include "parallel_bush.h"
 
 /*
@@ -8,7 +9,6 @@
 */
 void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     algorithmBParameters_type *parameters, scan_type LPrule) {
-//    displayMessage(FULL_NOTIFICATIONS, "Top of scan %d\n", t_id);
     int h, i, hi, m, curnode, curarc;
     double tempcost;
     merge_type *merge;
@@ -38,7 +38,6 @@ void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
                     merge->SPlink = curarc;
                 }
             }
-
             /* Find longest (need to separate out depending on LPrule) */
             if (LPrule == NO_LONGEST_PATH) continue;
             for (curarc = 0; curarc < merge->numApproaches; curarc++) {
@@ -83,8 +82,8 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
 
     /* First update labels... ignoring longest unused paths since those will be
      * removed in the next step. */
-    scanBushes_par(origin, network, bushes, parameters, parameters->updateBushScanType);
     calculateBushFlows_par(origin, network, bushes);
+    scanBushes_par(origin, network, bushes, parameters, parameters->updateBushScanType);
 
     /* Make a first pass... */
     for (ij = 0; ij < network->numArcs; ij++) {
@@ -92,8 +91,6 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
          * exactly zero */
         if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) {
             if (isInBush(origin, ij, network, bushes) == TRUE)
-                displayMessage(FULL_DEBUG, "Attempting to delete (%d,%d)\n", 
-                           network->arcs[ij].tail+1, network->arcs[ij].head+1);
             bushes->flow_par[origin][ij] = 0;
         }
         if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
@@ -177,7 +174,7 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
         }
         if (numApproaches == 0)
             fatalError("Cannot have non-origin node %d in bush %d without"
-                       "incoming contributing links", i, origin);
+                       "incoming contributing links", i+1, origin+1);
         if (numApproaches == 1) { /* No merge */
             bushes->pred[origin][i] = lastApproach;
             if (bushes->flow_par[origin][lastApproach] == NEW_LINK) bushes->flow_par[origin][lastApproach] = 0;
@@ -240,7 +237,6 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
     /* Update longest/shortest paths, check whether there is work to do */
     if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) {
         bushes->updateBush[origin] = FALSE;
-        displayMessage(DEBUG, "bailing out\n");
         return FALSE;
     };
 
@@ -293,10 +289,10 @@ bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
         bushExcess += bushes->flow_par[origin][ij] * (network->arcs[ij].cost +
                                           bushes->SPcost_par[origin][i] - bushes->SPcost_par[origin][j]);
     }
-    displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
-                   bushExcess / bushSPTT);
-    displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
-                   maxgap, parameters->thresholdGap, parameters->thresholdAEC);
+    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
+    //               bushExcess / bushSPTT);
+    //displayMessage(DEBUG, "Max gap, threshold, threshold AEC: %f %f %f\n",
+    //               maxgap, parameters->thresholdGap, parameters->thresholdAEC);
     if (maxgap < parameters->thresholdGap) return FALSE;
     if (bushExcess / bushSPTT < parameters->thresholdAEC) return FALSE;
 
@@ -344,6 +340,7 @@ void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
 
 /*
  * calculateBushFlows_par -- a key feature of this implementation is that bush
+ *
  * flows are not persistently stored, but generated as needed.  This saves
  * memory at the expense of a little extra computation.  calculateBushFlows
  * does this by making a pass in descending topological order, loading flows
@@ -660,3 +657,23 @@ void classUpdate_par(int hi, int class, double shift,  network_type *network) {
     pthread_mutex_lock(&network->arc_muts[hi]);
 }
 
+void updateBushPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    updateBushB_par(id, network, bushes, parameters);
+}
+
+void updateFlowsPool(void* pVoid) {
+    struct thread_args *args = (struct thread_args *) pVoid;
+    int id = args->id;
+    bushes_type *bushes = args->bushes;
+    network_type *network = args->network;
+    algorithmBParameters_type *parameters = args->parameters;
+    args->update_flows_ret |= updateFlowsB_par(id, network, bushes, parameters);
+}
+#else
+int empty_var = 0;  /* Empty statement to avoid compiler warning */
+#endif

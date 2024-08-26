@@ -1,0 +1,17 @@
+<NUMBER OF ZONES> 38
+<TOTAL OD FLOW> 6000.00
+<DISTANCE FACTOR> 2.0
+<END OF METADATA>
+
+
+Origin 2
+    4 :    1000.00;
+
+Origin 4
+    2 :    1000.00;    5 :    1000.00;     7 :    1000.00;
+
+Origin 5
+    4 :    1000.00;
+
+Origin 7
+    4 :    1000.00;

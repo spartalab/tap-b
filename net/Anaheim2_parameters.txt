@@ -1,0 +1,16 @@
+~ Parameters can be in any order; they are split up like this for readbility
+~ Boolean parameters are false unless given here (in which case they take no argument)
+
+~ Mandatory parameters
+<NETWORK FILE> Anaheim2_net.tntp
+<TRIPS FILE> Anaheim2_trips1.tntp
+<TRIPS FILE> Anaheim2_trips2.tntp
+~ Trips files are in order of the class number
+
+~ Semi-mandatory; at least one of these must be provided or the code won't stop
+<NUMBER OF BATCHES> 2
+<CONVERGENCE GAP> 1e-6
+~<MAX ITERATIONS> 1
+<MAX RUN TIME> 60
+
+~<NUMBER OF THREADS> 1

@@ -125,13 +125,13 @@ typedef struct bushes_type {
    int      *lastMerge; /* [origin] */
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
+#if PARALLELISM
    double   **LPcost_par; /* [thread][node] */
    double   **SPcost_par; /* [thread][node] */
    double   **flow_par; /* [thread][node] */
    double   **nodeFlow_par; /* [thread][node] */
    double   **nodeFlowshift_par; /* [origin][shift] */
-
-
+#endif
    network_type *network; /* Points back to the corresponding network */
 } bushes_type;
 
@@ -186,6 +186,7 @@ typedef struct bushes_type {
  *                       label correcting shortest path is run (e.g., during
  *                       initialization).  See datastructures.h for options;
  *                       default value is DEQUE.
+ *  updateBushScanType -- Scanning algorithm used when updating bush labels.
  *  createInitialBush -- Function pointer for how bushes are initially set up.
  *                       Default value is initialBushShortestPath (setting bush
  *                       to the one-to-all shortest path tree at free flow.
@@ -219,7 +220,8 @@ typedef struct bushes_type {
  *                    this setting, the code does not (yet) check that the
  *                    origins actually do coincide, and strange behavior will
  *                    result if they do not.  
- *
+ *  calculateBeckmann -- do we need to compute the Beckmann function?
+ *  calculateEntropy -- do we need to compute entropy?
  *
  *  includeGapTime -- include gap calculation time in run times?  Default TRUE
  *
@@ -249,6 +251,7 @@ typedef struct algorithmBParameters_type{
    int      numFlowShifts; /* Counter to measure algorithm performance */
    bool     warmStart;
    bool     calculateBeckmann;
+   bool     calculateEntropy;
    queueDiscipline SPQueueDiscipline;
    scan_type updateBushScanType;
    void     (*createInitialBush)(int, network_type *, bushes_type *,
@@ -264,8 +267,8 @@ typedef struct algorithmBParameters_type{
    bool     storeBushes;
    bool     reuseFirstBush;
    bool     includeGapTime;
-   char     batchStem[STRING_SIZE-20]; /* Leave space for index */
-   char     matrixStem[STRING_SIZE-20];
+   char     batchStem[STRING_SIZE];
+   char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
@@ -352,6 +355,8 @@ void exactCostUpdate(int ij, double shift, network_type *network);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);
+void printBush(int minVerbosity, int origin, network_type *network,
+               bushes_type *bushes);
 
 /**** Merges and merge-doubly linked lists ****/
 

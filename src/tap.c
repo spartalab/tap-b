@@ -24,7 +24,7 @@ int arcNumber(network_type *network, arc_type *arc) {
 
 /*
 BeckmannFunction calculates the Beckmann function for a network given its
-current class-flows.  Specialized for NCTCOG.
+current class-flows.  
 */
 double BeckmannFunction(network_type *network) {
     double Beckmann = 0;
@@ -304,7 +304,7 @@ double TSTT(network_type *network) {
 
 /*
 classCost calculates cost, but ONLY for one specified class.  Note that the
-given time/toll/distanceFactords do NOT need to be the same as that for the
+given time/toll/distanceFactors do NOT need to be the same as that for the
 class.  This gives flexibility in calculating total toll paid, total travel
 time, total travel cost, etc.
 */
@@ -532,13 +532,17 @@ void makeStronglyConnectedNetwork(network_type *network) {
         }
     }
     deleteVector(network->arcs);
+#ifdef PARALLELISM
     for(i = 0; i < network->numArcs; i++) {
         pthread_mutex_destroy(&network->arc_muts[i]);
     }
     deleteVector(network->arc_muts);
+#endif
     network->numArcs += newArcs;
     network->arcs = newArcVector;
+#ifdef PARALLELISM
     network->arc_muts = newVector(network->numArcs, pthread_mutex_t);
+#endif
    /* Regenerate forward/reverse star lists */
     for (j = 0; j < network->numNodes; j++) {
         clearArcList(&(network->nodes[j].forwardStar));
