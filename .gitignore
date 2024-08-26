@@ -18,4 +18,5 @@ todo-nosync.txt
 *.swp
 *.bin
 valgrind.txt
-
+scratch/
+net/

@@ -126,10 +126,10 @@ typedef struct bushes_type {
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
 #if PARALLELISM
-   double   **LPcost_par; /* [thread][node] */
-   double   **SPcost_par; /* [thread][node] */
-   double   **flow_par; /* [thread][node] */
-   double   **nodeFlow_par; /* [thread][node] */
+   double   **LPcost_par; /* [origin][node] */
+   double   **SPcost_par; /* [origin][node] */
+   double   **flow_par; /* [origin][node] */
+   double   **nodeFlow_par; /* [origin][node] */
    double   **nodeFlowshift_par; /* [origin][shift] */
 #endif
    network_type *network; /* Points back to the corresponding network */
@@ -176,6 +176,9 @@ typedef struct bushes_type {
  *  minLinkFlow -- Parameter to guard against numerical errors in link flows;
  *                 any link flow smaller than this value is assumed to be zero.
  *                 Default value is 1e-14.
+ *  minReducedCost -- Parameter to guard against numerical errors when working
+ *                    with shortest paths; any reduced cost smaller than this
+ *                    value is assumed to be zero.  Default value is 1e-8.
  *  minDerivative -- Parameter to avoid dividing by zero in Newton's Method.
  *                   A zero denominator is replaced by minDerivative.
  *                   Default value is 1e-6.
@@ -245,6 +248,7 @@ typedef struct algorithmBParameters_type{
    double   minCostDifference;
    double   minLinkFlowShift;
    double   minLinkFlow;
+   double   minReducedCost;
    double   minDerivative;
    double   newtonStep;
    int      numNewtonShifts;
@@ -267,6 +271,11 @@ typedef struct algorithmBParameters_type{
    bool     storeBushes;
    bool     reuseFirstBush;
    bool     includeGapTime;
+   bool     calculateBins;
+   int      numBins;
+   int      smallestBin;
+   int      *includedBin;
+   int      *excludedBin;
    char     batchStem[STRING_SIZE];
    char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];

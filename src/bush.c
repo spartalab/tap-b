@@ -31,8 +31,13 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     bushes_type *bushes = createBushes(network);
     struct timespec tick, tock;
     char beckmannString[STRING_SIZE];
+    if (parameters->calculateBins == TRUE) {
+        parameters->includedBin = newVector(parameters->numBins, int);
+        parameters->excludedBin = newVector(parameters->numBins, int);
+    }
 
-    double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY, entropy = -INFINITY, batchEntropy = -INFINITY;
+    double elapsedTime = 0, gap = INFINITY, batchGap = INFINITY;
+    double entropy = 0, batchEntropy;
 
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
@@ -67,11 +72,12 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             displayMessage(DEBUG, "Calculating batch gap...\n");
 
             batchGap = bushRelativeGap(network, bushes, parameters);
-            batchEntropy = bushEntropy(network, bushes, parameters);
             displayMessage(DEBUG, "Calculated batch gap...\n");
             gap += batchGap;
-            entropy += batchEntropy;
-            if (parameters->includeGapTime == FALSE) stopTime = clock(); 
+            if (parameters->calculateEntropy == TRUE) {
+                batchEntropy = bushEntropy(network, bushes, parameters);
+                entropy += batchEntropy;
+            }
             if (parameters->calculateBeckmann == TRUE) {
                 sprintf(beckmannString, "obj %.15g, ",
                         BeckmannFunction(network));
@@ -81,7 +87,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
 
             if (network->numBatches > 1) {
                 displayMessage(LOW_NOTIFICATIONS, "*Batch %ld: batchgap %.15f,"
-                       "%stime %.3f s.\n", batch, batchGap,
+                       " %stime %.3f s.\n", batch, batchGap,
                            beckmannString, elapsedTime);  
             }
                     
@@ -100,13 +106,17 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
         parameters->thresholdAEC = 0.25 * gap; /* Tuneable parameter */
 
     } 
-    displayMessage(FULL_NOTIFICATIONS, "Final entropy: %.15f\n", entropy);
+    if (parameters->calculateEntropy == TRUE) {
+        displayMessage(FULL_NOTIFICATIONS, "Final entropy: %.15f\n", entropy);
+    }
 
     for (int i = 0; i < network->numZones; i++) {
         printBush(DEBUG, i, network, bushes);
     }
     /* Clean up */
     deleteBushes(network, bushes);
+    deleteVector(parameters->includedBin);
+    deleteVector(parameters->excludedBin);
 #if PARALLELISM
     thpool_destroy(thpool);
 #endif
@@ -135,6 +145,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.minLinkFlowShift = 0;
 
     parameters.minLinkFlow = 1e-14;
+    parameters.minReducedCost = 1e-8;
     parameters.minDerivative = 1e-6;
     parameters.newtonStep = 1;
     parameters.numNewtonShifts = 1;
@@ -158,6 +169,12 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.includeGapTime = TRUE;
 
     parameters.updateBushScanType = LONGEST_USED_OR_SP;
+    parameters.calculateBins = TRUE;
+    parameters.numBins = 70;
+    parameters.smallestBin = -60;
+    parameters.includedBin = NULL;
+    parameters.excludedBin = NULL;
+
     parameters.createInitialBush = &initialBushShortestPath;
     parameters.topologicalOrder = &genericTopologicalOrder;
     parameters.linkShiftB = &exactCostUpdate;
@@ -568,11 +585,21 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
 
 /* 
  * bushSPTT -- specialized SPTT finding using bush structures as a warm start
+ *
+ * This function is also where reduced-cost bins are updated, because we
+ * already have exact shortest path labels.
  */
 double bushSPTT(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters) {
-    int r, j, c, lastClass = IS_MISSING, originNode;
+    int b, r, ij, i, j, c, lastClass = IS_MISSING, originNode;
+    double frac, rc, acceptanceGap = 0, rejectionGap = INFINITY, consistency;
     double sptt = 0;
+    if (parameters->calculateBins == TRUE) {
+        for (b = 0; b < parameters->numBins; b++) {
+            parameters->includedBin[b] = 0;
+            parameters->excludedBin[b] = 0;
+        }
+    }
     for (r = 0; r < network->batchSize; r++) {
         if (outOfOrigins(network, r) == TRUE) break;
         originNode = origin2node(network, r);
@@ -586,9 +613,77 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         for (j = 0; j < network->numZones; j++) {
             sptt += network->demand[r][j] * bushes->SPcost[j];
         }
+        if (parameters->calculateBins == TRUE) {
+#ifdef PARALLELISM
+            /* Ensures bushes->flows has the right values */
+            memcpy(bushes->flow, bushes->flow_par[r],
+                   network->numArcs * sizeof(bushes->flow_par[0][0]));
+#endif
+            for (ij = 0; ij < network->numArcs; ij++) {
+                i = network->arcs[ij].tail;
+                j = network->arcs[ij].head;
+                rc = network->arcs[ij].cost + bushes->SPcost[i] 
+                    - bushes->SPcost[j];
+                if (isInBush(r, ij, network, bushes) == TRUE
+                        && bushes->flow[ij] > 0) {
+                    acceptanceGap = max(rc, acceptanceGap);
+                    /*if (rc > 15) {
+                        displayMessage(FULL_DEBUG, "High accept gap in bush %d\n", r);
+                        displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
+                               i+1, j+1, rc,
+                               bushes->SPcost[i], network->arcs[ij].cost,
+                               bushes->SPcost[j]); 
+                    }*/
+                } else if (rc > parameters->minReducedCost) {
+                    rejectionGap = min(rc, rejectionGap);
+                }
+                /* displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
+                               i+1, j+1, rc,
+                               bushes->SPcost[i], network->arcs[ij].cost,
+                               bushes->SPcost[j]); */
+
+                if (rc == 0) { /* Map zero reduced costs to smallest bin */
+                    if (isInBush(r, ij, network, bushes) == TRUE) {
+                        parameters->includedBin[0]++;
+                    } else {
+                        parameters->excludedBin[0]++;
+                    }
+                } else {
+                    frac = frexp(rc, &b); /* Grab raw exponent in b */
+                    //displayMessage(FULL_DEBUG, "frac %f exp %d\n", frac, b);
+                    /* Now convert to bin index */
+                    b -= parameters->smallestBin;
+                    //displayMessage(FULL_DEBUG, "bin offset %d\n", b);
+                    b = max(min(b, parameters->numBins - 1), 0);
+                    //displayMessage(FULL_DEBUG, "trimed bin %d\n", b);
+                    if (isInBush(r, ij, network, bushes) == TRUE
+                        && bushes->flow[ij] > 0) {
+                        parameters->includedBin[b]++;
+                    } else {
+                        parameters->excludedBin[b]++;
+                    }
+                }
+            }
+        }
         lastClass = c;
     }
+    if (parameters->calculateBins == TRUE) {
+        displayMessage(DEBUG, "In,");
+        for (b = 0; b < parameters->numBins; b++) {
+            displayMessage(DEBUG, "%d,", parameters->includedBin[b]);
+        }
+        displayMessage(DEBUG, "Out,");
+        for (b = 0; b < parameters->numBins; b++) {
+            displayMessage(DEBUG, "%d,", parameters->excludedBin[b]);
+        }
+        consistency = rejectionGap / acceptanceGap;
+        displayMessage(DEBUG, "%e,%e,%e\n",
+                       acceptanceGap, rejectionGap, consistency);
+    }
     return sptt;
+    /* Suppress compiler warning... frac is never used but it must be
+     * set when calling frexp */
+    displayMessage(FULL_DEBUG, "%f", frac); 
 }
 
 double bushTSTT(network_type *network, bushes_type *bushes) {
@@ -745,7 +840,6 @@ void deleteBushes(network_type *network, bushes_type *bushes) {
     deleteMatrix(bushes->flow_par, network->batchSize);
     deleteMatrix(bushes->nodeFlow_par, network->batchSize);
 #endif
-
     deleteScalar(bushes);
 }
 
