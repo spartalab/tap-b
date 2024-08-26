@@ -1,5 +1,6 @@
 <NETWORK FILE> Anaheim_net.txt
 <TRIPS FILE> Anaheim_trips.txt
+<PATH FLOWS FILE> Anaheim_pathflows.txt
 
 ~ Trips files are in order of the class number
 

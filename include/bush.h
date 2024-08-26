@@ -279,6 +279,7 @@ typedef struct algorithmBParameters_type{
    char     batchStem[STRING_SIZE];
    char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];
+   char     pathFlowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
 /* Master routine and parameters */
@@ -398,4 +399,7 @@ void writeBushes(network_type *network, bushes_type *bushes, char *filename);
 void readBushes(network_type *network, bushes_type **bushes, char *filename);
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters);
+void writePathFlows(network_type *network,
+                    bushes_type *bushes,
+                    algorithmBParameters_type *parameters);
 #endif

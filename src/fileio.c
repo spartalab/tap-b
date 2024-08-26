@@ -10,17 +10,17 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
      * network data from the indicated files, and return the pointer
      * to the network data structure created in this way. */
 	int status;
-    int c;
+	int c;
 	char fullLine[STRING_SIZE * 2]; // Double-length to allow concatenation
-    char filePath[STRING_SIZE], dataPath[STRING_SIZE];
-    char networkFileName[STRING_SIZE];
-    stringList_type *tripsFile = NULL, *newTripsFile = NULL;
+	char filePath[STRING_SIZE], dataPath[STRING_SIZE];
+	char networkFileName[STRING_SIZE];
+	stringList_type *tripsFile = NULL, *newTripsFile = NULL;
 	char metadataTag[STRING_SIZE], metadataValue[STRING_SIZE];
 	FILE *parametersFile = openFile(filename, "r");
-    int numBatches = 1;
-    network_type *network = newScalar(network_type);
+	int numBatches = 1;
+	network_type *network = newScalar(network_type);
 #ifdef PARALLELISM
-    thisRun->numThreads = getNumCores();
+	thisRun->numThreads = getNumCores();
 #endif
 
 	/* Initialize (set mandatory values to missing, mandatory strings to length
@@ -58,6 +58,8 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
             strcpy(filePath, metadataValue);
 		} else if (strcmp(metadataTag, "FLOWS FILE") == 0) {
             strcpy(thisRun->flowsFile, metadataValue);
+		} else if (strcmp(metadataTag, "PATH FLOWS FILE") == 0) {
+            strcpy(thisRun->pathFlowsFile, metadataValue);
 		} else if (strcmp(metadataTag, "GAP FUNCTION") == 0) {
 			if    (strcmp(metadataValue, "RELATIVE GAP") == 0)
 				thisRun->gapFunction = RELATIVE_GAP_1;
@@ -179,8 +181,10 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
         fatalError("Negative demand multiplier.");
     if (numBatches < 1)
         fatalError("Must use at least one batch.");
+#ifdef PARALELISM
     if (thisRun->numThreads < 1)
         fatalError("Must use at least one thread.");
+#endif
     if (thisRun->innerIterations < 0)
         warning(LOW_NOTIFICATIONS, "Negative number of inner iterations.");
     if (thisRun->shiftReps < 0)
@@ -452,7 +456,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             if (status == BLANK_LINE || status == COMMENT) continue;
             if         (strcmp(metadataTag, "NUMBER OF ZONES") == 0) {
                 check = atoi(metadataValue);
-                if (check != network->numZones) fatalError("Number of zones in"
+                if (check != network->numZones) fatalError("Number of zones in "
                         "trip and link files do not match.");
             } else if (strcmp(metadataTag, "TOTAL OD FLOW") == 0) {
                 statedDemand = atof(metadataValue);
@@ -480,7 +484,7 @@ void readOBANetwork(network_type *network, char *linkFileName,
             if (strstr(trimmedLine, "Origin") != NULL) {
                 // i indexes current origin
                 sscanf(strstr(trimmedLine, "Origin")+6,"%d", &i);  
-                if (i <= 0 || i > network->numZones) fatalError("Origin %d is"
+                if (i <= 0 || i > network->numZones) fatalError("Origin %d is "
                         "out of range in trips file %s", i, tripFileName[c]);
                 i--;
                 r = nodeclass2origin(network, i, c);
