@@ -76,6 +76,7 @@ void waitForKey();
 void SWAP(void *a, void *b, int size);
 FILE *openFile(const char *filename, const char *access);
 void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+char *mystrncpy(char *dest, const char *src, size_t n);
 double updateElapsedTime(clock_t startTime, double *elapsedTime);
 
 /*********************

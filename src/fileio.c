@@ -84,13 +84,11 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
 		} else if (strcmp(metadataTag, "NUMBER OF BATCHES") == 0) {
             numBatches = atoi(metadataValue);
 		} else if (strcmp(metadataTag, "BATCH STEM") == 0) {
-            strncpy(thisRun->batchStem, metadataValue,
+            mystrncpy(thisRun->batchStem, metadataValue,
                     sizeof(thisRun->batchStem) - 1);
-            thisRun->batchStem[sizeof(thisRun->batchStem) - 1] = '\0';
 		} else if (strcmp(metadataTag, "MATRIX STEM") == 0) {
-            strncpy(thisRun->matrixStem, metadataValue, 
+            mystrncpy(thisRun->matrixStem, metadataValue, 
                     sizeof(thisRun->matrixStem) - 1);
-            thisRun->matrixStem[sizeof(thisRun->matrixStem) - 1] = '\0';
 		} else if (strcmp(metadataTag, "WARM START") == 0) {
             thisRun->warmStart = TRUE;
 		} else if (strcmp(metadataTag, "NUMBER OF THREADS") == 0) {
@@ -193,16 +191,13 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
     /* Concatenate paths, read network */
     int saveDigits = ceil(log10(network->numClasses)) + 4; // #classes + ".bin"
     snprintf(fullLine, 2*STRING_SIZE, "%s%s", filePath, networkFileName);
-    strncpy(networkFileName, fullLine, STRING_SIZE - 1);
-    networkFileName[STRING_SIZE - 1] = '\0';
+    mystrncpy(networkFileName, fullLine, STRING_SIZE - 1);
     snprintf(fullLine, 2*STRING_SIZE - saveDigits, "%s%s",
             dataPath, thisRun->batchStem);
-    strncpy(thisRun->batchStem, fullLine, STRING_SIZE - 1);
-    thisRun->batchStem[STRING_SIZE - 1] = '\0';
+    mystrncpy(thisRun->batchStem, fullLine, STRING_SIZE - 1);
     snprintf(fullLine, 2*STRING_SIZE - saveDigits, "%s%s",
             dataPath, thisRun->matrixStem);
-    strncpy(thisRun->matrixStem, fullLine, STRING_SIZE - 1);
-    thisRun->matrixStem[STRING_SIZE - 1] = '\0';
+    mystrncpy(thisRun->matrixStem, fullLine, STRING_SIZE - 1);
     char **tripsFiles = (char **)malloc(network->numClasses * sizeof(char *));
     if (tripsFiles == NULL) fatalError("Can't set up trip file array.\n");
     for (c = network->numClasses - 1; c >= 0; c--) {
@@ -787,7 +782,7 @@ void parseCSV(char field[][STRING_SIZE], char *fullLine, int numFields) {
         comma = strchr(position, ',');
     }
     /* Copy last field */
-    strncpy(field[curField], position, STRING_SIZE);
+    mystrncpy(field[curField], position, STRING_SIZE - 1);
 }
 
 #ifdef PARALLELISM

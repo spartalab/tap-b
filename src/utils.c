@@ -34,6 +34,16 @@ void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 /*
+Wrapper for strncpy that ensures null termination (if need be, overwriting
+last character
+*/
+char *mystrncpy(char *dest, const char *src, size_t n) {
+    char *ret = strncpy(dest, src, n);
+    if (n > 0) dest[n] = '\0';
+    return ret;
+}
+
+/*
 updateElapsedTime helps with timing, adding an increment to elapsedTime.  Note
 that this function does not reset startTime (in order to allow for calculations
 to be selectively excluded from timing, e.g. when generating logs or debug
