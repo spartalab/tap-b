@@ -22,6 +22,7 @@ CC = gcc
 CFLAGS = -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
 CFLAGS += -Wpedantic -Warray-bounds
+CFLAGS += -fcommon # gcc 10 now defaults to -fno-common; stopgap until code is rewritten
 CFLAGS += -DPARALLELISM=1 # Parallel is now default; use make serial if unwanted
 DEBUGFLAGS = -g -O0
 RELEASEFLAGS = -O3
