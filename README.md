@@ -13,6 +13,7 @@ These instructions will get you a copy of the project up and running on your loc
 The main option is to compile the code either for parallelization (default) or serial implementation.
 Primary implementation and testing has been done in a Linux ecosystem.
 Windows and Mac testing is ongoing; if you encounter difficulties in compiling, try to make the serial build.
+If you want to use the parallel version in Windows, the easiest method is to use WSL (the Windows Subsystem for Linux).
 
 ## Configurations
 
