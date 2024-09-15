@@ -69,6 +69,7 @@ The key points are as follows:
 - If you are working on a new feature, **always** branch off of `develop` (**not** `master`).  The `develop` branch is used for features under development, experiments, or other changes.  Each branch should have a `branch.txt` file in the root directory briefly stating the purpose of the branch.
 - The only branches off of `master` will be to fix significant bugs as a `hotfix`.
 - When a new feature is complete, merge it back into `develop` (**not** `master`).  
+
 This transition is currently in progress, identifying active branches which need to be merged, and other branches still with potential for development.
 When complete, the `master` branch will point to the v1.0 release, and other incomplete branches will be migrated to `develop`.
 Some inactive branches will not be moved to `develop` if I do not believe they have potential to enter the main code base in the future (e.g., bespoke changes for past projects).
