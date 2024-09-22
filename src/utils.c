@@ -1,5 +1,12 @@
 #include "utils.h"
 
+#ifdef DEBUG_MODE
+char debugFileName[STRING_SIZE];
+FILE *debugFile;
+#endif
+
+int verbosity;
+
 /*
 waitForKey pauses while the user presses a key.
 */

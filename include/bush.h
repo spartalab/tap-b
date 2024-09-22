@@ -40,7 +40,6 @@
 #include "utils.h"
 
 #define NEW_LINK -1
-//#define PARALLELISM 1
 typedef enum scan_type {
     LONGEST_BUSH_PATH,
     LONGEST_USED_PATH,

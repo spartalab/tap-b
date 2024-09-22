@@ -22,13 +22,6 @@
 #define PAUSE_ON_ERROR FALSE
 #define PAUSE_ON_WARNING FALSE
 
-#ifdef DEBUG_MODE
-char debugFileName[STRING_SIZE];
-FILE *debugFile;
-#endif
-
-int screenVerbosity, logVerbosity;
-
 enum { // Return codes for metadata parsing
     SUCCESS,
     BLANK_LINE,

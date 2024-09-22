@@ -21,8 +21,8 @@
 #include "utils.h"
 #include "bush.h"
 #include "thpool.h"
-threadpool thpool;
-pthread_mutex_t shift_lock;
+extern threadpool thpool;
+extern pthread_mutex_t shift_lock;
 
 //Struct for thread arguments
 struct thread_args {

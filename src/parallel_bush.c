@@ -1,6 +1,9 @@
 #ifdef PARALLELISM
 #include "parallel_bush.h"
 
+threadpool thpool;
+pthread_mutex_t shift_lock;
+
 /*
  * scanBushes_par -- simultaneously find shortest and longest paths for a given
  * bush by a thread.  If the longestUsed argument is TRUE, the longest path search will

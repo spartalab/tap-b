@@ -49,8 +49,8 @@ typedef enum {
 #endif
 
 #ifdef DEBUG_MODE
-    char debugFileName[STRING_SIZE];
-    FILE *debugFile;
+extern char debugFileName[STRING_SIZE];
+extern FILE *debugFile;
 #endif
 
 
@@ -65,7 +65,7 @@ enum { /* Verbosity levels for status messages */
 
 
 /* Global variable for changing how much to report */
-int verbosity;
+extern int verbosity;
 
 
 #ifdef MEMCHECK

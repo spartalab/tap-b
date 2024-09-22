@@ -37,7 +37,7 @@ void allOrNothingPool(void* pVoid) {
     args->sptt = allOrNothing(network, targetFlows, r, c, parameters);
 //    args->sptt = allOrNothing_par(network, targetFlows, r, c, parameters);
 }
-threadpool thpool;
+extern threadpool thpool;
 #endif
 /* Initializes convex combination algorithm parameters.  Argument is a
  * CCalgorithm_type enum that sets default search direction and line search
