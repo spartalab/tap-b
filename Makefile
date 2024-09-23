@@ -23,8 +23,9 @@ CFLAGS = -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
 CFLAGS += -Wpedantic -Warray-bounds
 CFLAGS += -DPARALLELISM=1 # Parallel is now default; use make serial if unwanted
+CFLAGS += -O2 # After testing, O2 is fastest; now make this default.
 DEBUGFLAGS = -g -O0
-RELEASEFLAGS = -O3
+RELEASEFLAGS = # Currently no extra flags for release option
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
 LINKER = gcc
 LFLAGS = -Wall -pthread -lm $(INCLUDEFLAG)
@@ -35,6 +36,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 # ------- all target: build the main project ------
 
 .PHONY: all
+all: CFLAGS += $(DEFAULTFLAGS)
 all: $(BINDIR)/$(PROJECT)
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
