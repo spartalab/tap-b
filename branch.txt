@@ -1,1 +1,3 @@
-This branch has code to write *path flows* corresponding to a bush-based solution.  No attempt is made to maximize entropy, just divide flow proportionally along bush paths.
+This is the develop branch of tap-b.
+
+Any new features should branch off of this one.
