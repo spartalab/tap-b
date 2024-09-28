@@ -22,8 +22,10 @@ CC = gcc
 CFLAGS = -pthread -Wall $(INCLUDEFLAG) $(DEPFLAGS)
 CFLAGS += -Wextra -Wwrite-strings -Wno-parentheses -Winline
 CFLAGS += -Wpedantic -Warray-bounds
+CFLAGS += -DPARALLELISM=1 # Parallel is now default; use make serial if unwanted
+CFLAGS += -O2 # After testing, O2 is fastest; now make this default.
 DEBUGFLAGS = -g -O0
-RELEASEFLAGS = -O3
+RELEASEFLAGS = # Currently no extra flags for release option
 PROFILEFLAGS = -pg $(DEBUGFLAGS)
 LINKER = gcc
 LFLAGS = -Wall -pthread -lm $(INCLUDEFLAG)
@@ -34,30 +36,21 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 # ------- all target: build the main project ------
 
 .PHONY: all
+all: CFLAGS += $(DEFAULTFLAGS)
 all: $(BINDIR)/$(PROJECT)
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
 	$(LINKER) $^ $(LFLAGS) -o $@
 
-# ------- parallel target: build the main project ------
-.PHONY: parallel
-parallel: CFLAGS += $(RELEASEFLAGS) -DPARALLELISM=1
-parallel: $(BINDIR)/$(PROJECT)
+# ------- serial target: build the main project ------
+.PHONY: serial
+serial: CFLAGS += -UPARALLELISM 
+serial: $(BINDIR)/$(PROJECT)
 
-# ------- parallel debug: build the main project ------
-.PHONY: parallel-d
-parallel-d: CFLAGS += -DPARALLELISM=1 -g
-parallel-d: $(BINDIR)/$(PROJECT)
-
-# ------- nctcog: build the main project ------
-.PHONY: nctcog
-nctcog: CFLAGS += $(RELEASEFLAGS) -DNCTCOG_ENABLED=1
-nctcog: $(BINDIR)/$(PROJECT)
-
-# ------- nctcog-par: build the main project ------
-.PHONY: nctcog-par
-nctcog-par: CFLAGS += $(RELEASEFLAGS) -DPARALLELISM=1 -DNCTCOG_ENABLED=1 
-nctcog-par: $(BINDIR)/$(PROJECT)
+# ------- serial debug: build the main project ------
+.PHONY: serial-d
+serial-d: CFLAGS += -UPARALLELISM -g
+serial-d: $(BINDIR)/$(PROJECT)
 
 # ---------- release target: extra optimization ----
 

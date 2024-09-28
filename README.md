@@ -1,18 +1,25 @@
 # TAP-B
 
-Fast, efficient C implementation of Algorithm-B for the traffic assignment problem (Robert Dial). Implementation by Dr. Steve Boyles. Parallelization done by Rishabh Thakkar and Karthik Velayutham. This project is part of UT Austin's SPARTA lab. 
-
-As of 12/26/19, this iteration now includes "batching" for very large OD-matrices.
-
-This code has been updated as of 4/25/20 with various patches and bug fixes.
+Fast, efficient C implementation of algorithms for the traffic assignment problem.
+Default solution method is Algorithm B, developed by Robert Dial.
+Link-based solution methods (MSA, Frank-Wolfe, conjugate and biconjugate Frank-Wolfe) are also provided.
+Main implementations are by Steve Boyles.
+Parallelization capabilities were added by Rishabh Thakkar and Karthik Velayutham.
+This project is part of UT Austin's SPARTA (Simulation, Pricing, Adaptive Routing, and Traffic Assignment) lab.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. There are two main options: normal and parallel.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+The main option is to compile the code either for parallelization (default) or serial implementation.
+Primary implementation and testing has been done in a Linux ecosystem.
+Windows and Mac testing is ongoing; if you encounter difficulties in compiling, try to make the serial build.
+If you want to use the parallel version in Windows, the easiest method is to use WSL (the Windows Subsystem for Linux).
 
 ## Configurations
 
-Specific configurations such as convergence gap and maximum number of iterations are things that must be modified in "main.c". 
+Input parameters are specified through a text user interface (TUI).
+See `net/SiouxFalls_parameters.txt` for a simple example of such a file; at a minimum it must specify the network and trip table files, and at least one convergence criterion (small gap, max time, or max iterations).
+To see all possible parameter settings, see `net/params_example.txt`
 
 ### Installation/Usage
 
@@ -22,80 +29,49 @@ First make sure to clone the repo as such:
 git clone https://github.com/spartalab/tap-b.git
 ```
 
-Then make sure to switch over to the "parallel-pool" branch.
-
 To build an executable of TAP-B, simply run the following:
 
 ```
 make
 ```
 
-To build an executable of TAP-B that is parallelized run the following:
+This creates a "standard" build with parallelization, and without compiler optimization.
+If you have difficulties with the parallel version, run
 
 ```
-make parallel
+make serial
 ```
 
-To run the normal executable run the following:
+to turn off parallelization options.
+
+If you want additional performance, run
 
 ```
-./bin/tap  net/<network>_net.txt  net/<network>_trips.txt
+make release
 ```
 
-To run the parallelized binary run the following:
+to turn on additional compiler optimizations.
+
+If you want to perform additional development, run
 
 ```
-./bin/tap  net/<network>_net.txt  net/<network>_trips.txt  <num_of_threads>
+make debug
 ```
 
-NOTE: if you do not state the number of threads, you will be assigned to a default number of threads based on the number of cores on your machine. If you don't like that, make sure to input the number of threads so that you machine does not get overworked!
+which turns off optimization but adds debugging symbols.
 
+## Contributing to TAP-B
 
+As of Fall 2024, the repository is being cleaned up and transitioned to a more organized structure, using the Gitflow branching model.
+See [here for more](https://nvie.com/posts/a-successful-git-branching-model/) on Gitflow.
+The key points are as follows:
+- The `master` branch will always point to a stable release, each of which will have an associated version number as tag, and a set of release notes.
+- If you are working on a new feature, **always** branch off of `develop` (**not** `master`).  The `develop` branch is used for features under development, experiments, or other changes.  Each branch should have a `branch.txt` file in the root directory briefly stating the purpose of the branch.
+- The only branches off of `master` will be to fix significant bugs as a `hotfix`.
+- When a new feature is complete, merge it back into `develop` (**not** `master`).
 
-### NCTCOG Specific Usage
+This transition is currently in progress, identifying active branches which need to be merged, and other branches still with potential for development.
+When complete, the `master` branch will point to the v1.0 release, and other incomplete branches will be migrated to `develop`.
+Some inactive branches will not be moved to `develop` if I do not believe they have potential to enter the main code base in the future (e.g., bespoke changes for past projects).
 
-To make the NCTCOG Specific Executable use for the serial and parallel versions respectively: 
-```
-make nctcog
-```
-```
-make nctcog-par
-```
-NCTCOG's network file format can be interpreted as given with all of the details about the conic delay function.
-
-NCTCOG's trip file argument can be a path to a csv file with trip details in the following format:
-`<origin_node>,<destination_node>,<class1_demand>,<class2_demand>,...<class10_demand>`
-
-NCTCOG's trip file argument can also be `STREAM` which implies that the OD matrix will be piped in as binary values
-in the same order of information as described above in the CSV format.
-
-If the trip file argument is an empty string (`""`) then the OD matrix will be read from the 
-stored binary matrices.
-
-To run the normal executable run the following:
-
-```
-./bin/tap  <path_to_NCTCOG_net>  <path_to_NCTCOG_trips|STREAM|"">
-```
-
-To run the parallelized binary run the following:
-
-```
-./bin/tap  <path_to_NCTCOG_net>  <path_to_NCTCOG_trips|STREAM|"">  <num_of_threads>
-```
-
-NOTE: if you do not state the number of threads, you will be assigned to a default number of threads based on the number of cores on your machine. If you don't like that, make sure to input the number of threads so that you machine does not get overworked!
-
-## Authors
-
-* **Steve Boyles** - *Primary implementation* 
-* **Rishabh Thakkar** - *Parallelized implementation* 
-* **Karthik Velayutham** - *Parallelized implementation* 
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Keshav Pingali's CS377P: Programming for Performance class with lectures and study about parallel programming
+If you have any questions, please contact sboyles@austin.utexas.edu.

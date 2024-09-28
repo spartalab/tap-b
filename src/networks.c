@@ -512,7 +512,9 @@ void finalizeNetwork(network_type *network) {
         initializeArcList(&(network->nodes[i].reverseStar));
     }
     for (i = 0; i < network->numArcs; i++) {
+#ifdef PARALLELISM
         pthread_mutex_init(&network->arc_muts[i], NULL);
+#endif
         insertArcList(&(network->nodes[network->arcs[i].tail].forwardStar),
                 &(network->arcs[i]), 
                 network->nodes[network->arcs[i].tail].forwardStar.tail);
@@ -602,7 +604,6 @@ void search(int origin, int* order, int *backnode, network_type *network,
         }
     }
     deleteQueue(&LIST);
-    if (verbosity >= FULL_DEBUG) waitForKey();
     return;
 }
 
@@ -795,7 +796,9 @@ void deleteNetwork(network_type *network) {
    deleteMatrix(network->demand, network->batchSize);
    deleteVector(network->nodes);
    deleteVector(network->arcs);
+#ifdef PARALLELISM
    deleteVector(network->arc_muts);
+#endif
    deleteVector(network->tollFactor);
    deleteVector(network->distanceFactor);
    deleteScalar(network);

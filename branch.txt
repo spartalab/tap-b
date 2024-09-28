@@ -1,0 +1,4 @@
+class-cost-refactor
+
+This branch aims to simplify calculations for the multiclass version of TAP.  By passing cost as an argument to the cost functions, this streamlines code (avoids loops through classes) and may possibly have performance and multithreading benefits.  Testing still underway.
+

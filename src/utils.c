@@ -1,5 +1,12 @@
 #include "utils.h"
 
+#ifdef DEBUG_MODE
+char debugFileName[STRING_SIZE];
+FILE *debugFile;
+#endif
+
+int verbosity;
+
 /*
 waitForKey pauses while the user presses a key.
 */
@@ -31,6 +38,16 @@ FILE *openFile(const char *filename, const char *access) {
 void my_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     unsigned int result = fread(ptr, size, nmemb, stream);
     if (result != nmemb) fatalError("Error reading from file. Expecting %d bytes, read %d bytes\n", nmemb, result);
+}
+
+/*
+Wrapper for strncpy that ensures null termination (if need be, overwriting
+last character
+*/
+char *mystrncpy(char *dest, const char *src, size_t n) {
+    char *ret = strncpy(dest, src, n);
+    if (n > 0) dest[n] = '\0';
+    return ret;
 }
 
 /*

@@ -1,0 +1,16 @@
+~ Austin network for VISTA project
+~<FILE PATH>
+<NETWORK FILE> austin_closure_net.txt
+<TRIPS FILE> austin_trips.txt
+<PATH FLOWS FILE> austin_path_flows.txt
+
+~ Trips files are in order of the class number
+
+~ Semi-mandatory; at least one of these must be provided or the code won't stop
+<CONVERGENCE GAP> 1e-4
+~<MAX ITERATIONS> 100
+
+~<WARM START>
+<STORE BUSHES>
+~<MAX ITERATIONS> 0 ~ This prevents a new run; together with warm-start this ensures determinism despite parallel implementation.
+
