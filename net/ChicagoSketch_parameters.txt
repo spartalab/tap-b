@@ -1,0 +1,11 @@
+<NETWORK FILE> ChicagoSketch_net.txt
+<TRIPS FILE> ChicagoSketch_trips.txt
+<PATH FLOWS FILE> ChicagoSketch_pathflows.txt
+
+~ Trips files are in order of the class number
+
+~ Semi-mandatory; at least one of these must be provided or the code won't stop
+<CONVERGENCE GAP> 1e-13
+~<MAX ITERATIONS> 100
+~<MAX RUN TIME> 60
+

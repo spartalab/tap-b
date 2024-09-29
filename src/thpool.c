@@ -5,7 +5,8 @@
  *               work. For usage, check the thpool.h file or README.md
  *
  *//** @file thpool.h *//*
- * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit declaration of functions
+ * Karthik & Rishabh: Updated 11/22/2019 to clean up cast warnings and implicit
+ * declaration of functions
  *
  ********************************/
 
@@ -143,7 +144,8 @@ struct thpool_* thpool_init(int num_threads){
     }
 
     /* Make threads in pool */
-    thpool_p->threads = (struct thread**)malloc(num_threads * sizeof(struct thread *));
+    thpool_p->threads = (struct thread**)malloc(num_threads 
+                                                * sizeof(struct thread *));
     if (thpool_p->threads == NULL){
         err("thpool_init(): Could not allocate memory for threads\n");
         jobqueue_destroy(&thpool_p->jobqueue);

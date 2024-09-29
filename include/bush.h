@@ -40,7 +40,6 @@
 #include "utils.h"
 
 #define NEW_LINK -1
-//#define PARALLELISM 1
 typedef enum scan_type {
     LONGEST_BUSH_PATH,
     LONGEST_USED_PATH,
@@ -125,13 +124,13 @@ typedef struct bushes_type {
    int      *lastMerge; /* [origin] */
    int      *numMerges; /* [origin] */
    merge_type ***merges; /* [origin][merge]*/
-   double   **LPcost_par; /* [thread][node] */
-   double   **SPcost_par; /* [thread][node] */
-   double   **flow_par; /* [thread][node] */
-   double   **nodeFlow_par; /* [thread][node] */
+#if PARALLELISM
+   double   **LPcost_par; /* [origin][node] */
+   double   **SPcost_par; /* [origin][node] */
+   double   **flow_par; /* [origin][node] */
+   double   **nodeFlow_par; /* [origin][node] */
    double   **nodeFlowshift_par; /* [origin][shift] */
-
-
+#endif
    network_type *network; /* Points back to the corresponding network */
 } bushes_type;
 
@@ -176,6 +175,9 @@ typedef struct bushes_type {
  *  minLinkFlow -- Parameter to guard against numerical errors in link flows;
  *                 any link flow smaller than this value is assumed to be zero.
  *                 Default value is 1e-14.
+ *  minReducedCost -- Parameter to guard against numerical errors when working
+ *                    with shortest paths; any reduced cost smaller than this
+ *                    value is assumed to be zero.  Default value is 1e-8.
  *  minDerivative -- Parameter to avoid dividing by zero in Newton's Method.
  *                   A zero denominator is replaced by minDerivative.
  *                   Default value is 1e-6.
@@ -186,6 +188,7 @@ typedef struct bushes_type {
  *                       label correcting shortest path is run (e.g., during
  *                       initialization).  See datastructures.h for options;
  *                       default value is DEQUE.
+ *  updateBushScanType -- Scanning algorithm used when updating bush labels.
  *  createInitialBush -- Function pointer for how bushes are initially set up.
  *                       Default value is initialBushShortestPath (setting bush
  *                       to the one-to-all shortest path tree at free flow.
@@ -219,7 +222,8 @@ typedef struct bushes_type {
  *                    this setting, the code does not (yet) check that the
  *                    origins actually do coincide, and strange behavior will
  *                    result if they do not.  
- *
+ *  calculateBeckmann -- do we need to compute the Beckmann function?
+ *  calculateEntropy -- do we need to compute entropy?
  *
  *  includeGapTime -- include gap calculation time in run times?  Default TRUE
  *
@@ -243,12 +247,14 @@ typedef struct algorithmBParameters_type{
    double   minCostDifference;
    double   minLinkFlowShift;
    double   minLinkFlow;
+   double   minReducedCost;
    double   minDerivative;
    double   newtonStep;
    int      numNewtonShifts;
    int      numFlowShifts; /* Counter to measure algorithm performance */
    bool     warmStart;
    bool     calculateBeckmann;
+   bool     calculateEntropy;
    queueDiscipline SPQueueDiscipline;
    scan_type updateBushScanType;
    void     (*createInitialBush)(int, network_type *, bushes_type *,
@@ -264,9 +270,15 @@ typedef struct algorithmBParameters_type{
    bool     storeBushes;
    bool     reuseFirstBush;
    bool     includeGapTime;
-   char     batchStem[STRING_SIZE-20]; /* Leave space for index */
-   char     matrixStem[STRING_SIZE-20];
+   bool     calculateBins;
+   int      numBins;
+   int      smallestBin;
+   int      *includedBin;
+   int      *excludedBin;
+   char     batchStem[STRING_SIZE];
+   char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];
+   char     pathFlowsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
 /* Master routine and parameters */
@@ -297,6 +309,8 @@ double bushSPTT(network_type *network, bushes_type *bushes,
 double bushTSTT(network_type *network, bushes_type *bushes);
 double bushRelativeGap(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters);
+double bushEntropy(network_type *network, bushes_type *bushes,
+                   algorithmBParameters_type *parameters);
 double bushAEC(network_type *network, bushes_type *bushes,
               algorithmBParameters_type *parameters);
 double bushMEC(network_type *network, bushes_type *bushes,
@@ -350,6 +364,8 @@ void exactCostUpdate(int ij, double shift, network_type *network);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);
+void printBush(int minVerbosity, int origin, network_type *network,
+               bushes_type *bushes);
 
 /**** Merges and merge-doubly linked lists ****/
 
@@ -382,4 +398,7 @@ void writeBushes(network_type *network, bushes_type *bushes, char *filename);
 void readBushes(network_type *network, bushes_type **bushes, char *filename);
 void readBinaryMatrix(network_type *network,
                       algorithmBParameters_type *parameters);
+void writePathFlows(network_type *network,
+                    bushes_type *bushes,
+                    algorithmBParameters_type *parameters);
 #endif

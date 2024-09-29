@@ -9,18 +9,32 @@
  * 
  */
 
-
 #ifndef PARALLEL_BUSH_H
 #define PARALLEL_BUSH_H
 
 #include <limits.h>
 #include <math.h>
+#include <pthread.h> 
 #include "tap.h"
 #include "networks.h"
 #include "datastructures.h"
 #include "utils.h"
 #include "bush.h"
-pthread_mutex_t shift_lock;
+#include "thpool.h"
+extern threadpool thpool;
+extern pthread_mutex_t shift_lock;
+
+//Struct for thread arguments
+struct thread_args {
+    int id;
+    bool update_flows_ret;
+    bushes_type *bushes;
+    network_type *network;
+    algorithmBParameters_type *parameters;
+};
+
+void updateBushPool(void* pVoid);
+void updateFlowsPool(void* pVoid);
 
 /* Parallized main Algorithm B helper functions */
 void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
