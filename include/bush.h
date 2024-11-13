@@ -364,6 +364,8 @@ void exactCostUpdate(int ij, double shift, network_type *network);
 void linearCostUpdate(int ij, double shift, network_type *network);
 void noCostUpdate(int ij, double shift, network_type *network);
 void checkFlows(network_type *network, bushes_type *bushes);
+void printReducedCostTable(int minVerbosity, network_type *network,
+                           bushes_type *bushes);
 void printBush(int minVerbosity, int origin, network_type *network,
                bushes_type *bushes);
 

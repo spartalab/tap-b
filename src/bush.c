@@ -620,9 +620,11 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         }
         if (parameters->calculateBins == TRUE) {
 #ifdef PARALLELISM
-            /* Ensures bushes->flows has the right values */
+            /* Ensure bushes->flows and bushes->SPcost have the right values */
             memcpy(bushes->flow, bushes->flow_par[r],
                    network->numArcs * sizeof(bushes->flow_par[0][0]));
+            memcpy(bushes->SPcost, bushes->SPcost_par[r],
+                   network->numNodes * sizeof(bushes->SPcost_par[0][0]));
 #endif
             for (ij = 0; ij < network->numArcs; ij++) {
                 i = network->arcs[ij].tail;
@@ -646,7 +648,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                                i+1, j+1, rc,
                                bushes->SPcost[i], network->arcs[ij].cost,
                                bushes->SPcost[j]); */
-
+                if (rc < 0) displayMessage(DEBUG, "Error, negative RC\n");
                 if (rc == 0) { /* Map zero reduced costs to smallest bin */
                     if (isInBush(r, ij, network, bushes) == TRUE) {
                         parameters->includedBin[0]++;
@@ -673,17 +675,23 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         lastClass = c;
     }
     if (parameters->calculateBins == TRUE) {
-        displayMessage(DEBUG, "In,");
+        displayMessage(DEBUG, "\nIn,");
         for (b = 0; b < parameters->numBins; b++) {
             displayMessage(DEBUG, "%d,", parameters->includedBin[b]);
         }
-        displayMessage(DEBUG, "Out,");
+        displayMessage(DEBUG, "\nOut,");
         for (b = 0; b < parameters->numBins; b++) {
             displayMessage(DEBUG, "%d,", parameters->excludedBin[b]);
         }
         consistency = rejectionGap / acceptanceGap;
-        displayMessage(DEBUG, "%e,%e,%e\n",
+        displayMessage(DEBUG, "\nAcceptance gap: %e"
+                              "\nRejection gap: %e"
+                              "\nConsistency: %e\n",
                        acceptanceGap, rejectionGap, consistency);
+        printReducedCostTable(DEBUG, network, bushes);
+        for (r = 0; r < network->numZones; r++) {
+            printBush(DEBUG, r, network, bushes);
+        }
     }
     return sptt;
     /* Suppress compiler warning... frac is never used but it must be
@@ -1563,6 +1571,49 @@ void checkFlows(network_type *network, bushes_type *bushes) {
     }
    
     deleteVector(flowCheck);
+}
+
+/* Print a table in the following format:
+ *          Bush 1                  Bush 2              ...
+ * Link In bush? Reduced cost   In bush? Reduced cost   ...
+ * (1,2)  Y         0              N         2.5        ...
+ *  ...
+ *
+ *  Reduced costs calculated based on bush labels.
+ *
+ *  TODO: This function currently assumes a single batch, with
+ *  parallelization.  This function is mainly intended for debugging, so
+ *  dealing with huge multibatch networks and nonstandard configurations is not
+ *  a priority.
+ */
+void printReducedCostTable(int minVerbosity, network_type *network,
+                           bushes_type *bushes) {
+    if (verbosity < minVerbosity) return;
+#ifndef PARALLELISM
+    return; // Serial version of this function not yet implemented.
+#endif
+    int r, i, j, ij;
+    double rc;
+    for (r = 0; r < network->numZones; r++)
+        displayMessage(minVerbosity, "\tBush %d\t", r + 1);
+    displayMessage(minVerbosity, "\nLink");
+    for (r = 0; r < network->numZones; r++)
+        displayMessage(minVerbosity, "\tIn bush?\tReduced cost");
+    displayMessage(minVerbosity, "\n");
+    for (ij = 0; ij < network->numArcs; ij++) {
+        i = network->arcs[ij].tail;
+        j = network->arcs[ij].head;
+        displayMessage(minVerbosity, "(%d,%d)", i + 1, j + 1);
+        for (r = 0; r < network->numZones; r++) {
+            displayMessage(minVerbosity, "\t%c",
+                       isInBush(r, ij,  network, bushes) == TRUE ? 'Y' : 'N');
+            rc = (bushes->SPcost_par[r][i] + network->arcs[ij].cost
+                    - bushes->SPcost_par[r][j]);
+            displayMessage(minVerbosity, "\t%f", rc); 
+        }
+        displayMessage(minVerbosity, "\n");
+    }
+
 }
 
 void printBush(int minVerbosity, int origin, network_type *network,

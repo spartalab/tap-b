@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     /* verbosity is a global variable controlling how much output to produce,
      * see utils.h for possible values*/
     //verbosity = FULL_DEBUG;
-    verbosity = FULL_NOTIFICATIONS;
+    verbosity = DEBUG; // FULL_NOTIFICATIONS;
     network_type *network;
 #ifdef DEBUG_MODE
     debugFile = openFile("full_log.txt", "w");
