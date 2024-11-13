@@ -1,6 +1,8 @@
 ~ Parameters can be in any order; they are split up like this for readbility
 ~ Boolean parameters are false unless given here (in which case they take no argument)
 
+<CALCULATE BINS>
+<BINS FILE> bin_log.txt
 
 ~ Mandatory parameters
 <NETWORK FILE> SiouxFalls_net.txt
@@ -10,8 +12,8 @@
 ~ Trips files are in order of the class number
 
 ~ Semi-mandatory; at least one of these must be provided or the code won't stop
-<CONVERGENCE GAP> 1e-13
-~<MAX ITERATIONS> 100
+~<CONVERGENCE GAP> 1e-13
+<MAX ITERATIONS> 200
 ~<MAX RUN TIME> 60
 
 

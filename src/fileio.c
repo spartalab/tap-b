@@ -60,6 +60,8 @@ network_type *readParametersFile(algorithmBParameters_type *thisRun,
             strcpy(thisRun->flowsFile, metadataValue);
 		} else if (strcmp(metadataTag, "PATH FLOWS FILE") == 0) {
             strcpy(thisRun->pathFlowsFile, metadataValue);
+		} else if (strcmp(metadataTag, "BINS FILE") == 0) {
+            strcpy(thisRun->binsFile, metadataValue);
 		} else if (strcmp(metadataTag, "GAP FUNCTION") == 0) {
 			if    (strcmp(metadataValue, "RELATIVE GAP") == 0)
 				thisRun->gapFunction = RELATIVE_GAP_1;

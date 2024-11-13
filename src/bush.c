@@ -42,6 +42,7 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
     /* Initialize */
     clock_t stopTime = clock(); /* used for timing */
     initializeAlgorithmB(network, &bushes, parameters);
+    displayMessage(DEBUG, "%f\n", bushes->flow_par[0][0]);
     displayMessage(LOW_NOTIFICATIONS, "Initialization done in %.3f s.\n",
         ((double)(clock() - stopTime)) / CLOCKS_PER_SEC);
     if(parameters->calculateBeckmann == TRUE)
@@ -183,6 +184,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.linkShiftB = &exactCostUpdate;
 
     parameters.pathFlowsFile[0] = '\0'; /* By default don't report this */    
+    parameters.binsFile[0] = '\0';
 
     return parameters;
 }
@@ -266,6 +268,10 @@ void initializeAlgorithmB(network_type *network, bushes_type **bushes,
         network->arcs[ij].der =
             network->arcs[ij].calculateDer(&network->arcs[ij]);
     }    
+
+    /* If saving logs, ensure existing file is empty.*/
+    FILE *binFile = openFile(parameters->binsFile, "w");
+    fclose(binFile);
 }
 
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
@@ -619,11 +625,13 @@ double bushSPTT(network_type *network, bushes_type *bushes,
             sptt += network->demand[r][j] * bushes->SPcost[j];
         }
         if (parameters->calculateBins == TRUE) {
-#ifdef PARALLELISM
-            /* Ensure bushes->flows and bushes->SPcost have the right values */
+#ifdef PARALLELISM /* Make sure working bush has correct values */
+            calculateBushFlows_par(r, network, bushes);
+            /* Need > 0 flow to count as included in bush */
             memcpy(bushes->flow, bushes->flow_par[r],
                    network->numArcs * sizeof(bushes->flow_par[0][0]));
-            memcpy(bushes->SPcost, bushes->SPcost_par[r],
+            /* Uncomment this line if you want to run printReducedCostTable */
+            memcpy(bushes->SPcost_par[r], bushes->SPcost,
                    network->numNodes * sizeof(bushes->SPcost_par[0][0]));
 #endif
             for (ij = 0; ij < network->numArcs; ij++) {
@@ -634,20 +642,9 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                 if (isInBush(r, ij, network, bushes) == TRUE
                         && bushes->flow[ij] > 0) {
                     acceptanceGap = max(rc, acceptanceGap);
-                    /*if (rc > 15) {
-                        displayMessage(FULL_DEBUG, "High accept gap in bush %d\n", r);
-                        displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
-                               i+1, j+1, rc,
-                               bushes->SPcost[i], network->arcs[ij].cost,
-                               bushes->SPcost[j]); 
-                    }*/
                 } else if (rc > parameters->minReducedCost) {
                     rejectionGap = min(rc, rejectionGap);
                 }
-                /* displayMessage(FULL_DEBUG, "(%d,%d) RC %f from %f + %f - %f\n",
-                               i+1, j+1, rc,
-                               bushes->SPcost[i], network->arcs[ij].cost,
-                               bushes->SPcost[j]); */
                 if (rc < 0) displayMessage(DEBUG, "Error, negative RC\n");
                 if (rc == 0) { /* Map zero reduced costs to smallest bin */
                     if (isInBush(r, ij, network, bushes) == TRUE) {
@@ -657,12 +654,9 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                     }
                 } else {
                     frac = frexp(rc, &b); /* Grab raw exponent in b */
-                    //displayMessage(FULL_DEBUG, "frac %f exp %d\n", frac, b);
                     /* Now convert to bin index */
                     b -= parameters->smallestBin;
-                    //displayMessage(FULL_DEBUG, "bin offset %d\n", b);
                     b = max(min(b, parameters->numBins - 1), 0);
-                    //displayMessage(FULL_DEBUG, "trimed bin %d\n", b);
                     if (isInBush(r, ij, network, bushes) == TRUE
                         && bushes->flow[ij] > 0) {
                         parameters->includedBin[b]++;
@@ -674,7 +668,20 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         }
         lastClass = c;
     }
-    if (parameters->calculateBins == TRUE) {
+    if (parameters->calculateBins == TRUE
+            && strlen(parameters->binsFile) > 0) {
+        FILE *binFile = openFile(parameters->binsFile, "a");
+        for (b = 0; b < parameters->numBins; b++) {
+            fprintf(binFile, "%d,", parameters->includedBin[b]);
+        }
+        for (b = 0; b < parameters->numBins; b++) {
+            fprintf(binFile, "%d,", parameters->excludedBin[b]);
+        }
+        consistency = rejectionGap / acceptanceGap;
+        fprintf(binFile, "%.15f,%.15f,%.15f\n", acceptanceGap, rejectionGap,
+                       consistency);
+        fclose(binFile);
+        
         displayMessage(DEBUG, "\nIn,");
         for (b = 0; b < parameters->numBins; b++) {
             displayMessage(DEBUG, "%d,", parameters->includedBin[b]);
@@ -683,15 +690,11 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         for (b = 0; b < parameters->numBins; b++) {
             displayMessage(DEBUG, "%d,", parameters->excludedBin[b]);
         }
-        consistency = rejectionGap / acceptanceGap;
         displayMessage(DEBUG, "\nAcceptance gap: %e"
                               "\nRejection gap: %e"
                               "\nConsistency: %e\n",
                        acceptanceGap, rejectionGap, consistency);
         printReducedCostTable(DEBUG, network, bushes);
-        for (r = 0; r < network->numZones; r++) {
-            printBush(DEBUG, r, network, bushes);
-        }
     }
     return sptt;
     /* Suppress compiler warning... frac is never used but it must be

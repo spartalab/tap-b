@@ -232,6 +232,8 @@ typedef struct bushes_type {
  *  matrixStem -- prefix for files storing binary OD matrices for each batch.
  *                Default = "matrix", so files are matrix0.bin, etc.
  *  flowsFile -- name for file to write flows, default is "flows.txt"
+ *  pathFlowsFile -- name for file to write path flows, no default
+ *  binsFile -- name for file to write bins, no default
  */
 typedef struct algorithmBParameters_type{
    gap_type gapFunction;
@@ -279,6 +281,7 @@ typedef struct algorithmBParameters_type{
    char     matrixStem[STRING_SIZE];
    char     flowsFile[STRING_SIZE];
    char     pathFlowsFile[STRING_SIZE];
+   char     binsFile[STRING_SIZE];
 } algorithmBParameters_type;
 
 /* Master routine and parameters */
