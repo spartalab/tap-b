@@ -647,16 +647,16 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
     deleteVector(flowCheck);
 }
 
-void exactCostUpdate_par(int ij, double shift, network_type *network, int class) {
-    network->arcs[ij].classFlow[class] += shift;
+void exactCostUpdate_par(int ij, double shift, network_type *network, int c) {
+    network->arcs[ij].classFlow[c] += shift;
     network->arcs[ij].flow += shift;
-    network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij]);
+    network->arcs[ij].cost=network->arcs[ij].calculateCost(&network->arcs[ij], c);
     network->arcs[ij].der = network->arcs[ij].calculateDer(&network->arcs[ij]);
 }
 
-void classUpdate_par(int hi, int class, double shift,  network_type *network) {
+void classUpdate_par(int hi, int c, double shift,  network_type *network) {
     pthread_mutex_lock(&network->arc_muts[hi]);
-    network->arcs[hi].classFlow[class] -= shift;
+    network->arcs[hi].classFlow[c] -= shift;
     pthread_mutex_lock(&network->arc_muts[hi]);
 }
 

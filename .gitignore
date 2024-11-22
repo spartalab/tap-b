@@ -20,4 +20,4 @@ todo-nosync.txt
 *.bin
 valgrind.txt
 scratch/
-net/
+net/*
