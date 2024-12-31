@@ -2,6 +2,8 @@
 <TRIPS FILE> Anaheim_trips.txt
 <PATH FLOWS FILE> Anaheim_pathflows.txt
 
+<CALCULATE BINS>
+<BINS FILE> Anaheim_bins.txt
 ~ Trips files are in order of the class number
 
 ~ Semi-mandatory; at least one of these must be provided or the code won't stop

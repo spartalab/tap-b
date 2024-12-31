@@ -21,3 +21,4 @@ todo-nosync.txt
 valgrind.txt
 scratch/
 net/
+*_pathflows.txt

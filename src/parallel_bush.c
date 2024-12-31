@@ -154,7 +154,7 @@ void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
  * Then transfer into an array for fast indexing.
  */
 void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes){
-//    displayMessage(FULL_NOTIFICATIONS, "Top of update reconstructmerg %d\n", t_id);
+//    displayMessage(FULL_NOTIFICATIONS, "Top of update reconstructmerg %d\n", r);
 
     int i, hi, lastApproach, m, arc, numApproaches;
     arcListElt *curArc;
@@ -253,7 +253,7 @@ bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
         pthread_mutex_unlock(&shift_lock);
 
         /* Uncomment next line for extra validation checking */
-//        checkFlows_par(network, bushes, t_id);
+        //checkFlows_par(network, bushes);
         if (parameters->rescanAfterShift == TRUE
             && i + 1 < parameters->shiftReps) {
             if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE)
@@ -354,7 +354,6 @@ void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes
     int i, j, ij, m, node;
     merge_type *merge;
 
-
     /* Initialize node flows with OD matrix */
     for (i = 0; i < network->numZones; i++) {
         bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
@@ -401,7 +400,7 @@ inline void pushBackFlowSimple_par(int j, int origin, network_type *network,
  * approaches to a merge node.
  */
 inline void pushBackFlowMerge_par(merge_type *merge, network_type *network,
-                       bushes_type *bushes, int t_id) {
+                       bushes_type *bushes, int r) {
 
 //    displayMessage(FULL_NOTIFICATIONS, "top pushback merge\n");
 
@@ -412,8 +411,8 @@ inline void pushBackFlowMerge_par(merge_type *merge, network_type *network,
         ij = merge->approach[arc];
         i = network->arcs[ij].tail;
         flow = merge->approachFlow[arc];
-        bushes->flow_par[t_id][ij] = flow;
-        bushes->nodeFlow_par[t_id][i] += flow;
+        bushes->flow_par[r][ij] = flow;
+        bushes->nodeFlow_par[r][i] += flow;
     }
 }
 
@@ -422,7 +421,7 @@ inline void pushBackFlowMerge_par(merge_type *merge, network_type *network,
  * node, recalculates the approach proportions.  In the degenerate case of zero
  * node flow, push everything onto the shortest path.
  */
-void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id) {
+void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int r) {
 
     int arc;
     double totalFlow = 0;
@@ -433,13 +432,13 @@ void rectifyMerge_par(int j, merge_type *merge, bushes_type *bushes, int t_id) {
 
     if (totalFlow > 0) {
         for (arc = 0; arc < merge->numApproaches; arc++) {
-            merge->approachFlow[arc] *= bushes->nodeFlow_par[t_id][j] / totalFlow;
+            merge->approachFlow[arc] *= bushes->nodeFlow_par[r][j] / totalFlow;
         }
     } else {
         for (arc = 0; arc < merge->numApproaches; arc++) {
             merge->approachFlow[arc] = 0;
         }
-        merge->approachFlow[merge->SPlink] = bushes->nodeFlow_par[t_id][j];
+        merge->approachFlow[merge->SPlink] = bushes->nodeFlow_par[r][j];
     }
 
 }
@@ -579,11 +578,12 @@ void newtonFlowShift_par(int j, merge_type *merge, int origin,
  * implementation, all calls to this function are commented out.
  */
 #define FLOW_TOLERANCE 1e-5
-void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
+void checkFlows_par(network_type *network, bushes_type *bushes) {
     int r, i, ij, kl;
     arcListElt *curArc;
     double balance;
 
+    displayMessage(DEBUG, "Starting parallel flow validation.\n");
     declareVector(double, flowCheck, network->numArcs);
     for (ij = 0; ij < network->numArcs; ij++) {
         flowCheck[ij] = 0;
@@ -593,8 +593,8 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
         calculateBushFlows_par(r, network, bushes);
         /* First check bush flow consistency */
         for (ij = 0; ij < network->numArcs; ij++) {
-            flowCheck[ij] += bushes->flow_par[t_id][ij];
-            if (bushes->flow_par[t_id][ij] < 0) {
+            flowCheck[ij] += bushes->flow_par[r][ij];
+            if (bushes->flow_par[r][ij] < 0) {
                 for (kl = 0; kl < network->numArcs; kl++) {
                     displayMessage(DEBUG, "(%ld,%ld) %f\n",
                                    network->arcs[kl].tail + 1,
@@ -611,11 +611,11 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
             balance = 0;
             for (curArc = network->nodes[i].reverseStar.head; curArc != NULL;
                  curArc = curArc->next) {
-                balance += bushes->flow_par[t_id][ptr2arc(network, curArc->arc)];
+                balance += bushes->flow_par[r][ptr2arc(network, curArc->arc)];
             }
             for (curArc = network->nodes[i].forwardStar.head; curArc != NULL;
                  curArc = curArc->next) {
-                balance -= bushes->flow_par[t_id][ptr2arc(network, curArc->arc)];
+                balance -= bushes->flow_par[r][ptr2arc(network, curArc->arc)];
             }
             if (i < network->numZones) balance -= network->demand[r][i];
             if (fabs(balance) > FLOW_TOLERANCE) {
@@ -623,7 +623,7 @@ void checkFlows_par(network_type *network, bushes_type *bushes, int t_id) {
                     displayMessage(DEBUG, "(%ld,%ld) %f\n",
                                    network->arcs[kl].tail + 1,
                                    network->arcs[kl].head + 1,
-                                   bushes->flow_par[t_id][kl]);
+                                   bushes->flow_par[r][kl]);
                 }
                 fatalError("Flow validation failed: origin %d, node %ld"
                            "violates conservation.", r, i + 1);
