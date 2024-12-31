@@ -618,7 +618,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         if (c != lastClass) {
             changeFixedCosts(network, c);
         }
-        scanBushes(r, network, bushes, parameters, NO_LONGEST_PATH);
+        scanBushes(r, network, bushes, parameters, LONGEST_BUSH_PATH);
         BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
                             bushes->SPcost, bushes->bushOrder[r]);
         for (j = 0; j < network->numZones; j++) {
@@ -627,10 +627,8 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         if (parameters->calculateBins == TRUE) {
 #ifdef PARALLELISM /* Make sure working bush has correct values */
             calculateBushFlows_par(r, network, bushes);
-            /* Need > 0 flow to count as included in bush */
             memcpy(bushes->flow, bushes->flow_par[r],
                    network->numArcs * sizeof(bushes->flow_par[0][0]));
-            /* Uncomment this line if you want to run printReducedCostTable */
             memcpy(bushes->SPcost_par[r], bushes->SPcost,
                    network->numNodes * sizeof(bushes->SPcost_par[0][0]));
 #endif
@@ -642,12 +640,14 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                 if (isInBush(r, ij, network, bushes) == TRUE
                         && bushes->flow[ij] > 0) {
                     acceptanceGap = max(rc, acceptanceGap);
-                } else if (rc > parameters->minReducedCost) {
+                } else if (rc > parameters->minReducedCost 
+                        && bushes->LPcost[i] >= bushes->LPcost[j]) {
                     rejectionGap = min(rc, rejectionGap);
                 }
                 if (rc < 0) displayMessage(DEBUG, "Error, negative RC\n");
                 if (rc == 0) { /* Map zero reduced costs to smallest bin */
-                    if (isInBush(r, ij, network, bushes) == TRUE) {
+                    if (isInBush(r, ij, network, bushes) == TRUE
+                            || bushes->LPcost[i] < bushes->LPcost[j]) {
                         parameters->includedBin[0]++;
                     } else {
                         parameters->excludedBin[0]++;
@@ -658,7 +658,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
                     b -= parameters->smallestBin;
                     b = max(min(b, parameters->numBins - 1), 0);
                     if (isInBush(r, ij, network, bushes) == TRUE
-                        && bushes->flow[ij] > 0) {
+                        || bushes->LPcost[i] < bushes->LPcost[j]) {
                         parameters->includedBin[b]++;
                     } else {
                         parameters->excludedBin[b]++;
@@ -752,7 +752,6 @@ double bushEntropy(network_type *network, bushes_type *bushes,
                 entropy += bushes->flow[ij] * log(bushes->flow[ij] / bushes->nodeFlow[network->arcs[ij].head]);
             }
         }
-        displayMessage(FULL_DEBUG, "Entropy for bush(%d) %f\n", r, entropy);
     }
 
     return -entropy;
@@ -2105,8 +2104,6 @@ void writePathFlows(network_type *network,
                     break;
                 }
             } while (done == FALSE);
-            displayMessage(DEBUG, "%d paths for %d->%d\n",
-                           numPaths, r+1, s+1);
         }
     }
     fclose(pathFlowsFile);

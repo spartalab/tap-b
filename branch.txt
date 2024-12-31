@@ -1,3 +1,5 @@
-This is the develop branch of tap-b.
+This is the rcbins feature.
 
-Any new features should branch off of this one.
+Add tables showing which links are in and out of bushes, and their reduced cost.
+Compute acceptance and rejection gaps in preparation for most likely path flows.
+
