@@ -263,7 +263,7 @@ typedef struct algorithmBParameters_type{
                                  struct algorithmBParameters_type *);
    void     (*topologicalOrder)(int, network_type *, bushes_type *,
                                 struct algorithmBParameters_type *);
-   void     (*linkShiftB)(int, double, network_type *);
+   void     (*linkShiftB)(int, double, network_type *, int c);
 
 #if PARALLELISM
    int numThreads;
@@ -291,10 +291,8 @@ algorithmBParameters_type initializeAlgorithmBParameters();
 /* Main Algorithm B helper functions */
 void initializeAlgorithmB(network_type *network, bushes_type **bushes,
                           algorithmBParameters_type *parameters);
-void updateBatchBushes(network_type *network, bushes_type *bushes,
-                       int *lastClass, algorithmBParameters_type *parameters);
-void updateBatchFlows(network_type *network, bushes_type *bushes,
-                      int *lastClass, algorithmBParameters_type *parameters);
+void updateBatchBushes(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
+void updateBatchFlows(network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters);
 void loadBatch(int batch, network_type *network, bushes_type **bushes,
                algorithmBParameters_type *parameters);
 void storeBatch(int batch, network_type *network, bushes_type *bushes,
@@ -363,9 +361,9 @@ bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes);
 bool isMergeNode(int origin, int i, bushes_type *bushes);
 int pred2merge(int ij);
 int merge2pred(int m);
-void exactCostUpdate(int ij, double shift, network_type *network);
-void linearCostUpdate(int ij, double shift, network_type *network);
-void noCostUpdate(int ij, double shift, network_type *network);
+void exactCostUpdate(int ij, double shift, network_type *network, int c);
+void linearCostUpdate(int ij, double shift, network_type *network, int c);
+void noCostUpdate(int ij, double shift, network_type *network, int c);
 void checkFlows(network_type *network, bushes_type *bushes);
 void printReducedCostTable(int minVerbosity, network_type *network,
                            bushes_type *bushes);

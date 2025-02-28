@@ -1,5 +1,4 @@
-This is the rcbins feature.
+Main develop branch.
 
-Add tables showing which links are in and out of bushes, and their reduced cost.
-Compute acceptance and rejection gaps in preparation for most likely path flows.
-
+Last changes: Merged in rcbins and classcost-refactor
+Next planned change: refactor class costs yet again to work properly with reduced cost bins, and to explore whether we can relax the assumption about ratios between # origins, # classes, and # batches
