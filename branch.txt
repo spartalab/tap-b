@@ -1,4 +1,2 @@
-Main develop branch.
+Branch for exploring refactoring origins, classes, costs, and batches.
 
-Last changes: Merged in rcbins and classcost-refactor
-Next planned change: refactor class costs yet again to work properly with reduced cost bins, and to explore whether we can relax the assumption about ratios between # origins, # classes, and # batches
