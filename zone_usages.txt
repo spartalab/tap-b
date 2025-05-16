@@ -1,0 +1,108 @@
+fileio.c:247:                   network->numZones, matrixFile);
+fileio.c:269:    network->numZones = IS_MISSING;
+fileio.c:285:        if         (strcmp(metadataTag, "NUMBER OF ZONES") == 0) {
+fileio.c:286:            network->numZones = atoi(metadataValue);
+fileio.c:306:    if (network->numZones == IS_MISSING) 
+fileio.c:307:        fatalError("Link file %s does not contain number of zones.", 
+fileio.c:326:    if (network->numZones < 1) 
+fileio.c:339:    network->numOrigins = network->numZones * network->numClasses;
+fileio.c:342:    network->demand = newMatrix(network->numOrigins, network->numZones,double);
+fileio.c:355:        for (j = 0; j < network->numZones; j++) {
+fileio.c:454:            if         (strcmp(metadataTag, "NUMBER OF ZONES") == 0) {
+fileio.c:456:                if (check != network->numZones) fatalError("Number of zones in "
+fileio.c:484:                if (i <= 0 || i > network->numZones) fatalError("Origin %d is "
+fileio.c:494:                if (j <= 0 || j > network->numZones) fatalError("Destination "
+fileio.c:521:    displayMessage(MEDIUM_NOTIFICATIONS, "%d nodes, %d arcs, and %d zones\n",
+fileio.c:522:            network->numNodes, network->numArcs, network->numZones);
+fileio.c:556:        network->demand = newMatrix(network->batchSize, network->numZones,
+fileio.c:576:    fprintf(linkFile, "<NUMBER OF ZONES> %d\n", network->numZones);
+fileio.c:602:    fprintf(tripFile, "<NUMBER OF ZONES> %d\n", network->numZones);
+fileio.c:605:    for (i = 0; i < network->numZones; i++) {
+fileio.c:608:        for (j = 0; j < network->numZones; j++) {
+convexcombination.c:394:    struct thread_args args[network->numZones];
+convexcombination.c:395:    for (r = 0; r < network->numZones; ++r) {
+convexcombination.c:409:        for (r = 0; r < network->numZones; ++r) {
+convexcombination.c:414:        for (r = 0; r < network->numZones; ++r) {
+convexcombination.c:425:        for (r = 0; r < network->numZones; r++) {
+convexcombination.c:431://    for (r = 0; r < network->numZones; ++r) {
+convexcombination.c:585:double allOrNothing(network_type *network, double **flows, int originZone,
+convexcombination.c:593:    int origin = nodeclass2origin(network, originZone, class);
+convexcombination.c:598:        heapDijkstraNew(originZone, SPLabels, SPTree, network);    
+convexcombination.c:601:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);    
+convexcombination.c:612:    for (i = 0; i < network->numZones; i++) {
+convexcombination.c:616:            if (network->demand[origin][i] > 0 && i != originZone) {
+convexcombination.c:618:                            originZone, i);
+convexcombination.c:636:    for (i = 0; i < network->numZones; i++)
+convexcombination.c:644:        if (curnode == originZone) break;
+convexcombination.c:679:double allOrNothing_par(network_type *network, double *flows, int originZone,
+convexcombination.c:687:    int origin = nodeclass2origin(network, originZone, class);
+convexcombination.c:692:        heapDijkstraNew(originZone, SPLabels, SPTree, network);
+convexcombination.c:695:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);
+convexcombination.c:706:    for (i = 0; i < network->numZones; i++) {
+convexcombination.c:710:            if (network->demand[origin][i] > 0 && i != originZone) {
+convexcombination.c:712:                            originZone, i);
+convexcombination.c:730:    for (i = 0; i < network->numZones; i++)
+convexcombination.c:738:        if (curnode == originZone) break;
+parallel_bush.c:282:    for (i = 0; i < network->numZones; i++) {
+parallel_bush.c:316:    for (i = 0; i < network->numZones; i++)
+parallel_bush.c:358:    for (i = 0; i < network->numZones; i++) {
+parallel_bush.c:592:    for (r = 0; r < network->numZones; r++) {
+parallel_bush.c:620:            if (i < network->numZones) balance -= network->demand[r][i];
+networks.c:709:             % network->numZones;
+networks.c:714:             / network->numZones;
+networks.c:722:    return (class * network->numZones + originNode);
+networks.c:726:    return checkIfCurrentOrigin(network, class*network->numZones + originNode);
+tap.c:288:        for (j = 0; j < network->numZones; j++) {
+origin_usages.txt:6:fileio.c:339:    network->numOrigins = network->numZones * network->numClasses;
+origin_usages.txt:7:fileio.c:342:    network->demand = newMatrix(network->numOrigins, network->numZones,double);
+origin_usages.txt:13:fileio.c:484:                if (i <= 0 || i > network->numZones) fatalError("Origin %d is "
+origin_usages.txt:30:convexcombination.c:585:double allOrNothing(network_type *network, double **flows, int originZone,
+origin_usages.txt:32:convexcombination.c:593:    int origin = nodeclass2origin(network, originZone, class);
+origin_usages.txt:34:convexcombination.c:598:        heapDijkstraNew(originZone, SPLabels, SPTree, network);    
+origin_usages.txt:35:convexcombination.c:601:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);    
+origin_usages.txt:37:convexcombination.c:616:            if (network->demand[origin][i] > 0 && i != originZone) {
+origin_usages.txt:38:convexcombination.c:618:                            originZone, i);
+origin_usages.txt:42:convexcombination.c:644:        if (curnode == originZone) break;
+origin_usages.txt:47:convexcombination.c:679:double allOrNothing_par(network_type *network, double *flows, int originZone,
+origin_usages.txt:49:convexcombination.c:687:    int origin = nodeclass2origin(network, originZone, class);
+origin_usages.txt:51:convexcombination.c:692:        heapDijkstraNew(originZone, SPLabels, SPTree, network);
+origin_usages.txt:52:convexcombination.c:695:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);
+origin_usages.txt:54:convexcombination.c:710:            if (network->demand[origin][i] > 0 && i != originZone) {
+origin_usages.txt:55:convexcombination.c:712:                            originZone, i);
+origin_usages.txt:59:convexcombination.c:738:        if (curnode == originZone) break;
+origin_usages.txt:242:networks.c:722:    return (class * network->numZones + originNode);
+origin_usages.txt:244:networks.c:726:    return checkIfCurrentOrigin(network, class*network->numZones + originNode);
+origin_usages.txt:256:bush.c_minmem:69://		for (origin = 0; origin < network->numZones; origin++) {
+origin_usages.txt:259:bush.c_minmem:76:			for (origin = 0; origin < network->numZones; origin++) {
+origin_usages.txt:340:bush.c_minmem:553:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+origin_usages.txt:347:bush.c_minmem:584:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+bush.c_minmem:22:    for (; start < start + num && start < network->numZones; start++) {
+bush.c_minmem:49:        int pointsPerThread = network->numZones/NUM_THREADS;
+bush.c_minmem:69://		for (origin = 0; origin < network->numZones; origin++) {
+bush.c_minmem:76:			for (origin = 0; origin < network->numZones; origin++) {
+bush.c_minmem:226:   bushes->pred = newMatrix(network->numZones, network->numNodes, int);
+bush.c_minmem:228:   bushes->lastMerge = newVector(network->numZones, int);
+bush.c_minmem:229:   bushes->numMerges = newVector(network->numZones, int);
+bush.c_minmem:230:   bushes->merges = newVector(network->numZones, merge_type**);
+bush.c_minmem:232:   for (i = 0; i < network->numZones; i++) {
+bush.c_minmem:246:   deleteMatrix(bushes->pred, network->numZones);
+bush.c_minmem:249:   for (i = 0; i < network->numZones; i++) {
+bush.c_minmem:279:   for (i = 0; i < network->numZones; i++) {
+bush.c_minmem:553:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+bush.c_minmem:584:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+bush.c_minmem:736:   for (r = 0; r < network->numZones; r++) {
+bush.c_minmem:757:         if (i < network->numZones) balance -= network->OD[r][i].demand;
+bush.c:114:    for (int i = 0; i < network->numZones; i++) {
+bush.c:602:        for (j = 0; j < network->numZones; j++) {
+bush.c:755:        for (j = 0; j < network->numZones; j++) {
+bush.c:1191:    for (i = 0; i < network->numZones; i++) {
+bush.c:1224:    for (i = 0; i < network->numZones; i++)
+bush.c:1265:    for (i = 0; i < network->numZones; i++)
+bush.c:1355:    for (i = 0; i < network->numZones; i++)
+bush.c:1513:            if (i < network->numZones) balance -= network->demand[r][i];
+bush.c:1564:    for (r = 0; r < network->numZones; r++)
+bush.c:1567:    for (r = 0; r < network->numZones; r++)
+bush.c:1574:        for (r = 0; r < network->numZones; r++) {
+bush.c:1952:                  network->numZones, matrixFile);
+bush.c:1988:    for (r = 0; r < network->numZones; r++) {
+bush.c:2005:        for (s = 0; s < network->numZones; s++) {

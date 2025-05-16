@@ -1,2 +1,86 @@
 Branch for exploring refactoring origins, classes, costs, and batches.
 
+The current setup is a bit messy.  The current definitions in the code are:
+
+zone = physical zone
+    This is what is indicated in the network input file.
+batch = a subset of physical zones, used to handle large networks
+class = user class, with different class-specific fixed costs (value of time/dist)
+origin = a combination of physical zone + user class
+    numOrigins = numZones * numClasses
+pseudo-origin = a particular origin in the context of a specific batch
+
+CURRENT DEFAULTS: numBatches = 1, batchSize = numOrigins = numZones*numClasses
+CURRENT REQUIREMENTS: batchSize | numOrigins = numZones*numClasses
+
+Notes in current implementation:
+1. OD matrix size is numOrigins * numZones; doesn't have to be numOrigins*numOrigins because origin/destination are always same class
+2. Utility functions in networks.c:
+    origin2node:map pseudo-origin (in context of a specific batch) to physical node
+    origin2class:map pseudo-origin (in context of a specific batch) to class
+        ** Assumes that origins are numbered consecutively by class.
+            (This is how things are setup in fileio.c, but should probably be
+             documented clearly.)
+    in both of these: origin + batchSize * curBatch maps pseudo-origin to origin
+
+    nodeclass2origin: map pseudo-origin to origin (zone,class)
+    checkIfCurrentOrigin = [origin (zone,class) belongs to current batch]
+    checkIfCurrentNodeClass = [(zone,class) belongs to current batch]
+    outOfOrigins = supposed origin corresponds to class > numClasses
+
+3. zone is used relatively seldom (see specific issues to look at as a list); origin is used much more frequently
+4. is a lot of the 'zone' usages implicitly assuming that batchSize = numZones?
+5. batch size is determined by <NUMBER OF BATCHES> parameter in parameters file;
+    end of parametr file reading is where setBatches is called
+        note: parameters file first reads params; then reads network (inside)
+              then does setbatches as part of finalization
+    readOBAnetwork does an initial read setting batchSize = numOrigins, numBatches = 1
+    setBatches (in fileio.c) is what does error checking, sets both numOrigins
+        and batchSize, and writes binary OD matrices for each batch.
+
+
+General goals are to:
+1. simplify/streamline if possible
+2. generalize if possible so we don't require numBatches to evenly divide numOrigins
+    this would allow e.g. batching with prime numbers of origins.  
+        (can we handle this with "empty" origins with 0 flow which get skipped
+         in eqm computations?)
+    (yes, goals 1 and 2 are probably conflicting)
+3. particularly look at refactoring the class-cost interface; can we have a link cost per class, so every call to linkCost must include a particular class.
+
+Anti-goals:
+1. do not consider bush.c_minmem
+    ** As a future development note, do we want to officially deprecate this file?
+
+Specific issues to look at... are these the right usages?
+1. convexcombinations.c uses numZones, not numOrigins... does it work with multiclass or batching?  but origin and some of the nodeclass functions rae still used
+2. parallel_bush.c uses numZones in rescanAndCheck, updateFlowPass_par, calculateBushFlows_par, checkFlows_par
+3. networks.c, in origin2node and origin2class... should we specify pseudo-origin vs origin?  The terms are used in an overloaded way.
+    ** Consider renaming pseudo-Origin -> origin; origin -> originClass ?   
+4. bush.c (114) prints based on Zones (does this work with multiclass?)
+    The following functions also iterate based on numZones, rather than batchSize
+        bushSPTT
+        bushMEC
+        rescanAndCheck
+        calculateBushFlows
+        rectifyBushFlows
+        checkFlows
+        printReducedCostTable
+        readBinaryMatrix
+        writePathFlows
+5. Must batching imply warm start and reading/writing binary matrices?
+    Answer is probably yes, but should think carefully and document why.
+6. in readParametersFile, clarify that it also reads the network file;
+    also look at garbage collection section and clarify comments, not everything
+    there is garbage collection
+7. setBatches function is awkward; the parameter calls for # of batches, but
+    setBatches calls for batchSize... so readParametersFile first has to compute
+    size, then setBatches has to convert numBatches
+8. can we remove obsolute linkCost legacy function?
+9. Is there a more efficient way to handle costs/times, etc.
+    each link has a single 'time' argument which is based on BPR (or conic, or...)
+    each link has (single) fixed 'toll' and 'distance' arguments
+    each link has (once-computed) 'fixed costs' PER CLASS
+    there is a function to compute a link cost with a bool arg to recompute time
+    functions like TSTT, revenue, etc. can draw specifically on the time/toll args.
+

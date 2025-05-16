@@ -1,0 +1,616 @@
+fileio.c:225:    setBatches(network, network->numOrigins / numBatches, thisRun->warmStart,
+fileio.c:235:    int batch, r, origin;
+fileio.c:244:            if (outOfOrigins(network, r) == TRUE) break;
+fileio.c:245:            origin = r + batch * network->batchSize;
+fileio.c:246:            fwrite(network->demand[origin], sizeof(network->demand[origin][0]),
+fileio.c:339:    network->numOrigins = network->numZones * network->numClasses;
+fileio.c:342:    network->demand = newMatrix(network->numOrigins, network->numZones,double);
+fileio.c:350:    network->batchSize = network->numOrigins;
+fileio.c:354:    for (i = 0; i < network->numOrigins; i++) {
+fileio.c:481:            if (strstr(trimmedLine, "Origin") != NULL) {
+fileio.c:482:                // i indexes current origin
+fileio.c:483:                sscanf(strstr(trimmedLine, "Origin")+6,"%d", &i);  
+fileio.c:484:                if (i <= 0 || i > network->numZones) fatalError("Origin %d is "
+fileio.c:487:                r = nodeclass2origin(network, i, c);
+fileio.c:499:                if (demand < 0) fatalError("Negative demand from origin %d to "
+fileio.c:534:setBatches: Re-partitions the network into origin batches of the given
+fileio.c:543:    if (network->numOrigins % batchSize != 0) {
+fileio.c:544:        fatalError("Number of origins (%d) must be divisible by the batch "
+fileio.c:545:                   "size(%d)\n", network->numOrigins, batchSize);
+fileio.c:547:    network->numBatches = (network->numOrigins - 1) / batchSize + 1;
+fileio.c:555:        deleteMatrix(network->demand, network->numOrigins);
+fileio.c:606:        fprintf(tripFile, "\n\nOrigin %d\n", i);
+Binary file .parallel_bush.c.swp matches
+convexcombination.c:370: * (the loop over each origin and class) can all be done independently of each
+convexcombination.c:372: * with the flows from that origin) but do not read from it.  Hopefully this
+convexcombination.c:380:    int ij, r, c; /* Indices: ij for arcs, r for origin, c for class */
+convexcombination.c:416:                fatalError("SPTT is negative for origin %d is %f", r, args[r].sptt);
+convexcombination.c:577:/* Finds an all-or-nothing assignment from a given origin.  Involves three main
+convexcombination.c:581: * In the process, also calculates the SPTT for this origin (it comes almost
+convexcombination.c:585:double allOrNothing(network_type *network, double **flows, int originZone,
+convexcombination.c:589:    double originSPTT = 0;
+convexcombination.c:593:    int origin = nodeclass2origin(network, originZone, class);
+convexcombination.c:595:    /* Find all-to-one shortest paths from origin */
+convexcombination.c:598:        heapDijkstraNew(originZone, SPLabels, SPTree, network);    
+convexcombination.c:601:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);    
+convexcombination.c:614:            originSPTT += SPLabels[i] * network->demand[origin][i];
+convexcombination.c:616:            if (network->demand[origin][i] > 0 && i != originZone) {
+convexcombination.c:618:                            originZone, i);
+convexcombination.c:626:       sweep of the tree is needed to find all flow from this origin.
+convexcombination.c:630:       In the TNTP file format, origins are numbered first.  The second loop
+convexcombination.c:637:        remainingVehicles[i] = network->demand[origin][i];
+convexcombination.c:644:        if (curnode == originZone) break;
+convexcombination.c:659:                           " demand %f existing there!", origin, curnode,
+convexcombination.c:669:    return originSPTT;
+convexcombination.c:671:/* Finds an all-or-nothing assignment from a given origin.  Involves three main
+convexcombination.c:675: * In the process, also calculates the SPTT for this origin (it comes almost
+convexcombination.c:679:double allOrNothing_par(network_type *network, double *flows, int originZone,
+convexcombination.c:683:    double originSPTT = 0;
+convexcombination.c:687:    int origin = nodeclass2origin(network, originZone, class);
+convexcombination.c:689:    /* Find all-to-one shortest paths from origin */
+convexcombination.c:692:        heapDijkstraNew(originZone, SPLabels, SPTree, network);
+convexcombination.c:695:        BellmanFordNew(originZone, SPLabels, SPTree, NULL, network, DEQUE);
+convexcombination.c:708:            originSPTT += SPLabels[i] * network->demand[origin][i];
+convexcombination.c:710:            if (network->demand[origin][i] > 0 && i != originZone) {
+convexcombination.c:712:                            originZone, i);
+convexcombination.c:720:       sweep of the tree is needed to find all flow from this origin.
+convexcombination.c:724:       In the TNTP file format, origins are numbered first.  The second loop
+convexcombination.c:731:        remainingVehicles[i] = network->demand[origin][i];
+convexcombination.c:738:        if (curnode == originZone) break;
+convexcombination.c:747:                           " demand %f existing there!", origin, curnode,
+convexcombination.c:757:    return originSPTT;
+convexcombination.c:777:        /* Trace a path back from i to a labeled node (or the origin) */
+parallel_bush.c:13:void scanBushes_par(int origin, network_type *network, bushes_type *bushes,
+parallel_bush.c:20:        bushes->LPcost_par[origin][i] = -INFINITY;
+parallel_bush.c:21:        bushes->SPcost_par[origin][i] = INFINITY;
+parallel_bush.c:27:    bushes->SPcost_par[origin][origin2node(network, origin)] = 0;
+parallel_bush.c:28:    bushes->LPcost_par[origin][origin2node(network, origin)] = 0;
+parallel_bush.c:30:        i = bushes->bushOrder[origin][curnode];
+parallel_bush.c:32:        if (isMergeNode(origin, i, bushes) == TRUE) {
+parallel_bush.c:33:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:34:            merge = bushes->merges[origin][m];
+parallel_bush.c:38:                tempcost = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
+parallel_bush.c:39:                if (tempcost < bushes->SPcost_par[origin][i]) {
+parallel_bush.c:40:                    bushes->SPcost_par[origin][i] = tempcost;
+parallel_bush.c:49:                tempcost = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;     
+parallel_bush.c:50:                if (tempcost > bushes->LPcost_par[origin][i]
+parallel_bush.c:58:                    bushes->LPcost_par[origin][i] = tempcost;
+parallel_bush.c:63:            hi = bushes->pred[origin][i];
+parallel_bush.c:65:            bushes->LPcost_par[origin][i] = bushes->LPcost_par[origin][h] + network->arcs[hi].cost;
+parallel_bush.c:66:            bushes->SPcost_par[origin][i] = bushes->SPcost_par[origin][h] + network->arcs[hi].cost;
+parallel_bush.c:81:void updateBushB_par(int origin, network_type *network, bushes_type *bushes,
+parallel_bush.c:88:    calculateBushFlows_par(origin, network, bushes);
+parallel_bush.c:89:    scanBushes_par(origin, network, bushes, parameters, parameters->updateBushScanType);
+parallel_bush.c:95:        if (bushes->flow_par[origin][ij] < parameters->minLinkFlow) {
+parallel_bush.c:96:            if (isInBush(origin, ij, network, bushes) == TRUE)
+parallel_bush.c:97:            bushes->flow_par[origin][ij] = 0;
+parallel_bush.c:99:        if (bushes->flow_par[origin][ij] > 0) continue; /* Link is already in the bush, no
+parallel_bush.c:104:        if (bushes->LPcost_par[origin][i] == -INFINITY && bushes->LPcost_par[origin][j] > -INFINITY)
+parallel_bush.c:106:        if (bushes->SPcost_par[origin][i] + network->arcs[ij].cost < bushes->SPcost_par[origin][j]
+parallel_bush.c:107:            && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
+parallel_bush.c:108:            && (network->arcs[ij].tail == origin2node(network, origin)
+parallel_bush.c:111:            bushes->flow_par[origin][ij] = NEW_LINK;
+parallel_bush.c:115:        } else if (bushes->SPcost_par[origin][i]+network->arcs[ij].cost==bushes->SPcost_par[origin][j]
+parallel_bush.c:116:                   && bushes->flow_par[origin][ij] == 0
+parallel_bush.c:117:                   && isInBush(origin, ij, network, bushes) == TRUE) {
+parallel_bush.c:118:            bushes->flow_par[origin][ij] = NEW_LINK;
+parallel_bush.c:127:            if (bushes->LPcost_par[origin][i]==-INFINITY && bushes->LPcost_par[origin][j]>-INFINITY)
+parallel_bush.c:129:            if (bushes->flow_par[origin][ij] == 0 && bushes->LPcost_par[origin][i] < bushes->LPcost_par[origin][j]
+parallel_bush.c:130:                && (network->arcs[ij].tail == origin2node(network, origin)
+parallel_bush.c:133:                bushes->flow_par[origin][ij] = NEW_LINK;
+parallel_bush.c:140:    reconstructMerges_par(origin, network, bushes);
+parallel_bush.c:141:    parameters->topologicalOrder(origin, network, bushes, parameters);
+parallel_bush.c:150: *    such links for a non-origin, throw an error.
+parallel_bush.c:156:void reconstructMerges_par(int origin, network_type *network, bushes_type *bushes){
+parallel_bush.c:168:        if (i == origin2node(network, origin)) continue;
+parallel_bush.c:173:            if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
+parallel_bush.c:179:            fatalError("Cannot have non-origin node %d in bush %d without"
+parallel_bush.c:180:                       "incoming contributing links", i+1, origin+1);
+parallel_bush.c:182:            bushes->pred[origin][i] = lastApproach;
+parallel_bush.c:183:            if (bushes->flow_par[origin][lastApproach] == NEW_LINK) bushes->flow_par[origin][lastApproach] = 0;
+parallel_bush.c:190:                if (bushes->flow_par[origin][hi] > 0 || bushes->flow_par[origin][hi] == NEW_LINK) {
+parallel_bush.c:191:                    if (bushes->flow_par[origin][hi] == NEW_LINK) bushes->flow_par[origin][hi] = 0;
+parallel_bush.c:193:                    merge->approachFlow[arc] = bushes->flow_par[origin][hi];
+parallel_bush.c:202:    for (m = 0; m < bushes->numMerges[origin]; m++) {
+parallel_bush.c:203:        deleteMerge(bushes->merges[origin][m]);
+parallel_bush.c:205:    deleteVector(bushes->merges[origin]);
+parallel_bush.c:206:    bushes->numMerges[origin] = mergeList->size;
+parallel_bush.c:207:    bushes->merges[origin] = newVector(mergeList->size, merge_type *);
+parallel_bush.c:211:        bushes->merges[origin][m] = curMerge->merge;
+parallel_bush.c:212:        bushes->pred[origin][curMerge->node] = merge2pred(m);
+parallel_bush.c:230: *   case we want to do multiple shifts per origin.
+parallel_bush.c:232:bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
+parallel_bush.c:236:    /* Recompute bush flows for this origin */
+parallel_bush.c:237:    calculateBushFlows_par(origin, network, bushes);
+parallel_bush.c:241:    if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE) {
+parallel_bush.c:242:        bushes->updateBush[origin] = FALSE;
+parallel_bush.c:246:    /* Now do (possibly multiple) shifts per origin */
+parallel_bush.c:248:        updateFlowPass_par(origin, network, bushes, parameters);
+parallel_bush.c:259:            if (rescanAndCheck_par(origin, network, bushes, parameters) == FALSE)
+parallel_bush.c:274:bool rescanAndCheck_par(int origin, network_type *network, bushes_type *bushes,
+parallel_bush.c:280:    scanBushes_par(origin, network, bushes, parameters, LONGEST_USED_PATH);
+parallel_bush.c:281:    findDivergenceNodes(origin, network, bushes);
+parallel_bush.c:283:        bushSPTT += network->demand[origin][i] * bushes->SPcost_par[origin][i];
+parallel_bush.c:284:        maxgap = max(maxgap, fabs(bushes->LPcost_par[origin][i] -bushes->SPcost_par[origin][i]));
+parallel_bush.c:287:        maxgap = max(maxgap, fabs(bushes->LPcost_par[origin][i] -bushes->SPcost_par[origin][i]));
+parallel_bush.c:292:        bushExcess += bushes->flow_par[origin][ij] * (network->arcs[ij].cost +
+parallel_bush.c:293:                                          bushes->SPcost_par[origin][i] - bushes->SPcost_par[origin][j]);
+parallel_bush.c:295:    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin,
+parallel_bush.c:309:void updateFlowPass_par(int origin, network_type *network, bushes_type *bushes,
+parallel_bush.c:317:        bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
+parallel_bush.c:319:    for (; i < network->numNodes; i++) bushes->nodeFlow_par[origin][i] = 0;
+parallel_bush.c:324:        j = bushes->bushOrder[origin][node];
+parallel_bush.c:325:        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+parallel_bush.c:326:            pushBackFlowSimple_par(j, origin, network, bushes);
+parallel_bush.c:328:            m = pred2merge(bushes->pred[origin][j]);
+parallel_bush.c:329:            merge = bushes->merges[origin][m];
+parallel_bush.c:331:                || (fabs(bushes->LPcost_par[origin][j] - bushes->SPcost_par[origin][j])
+parallel_bush.c:333:                || bushes->nodeFlow_par[origin][j] < parameters->minLinkFlowShift
+parallel_bush.c:336:                pushBackFlowMerge_par(merge, network, bushes, origin);
+parallel_bush.c:338:                newtonFlowShift_par(j,merge,origin,network,bushes,parameters);
+parallel_bush.c:352:void calculateBushFlows_par(int origin,network_type *network,bushes_type *bushes) {
+parallel_bush.c:359:        bushes->nodeFlow_par[origin][i] = network->demand[origin][i];
+parallel_bush.c:362:        bushes->nodeFlow_par[origin][i] = 0;
+parallel_bush.c:365:        bushes->flow_par[origin][ij] = 0;
+parallel_bush.c:371:        j = bushes->bushOrder[origin][node];
+parallel_bush.c:372:        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+parallel_bush.c:373:            pushBackFlowSimple_par(j, origin, network, bushes);
+parallel_bush.c:375:            m = pred2merge(bushes->pred[origin][j]);
+parallel_bush.c:376:            merge = bushes->merges[origin][m];
+parallel_bush.c:377:            pushBackFlowMerge_par(merge, network, bushes, origin);
+parallel_bush.c:387:inline void pushBackFlowSimple_par(int j, int origin, network_type *network,
+parallel_bush.c:392:    ij = bushes->pred[origin][j];
+parallel_bush.c:394:    bushes->flow_par[origin][ij] = bushes->nodeFlow_par[origin][j];
+parallel_bush.c:395:    bushes->nodeFlow_par[origin][i] += bushes->nodeFlow_par[origin][j];
+parallel_bush.c:450:void newtonFlowShift_par(int j, merge_type *merge, int origin,
+parallel_bush.c:458:    c = origin2class(network, origin);
+parallel_bush.c:465:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:466:            hi = bushes->pred[origin][i];
+parallel_bush.c:468:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:469:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:477:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:478:            hi = bushes->pred[origin][i];
+parallel_bush.c:480:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:481:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:500:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:501:            hi = bushes->pred[origin][i];
+parallel_bush.c:503:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:504:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:519:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:520:            hi = bushes->pred[origin][i];
+parallel_bush.c:522:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:523:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:541:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:542:            hi = bushes->pred[origin][i];
+parallel_bush.c:544:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:545:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:550:        bushes->flow_par[origin][hi] -= shift;
+parallel_bush.c:555:        if (isMergeNode(origin, i, bushes) == FALSE) {
+parallel_bush.c:556:            hi = bushes->pred[origin][i];
+parallel_bush.c:558:            m = pred2merge(bushes->pred[origin][i]);
+parallel_bush.c:559:            segmentMerge = bushes->merges[origin][m];
+parallel_bush.c:564:        bushes->flow_par[origin][hi] += shift;
+parallel_bush.c:604:                fatalError("Flow validation failed: origin %d, link (%ld,%ld)"
+parallel_bush.c:628:                fatalError("Flow validation failed: origin %d, node %ld"
+Binary file .bush.c.swp matches
+Binary file .networks.c.swp matches
+networks.c:25: *  -origin: Node to calculate shortest paths from
+networks.c:33: *  -origin: As before
+networks.c:37: *            tree rooted at origin
+networks.c:43:void BellmanFordNew(int origin, double *label, arc_type **backarc, int *order,
+networks.c:57:        label[origin] = 0;
+networks.c:58:        enQueue(&SEL, origin);
+networks.c:60:        label[origin] = 0;
+networks.c:118:void heapDijkstraNew(int origin, double *label, arc_type **backarc, network_type
+networks.c:138:    insertHeap(dijkstraHeap, origin, 0);
+networks.c:174:upon completion of the algorithm.  origin gives the starting point for these
+networks.c:186:void BellmanFord(int origin, double *label, int *backnode, network_type
+networks.c:202:    label[origin] = 0;
+networks.c:203:    enQueue(&SEL, origin);
+networks.c:251:void arcBellmanFord(int origin, double *label, arc_type **backarc,
+networks.c:262:    label[origin] = 0;
+networks.c:263:    enQueue(&SEL, origin);
+networks.c:307:void arcIndexBellmanFord(int origin, double *label, int *backarc, network_type
+networks.c:313://    displayMessage(FULL_NOTIFICATIONS, "Made queue for origin %d\n", origin);
+networks.c:319:    label[origin] = 0;
+networks.c:320:    enQueue(&SEL, origin);
+networks.c:349://    displayMessage(FULL_NOTIFICATIONS, "Freeing queue for origin %d\n", origin);
+networks.c:372:void BellmanFord_NoLabel(int origin, double *label, network_type *network,
+networks.c:385:        label[origin] = 0;
+networks.c:386:        enQueue(&SEL, origin);
+networks.c:451:This is a one-to-all shortest path algorithm, starting at 'origin'.  *label and
+networks.c:456:void heapDijkstra(int origin, double *label, int *backnode, network_type
+networks.c:475:    insertHeap(dijkstraHeap, origin, 0);
+networks.c:540:search: Given an initial node (the origin argument), performs a search to
+networks.c:541:identify all nodes reachable from origin, or from which origin can be reached,
+networks.c:542:depending on the argument 'd' (FORWARD = nodes reachable from origin; REVERSE =
+networks.c:543:nodes from which origin can be reached).  Argument 'q' indicates the search
+networks.c:546:the previous/next node on the path from/to origin (depending on d); if
+networks.c:550:void search(int origin, int* order, int *backnode, network_type *network,
+networks.c:555:     * not connected from/to origin */
+networks.c:559:    backnode[origin] = 0;
+networks.c:561:    order[origin] = next;
+networks.c:565:    enQueue(&LIST, origin);
+networks.c:666:the origin)
+networks.c:704:a physical origin node/class and the corresponding pseudo-origin ID.  Also 
+networks.c:707:int origin2node(network_type *network, int origin) {
+networks.c:708:    return (origin + network->batchSize * network->curBatch)
+networks.c:712:int origin2class(network_type *network, int origin) {
+networks.c:713:    return (origin + network->batchSize * network->curBatch)
+networks.c:718:Warning: This function does not check whether the given origin and class
+networks.c:721:int nodeclass2origin(network_type *network, int originNode, int class) {
+networks.c:722:    return (class * network->numZones + originNode);
+networks.c:725:bool checkIfCurrentNodeClass(network_type *network, int originNode, int class) {
+networks.c:726:    return checkIfCurrentOrigin(network, class*network->numZones + originNode);
+networks.c:729:bool checkIfCurrentOrigin(network_type *network, int origin) {
+networks.c:730:    return origin / network->batchSize == network->curBatch ? TRUE : FALSE;
+networks.c:733:bool outOfOrigins(network_type *network, int origin) {
+networks.c:734:    return origin2class(network, origin) >= network->numClasses ? TRUE : FALSE;
+tap.c:277:shortest paths for each origin, rather than using the OD cost field in the
+tap.c:282:    int r, j, originNode;
+tap.c:285:    for (r = 0; r < network->numOrigins; r++) {
+tap.c:286:        originNode = origin2node(network, r);
+tap.c:287:        BellmanFord_NoLabel(originNode, SPcosts, network, DEQUE, NULL, NULL);
+bush.c_minmem:24:        updateFlowsB(origin, network, bushes, parameters);
+bush.c_minmem:34:	int origin, i, iteration = 0;
+bush.c_minmem:69://		for (origin = 0; origin < network->numZones; origin++) {
+bush.c_minmem:70://			updateBushB(origin, network, bushes, parameters);
+bush.c_minmem:71://   		updateFlowsB(origin, network, bushes, parameters);
+bush.c_minmem:76:			for (origin = 0; origin < network->numZones; origin++) {
+bush.c_minmem:77:				updateFlowsB(origin, network, bushes, parameters);
+bush.c_minmem:123:void initialBushShortestPath(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:125:	arcIndexBellmanFord(origin, bushes->SPcost, bushes->pred[origin], network, parameters->SPQueueDiscipline);
+bush.c_minmem:128:	bushes->numMerges[origin] = 0;
+bush.c_minmem:129:	bushes->merges[origin] = newVector(0, merge_type *);
+bush.c_minmem:130:	parameters->topologicalOrder(origin, network, bushes, parameters);
+bush.c_minmem:133:void initialBushBFS(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:136:   displayMessage(FULL_DEBUG, "%d %p %p %p", origin, network, bushes, parameters);
+bush.c_minmem:139:void genericTopologicalOrder(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:145:	   indegree[i] = 1; /* By default non-origin nodes are assumed to have 1 incoming link; merges and origin handled below */
+bush.c_minmem:149:	   if (isMergeNode(origin, i, bushes) == TRUE) {
+bush.c_minmem:150:	      m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:151:	      indegree[i] = bushes->merges[origin][m]->numApproaches;
+bush.c_minmem:154:	indegree[origin] = 0;
+bush.c_minmem:162:		if (isMergeNode(origin, i, bushes) == TRUE) highestMerge = next;
+bush.c_minmem:165:         if (isInBush(origin, ptr2arc(network, curArc->arc), network, bushes) == TRUE) {
+bush.c_minmem:173:	bushes->lastMerge[origin] = highestMerge;
+bush.c_minmem:182:void mergeFirstTopologicalOrder(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:185:   displayMessage(FULL_DEBUG, "%d %p %p %p", origin, network, bushes, parameters);
+bush.c_minmem:188:bool isMergeNode(int origin, int i, bushes_type *bushes) {
+bush.c_minmem:189:   return (bushes->pred[origin][i] < 0 && i != origin) ? TRUE : FALSE;
+bush.c_minmem:202:bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
+bush.c_minmem:205:   if (isMergeNode(origin, j, bushes) == FALSE) {
+bush.c_minmem:206:      return (bushes->pred[origin][j] == ij) ? TRUE : FALSE;
+bush.c_minmem:208:      m = pred2merge(bushes->pred[origin][j]);
+bush.c_minmem:209:      merge = bushes->merges[origin][m];
+bush.c_minmem:296:void scanBushes(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters, bool longestUsed) {
+bush.c_minmem:309:   bushes->SPcost[origin] = 0;
+bush.c_minmem:310:	bushes->LPcost[origin] = 0;
+bush.c_minmem:313:		if (isMergeNode(origin, i, bushes) == TRUE) { /* Iterative over incoming links */
+bush.c_minmem:314:         m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:315:		   merge = bushes->merges[origin][m];
+bush.c_minmem:332:   		hi = bushes->pred[origin][i];
+bush.c_minmem:341:void updateBushB(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:345:	parameters->topologicalOrder(origin, network, bushes, parameters);   
+bush.c_minmem:346:   scanBushes(origin, network, bushes, parameters, TRUE);
+bush.c_minmem:347:   calculateBushFlows(origin, network, bushes);
+bush.c_minmem:360:          && (network->arcs[ij].tail == origin || network->arcs[ij].tail >= network->firstThroughNode)) 
+bush.c_minmem:377:             && (network->arcs[ij].tail == origin || network->arcs[ij].tail >= network->firstThroughNode))          
+bush.c_minmem:385:   reconstructMerges(origin, network, bushes);
+bush.c_minmem:390:1. Normalize the approach proportions for incoming links -- if there are zero for a non-origin, throw a flag.
+bush.c_minmem:394:void reconstructMerges(int origin, network_type *network, bushes_type *bushes) {
+bush.c_minmem:404:      if (i == origin) continue;
+bush.c_minmem:414:      if (numApproaches == 0) fatalError("Cannot have non-origin node %d in bush %d without incoming contributing links", i, origin);
+bush.c_minmem:416:         bushes->pred[origin][i] = lastApproach;
+bush.c_minmem:434:   for (m = 0; m < bushes->numMerges[origin]; m++) {
+bush.c_minmem:435:      deleteMerge(bushes->merges[origin][m]);
+bush.c_minmem:437:   deleteVector(bushes->merges[origin]);
+bush.c_minmem:438:   bushes->numMerges[origin] = mergeList->size;
+bush.c_minmem:439:   bushes->merges[origin] = newVector(mergeList->size, merge_type *);
+bush.c_minmem:442:      bushes->merges[origin][m] = curMerge->merge;
+bush.c_minmem:443:      bushes->pred[origin][curMerge->node] = merge2pred(m);
+bush.c_minmem:450:void findDivergenceNodes(int origin, network_type *network, bushes_type *bushes) {
+bush.c_minmem:458:   for (m = 0; m < bushes->numMerges[origin]; m++) {
+bush.c_minmem:459:      i = network->arcs[bushes->merges[origin][m]->approach[0]].head;
+bush.c_minmem:463:      if (bushes->merges[origin][m]->LPlink == NO_PATH_EXISTS) { /* Sometimes there is no longest used path to a node (zero demand), nothing to do. */
+bush.c_minmem:464:         bushes->merges[origin][m]->divergenceNode = NO_PATH_EXISTS;
+bush.c_minmem:468:         if (SPnode != origin) {
+bush.c_minmem:469:            if (isMergeNode(origin, SPnode, bushes) == FALSE) {
+bush.c_minmem:470:               SPnode = network->arcs[bushes->pred[origin][SPnode]].tail;
+bush.c_minmem:472:               n = pred2merge(bushes->pred[origin][SPnode]);
+bush.c_minmem:473:               merge = bushes->merges[origin][n];
+bush.c_minmem:482:         if (LPnode != origin) {
+bush.c_minmem:483:            if (isMergeNode(origin, LPnode, bushes) == FALSE) {
+bush.c_minmem:484:               LPnode = network->arcs[bushes->pred[origin][LPnode]].tail;
+bush.c_minmem:486:               n = pred2merge(bushes->pred[origin][LPnode]);
+bush.c_minmem:487:               merge = bushes->merges[origin][n];               
+bush.c_minmem:497:      bushes->merges[origin][m]->divergenceNode = diverge;
+bush.c_minmem:511:void updateFlowsB(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:514:   /* Restore topological order and bush flows for this origin */
+bush.c_minmem:515:	parameters->topologicalOrder(origin, network, bushes, parameters);
+bush.c_minmem:516:   calculateBushFlows(origin, network, bushes);
+bush.c_minmem:519:   if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) return;
+bush.c_minmem:521:   /* Now do (possibly multiple) shifts per origin */
+bush.c_minmem:523:      updateFlowPass(origin, network, bushes, parameters);
+bush.c_minmem:527:         if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) return;
+bush.c_minmem:533:bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:537:   scanBushes(origin, network, bushes, parameters, TRUE);
+bush.c_minmem:538:   findDivergenceNodes(origin, network, bushes);
+bush.c_minmem:548:void updateFlowPass(int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:553:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+bush.c_minmem:559:      if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+bush.c_minmem:560:         pushBackFlowSimple(j, origin, network, bushes);
+bush.c_minmem:562:         m = pred2merge(bushes->pred[origin][j]);
+bush.c_minmem:563:         merge = bushes->merges[origin][m];
+bush.c_minmem:572:               newtonFlowShift(j, merge, origin, network, bushes, parameters);
+bush.c_minmem:579:void calculateBushFlows(int origin, network_type *network, bushes_type *bushes) {
+bush.c_minmem:584:   for (i = 0; i < network->numZones; i++) bushes->nodeFlow[i] = network->OD[origin][i].demand;
+bush.c_minmem:591:      if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+bush.c_minmem:592:         pushBackFlowSimple(j, origin, network, bushes);
+bush.c_minmem:594:         m = pred2merge(bushes->pred[origin][j]);
+bush.c_minmem:595:         merge = bushes->merges[origin][m];
+bush.c_minmem:602:void pushBackFlowSimple(int j, int origin, network_type *network, bushes_type *bushes) {
+bush.c_minmem:605:   ij = bushes->pred[origin][j];
+bush.c_minmem:645:void newtonFlowShift(int j, merge_type *merge, int origin, network_type *network, bushes_type *bushes, algorithmBParameters_type *parameters) {
+bush.c_minmem:656:      if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c_minmem:657:         hi = bushes->pred[origin][i];
+bush.c_minmem:659:         m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:660:         segmentMerge = bushes->merges[origin][m];
+bush.c_minmem:675:      if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c_minmem:676:         hi = bushes->pred[origin][i];
+bush.c_minmem:678:         m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:679:         segmentMerge = bushes->merges[origin][m];
+bush.c_minmem:697:      if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c_minmem:698:         hi = bushes->pred[origin][i];
+bush.c_minmem:700:         m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:701:         segmentMerge = bushes->merges[origin][m];
+bush.c_minmem:711:      if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c_minmem:712:         hi = bushes->pred[origin][i];
+bush.c_minmem:714:         m = pred2merge(bushes->pred[origin][i]);
+bush.c_minmem:715:         segmentMerge = bushes->merges[origin][m];
+bush.c_minmem:745:            fatalError("Flow validation failed: origin %d, link (%ld,%ld) has negative flow.", r, network->arcs[ij].tail + 1, network->arcs[ij].head + 1);
+bush.c_minmem:762:            fatalError("Flow validation failed: origin %d, node %ld violates conservation.", r, i + 1);
+bush.c:61:        /* Iterate over batches of origins */
+bush.c:195:    int batch, c, ij, origin;
+bush.c:211:          is the same as the number of origins.  The following code handles
+bush.c:250:        for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:251:            rectifyBushFlows(origin, network, *bushes);
+bush.c:252:            c = origin2class(network, origin);
+bush.c:319:        if (outOfOrigins(network, j) == TRUE) break;
+bush.c:327:        if (outOfOrigins(network, j) == TRUE) break;
+bush.c:334:    int origin;
+bush.c:335:    for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:336:        if (outOfOrigins(network, origin) == TRUE) break;
+bush.c:337:        bushes->updateBush[origin] = TRUE;
+bush.c:338:        updateBushB(origin, network, bushes, parameters);
+bush.c:339:        updateFlowsB(origin, network, bushes, parameters);
+bush.c:361:            if (outOfOrigins(network, j) == TRUE) break;
+bush.c:372:        int origin;
+bush.c:373:        for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:374:            if (outOfOrigins(network, origin) == TRUE) break;
+bush.c:375:            if (bushes->updateBush[origin] == FALSE) continue;
+bush.c:376:            doneAny |= updateFlowsB(origin,network,bushes,parameters);
+bush.c:385: * tree at free-flow times.  Arguments are the origin for the bush, pointers to
+bush.c:389:void initialBushShortestPath(int origin, network_type *network,
+bush.c:393:    int ij, originNode = origin2node(network, origin);
+bush.c:394:    arcIndexBellmanFord(originNode, bushes->SPcost, bushes->pred[origin],
+bush.c:397:        if (ij != originNode && bushes->pred[origin][ij] == IS_MISSING) {
+bush.c:401:                                    bushes->pred[origin][ij],
+bush.c:417:    bushes->numMerges[origin] = 0;
+bush.c:418:    parameters->topologicalOrder(origin, network, bushes, parameters);
+bush.c:429:void initialBushBFS(int origin, network_type *network, bushes_type *bushes,
+bush.c:434:   displayMessage(FULL_DEBUG, "%d%p%p%p", origin, network, bushes, parameters);
+bush.c:440: * Arguments are the origin corresponding to the bush, and the network, bush,
+bush.c:443:void genericTopologicalOrder(int origin, network_type *network,
+bush.c:450:        indegree[i] = 1; /* By default non-origin nodes are assumed to have 1
+bush.c:451:                            incoming link; merges and origin handled below */
+bush.c:452:        bushes->bushOrder[origin][i] = NO_PATH_EXISTS;
+bush.c:455:        if (isMergeNode(origin, i, bushes) == TRUE) {
+bush.c:456:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:457:            indegree[i] = bushes->merges[origin][m]->numApproaches;
+bush.c:460:    indegree[origin2node(network, origin)] = 0;
+bush.c:469:        bushes->bushOrder[origin][next] = i;
+bush.c:470:        if (isMergeNode(origin, i, bushes) == TRUE) highestMerge = next;
+bush.c:474:            if (isInBush(origin, ptr2arc(network, curArc->arc), network,
+bush.c:483:        displayMessage(LOW_NOTIFICATIONS, "origin: %d, next: %d, network->numNodes: %d\n", 
+bush.c:484:                           origin+1, next, network->numNodes);
+bush.c:485:        fatalError("#%d: Graph given to bushTopologicalOrder contains a cycle.", origin+1);
+bush.c:487:    bushes->lastMerge[origin] = highestMerge;
+bush.c:506:void mergeFirstTopologicalOrder(int origin, network_type *network,
+bush.c:511:    displayMessage(FULL_DEBUG,"%d%p%p%p", origin, network, bushes, parameters);
+bush.c:526: * corresponding to origin.
+bush.c:528:bool isMergeNode(int origin, int i, bushes_type *bushes) {
+bush.c:529:    return (bushes->pred[origin][i] < 0 &&
+bush.c:530:            i != origin2node(bushes->network, origin)) ? TRUE : FALSE;
+bush.c:551: * (the one corresponding to origin).  With the current bush data structures,
+bush.c:554:bool isInBush(int origin, int ij, network_type *network, bushes_type *bushes) {
+bush.c:557:    if (isMergeNode(origin, j, bushes) == FALSE) {
+bush.c:558:        return (bushes->pred[origin][j] == ij) ? TRUE : FALSE;
+bush.c:560:        m = pred2merge(bushes->pred[origin][j]);
+bush.c:561:        merge = bushes->merges[origin][m];
+bush.c:581:    int b, r, ij, i, j, c, originNode;
+bush.c:591:        if (outOfOrigins(network, r) == TRUE) break;
+bush.c:592:        originNode = origin2node(network, r);
+bush.c:593:        c = origin2class(network, origin);        
+bush.c:600:        BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
+bush.c:686:        if (outOfOrigins(network, r) == TRUE) break;
+bush.c:720:        if (outOfOrigins(network, r) == TRUE) break;
+bush.c:748:    int j, r, originNode;
+bush.c:750:        if (outOfOrigins(network, r) == TRUE) break;
+bush.c:751:        originNode = origin2node(network, r);
+bush.c:753:        BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
+bush.c:846:    int origin;
+bush.c:848:    for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:849:        if (outOfOrigins(network, origin) == TRUE) break;
+bush.c:851:        parameters->createInitialBush(origin, network, bushes, parameters);
+bush.c:852:        calculateBushFlows(origin, network, bushes);
+bush.c:863:void scanBushes(int origin, network_type *network, bushes_type *bushes,
+bush.c:876:        updateAllCostsClass(network, origin2class(network, origin));
+bush.c:879:    bushes->SPcost[origin2node(network, origin)] = 0;
+bush.c:880:    bushes->LPcost[origin2node(network, origin)] = 0;
+bush.c:882:        i = bushes->bushOrder[origin][curnode];
+bush.c:884:        if (isMergeNode(origin, i, bushes) == TRUE) {
+bush.c:885:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:886:            merge = bushes->merges[origin][m];
+bush.c:916:            hi = bushes->pred[origin][i];
+bush.c:936:void updateBushB(int origin, network_type *network, bushes_type *bushes,
+bush.c:942:    scanBushes(origin, network, bushes, parameters, parameters->updateBushScanType);
+bush.c:943:    calculateBushFlows(origin, network, bushes);
+bush.c:950:            if (isInBush(origin, ij, network, bushes) == TRUE)
+bush.c:962:            && (network->arcs[ij].tail == origin2node(network, origin)
+bush.c:971:                   && isInBush(origin, ij, network, bushes) == TRUE) {
+bush.c:984:                && (network->arcs[ij].tail == origin2node(network, origin)
+bush.c:994:    reconstructMerges(origin, network, bushes);
+bush.c:995:    parameters->topologicalOrder(origin, network, bushes, parameters);
+bush.c:1004: *    such links for a non-origin, throw an error.
+bush.c:1010:void reconstructMerges(int origin, network_type *network, bushes_type *bushes){
+bush.c:1020:        if (i == origin2node(network, origin)) continue;
+bush.c:1032:            fatalError("Cannot have non-origin node %d in bush %d without "
+bush.c:1033:                       "incoming contributing links", i, origin);
+bush.c:1035:            bushes->pred[origin][i] = lastApproach;
+bush.c:1055:    for (m = 0; m < bushes->numMerges[origin]; m++) {
+bush.c:1056:        deleteMerge(bushes->merges[origin][m]);
+bush.c:1058:    deleteVector(bushes->merges[origin]);
+bush.c:1059:    bushes->numMerges[origin] = mergeList->size;
+bush.c:1060:    bushes->merges[origin] = newVector(mergeList->size, merge_type *);
+bush.c:1064:        bushes->merges[origin][m] = curMerge->merge;
+bush.c:1065:        bushes->pred[origin][curMerge->node] = merge2pred(m);
+bush.c:1078:void findDivergenceNodes(int origin, network_type *network,
+bush.c:1087:    for (m = 0; m < bushes->numMerges[origin]; m++) {
+bush.c:1088:        i = network->arcs[bushes->merges[origin][m]->approach[0]].head;
+bush.c:1094:        if (bushes->merges[origin][m]->LPlink == NO_PATH_EXISTS) {
+bush.c:1095:            bushes->merges[origin][m]->divergenceNode = NO_PATH_EXISTS;
+bush.c:1099:            if (SPnode != origin2node(network, origin)) {
+bush.c:1100:                if (isMergeNode(origin, SPnode, bushes) == FALSE) {
+bush.c:1101:                    SPnode = network->arcs[bushes->pred[origin][SPnode]].tail;
+bush.c:1103:                    n = pred2merge(bushes->pred[origin][SPnode]);
+bush.c:1104:                    merge = bushes->merges[origin][n];
+bush.c:1113:            if (LPnode != origin2node(network, origin)) {
+bush.c:1114:                if (isMergeNode(origin, LPnode, bushes) == FALSE) {
+bush.c:1115:                    LPnode = network->arcs[bushes->pred[origin][LPnode]].tail;
+bush.c:1117:                    n = pred2merge(bushes->pred[origin][LPnode]);
+bush.c:1118:                    merge = bushes->merges[origin][n];               
+bush.c:1128:        bushes->merges[origin][m]->divergenceNode = diverge;
+bush.c:1146: *   case we want to do multiple shifts per origin.
+bush.c:1148:bool updateFlowsB(int origin, network_type *network, bushes_type *bushes,
+bush.c:1152:    /* Recompute bush flows for this origin */
+bush.c:1153:    calculateBushFlows(origin, network, bushes);
+bush.c:1156:    if (rescanAndCheck(origin, network, bushes, parameters) == FALSE) {
+bush.c:1157:        bushes->updateBush[origin] = FALSE;
+bush.c:1161:    /* Now do (possibly multiple) shifts per origin */
+bush.c:1163:        updateFlowPass(origin, network, bushes, parameters);
+bush.c:1169:            if (rescanAndCheck(origin, network, bushes, parameters) == FALSE)
+bush.c:1183:bool rescanAndCheck(int origin, network_type *network, bushes_type *bushes,
+bush.c:1189:    scanBushes(origin, network, bushes, parameters, LONGEST_USED_PATH);
+bush.c:1190:    findDivergenceNodes(origin, network, bushes);
+bush.c:1192:        bushSPTT += network->demand[origin][i] * bushes->SPcost[i];
+bush.c:1204:    //displayMessage(DEBUG, "Scanning %d, gap is %f\n", origin, 
+bush.c:1218:void updateFlowPass(int origin, network_type *network, bushes_type *bushes,
+bush.c:1225:        bushes->nodeFlow[i] = network->demand[origin][i];
+bush.c:1231:        j = bushes->bushOrder[origin][node];
+bush.c:1232:        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+bush.c:1233:            pushBackFlowSimple(j, origin, network, bushes);
+bush.c:1235:            m = pred2merge(bushes->pred[origin][j]);
+bush.c:1236:            merge = bushes->merges[origin][m];
+bush.c:1246:                    newtonFlowShift(j,merge,origin,network,bushes,parameters);
+bush.c:1260:void calculateBushFlows(int origin,network_type *network,bushes_type *bushes) {
+bush.c:1266:        bushes->nodeFlow[i] = network->demand[origin][i];
+bush.c:1274:        j = bushes->bushOrder[origin][node];
+bush.c:1275:        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+bush.c:1276:            pushBackFlowSimple(j, origin, network, bushes);
+bush.c:1278:            m = pred2merge(bushes->pred[origin][j]);
+bush.c:1279:            merge = bushes->merges[origin][m];
+bush.c:1290:void pushBackFlowSimple(int j, int origin, network_type *network,
+bush.c:1294:    ij = bushes->pred[origin][j];
+bush.c:1350:void rectifyBushFlows(int origin, network_type *network,bushes_type *bushes) {
+bush.c:1356:        bushes->nodeFlow[i] = network->demand[origin][i];
+bush.c:1364:        j = bushes->bushOrder[origin][node];
+bush.c:1365:        if (isMergeNode(origin, j, bushes) == FALSE) { /* Nothing to do */
+bush.c:1366:            pushBackFlowSimple(j, origin, network, bushes);
+bush.c:1368:            m = pred2merge(bushes->pred[origin][j]);
+bush.c:1369:            merge = bushes->merges[origin][m];
+bush.c:1382:void newtonFlowShift(int j, merge_type *merge, int origin,
+bush.c:1389:    c = origin2class(network, origin);
+bush.c:1397:        if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c:1398:            hi = bushes->pred[origin][i];
+bush.c:1400:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1401:            segmentMerge = bushes->merges[origin][m];
+bush.c:1416:        if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c:1417:            hi = bushes->pred[origin][i];
+bush.c:1419:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1420:            segmentMerge = bushes->merges[origin][m];
+bush.c:1438:        if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c:1439:            hi = bushes->pred[origin][i];
+bush.c:1441:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1442:            segmentMerge = bushes->merges[origin][m];
+bush.c:1453:        if (isMergeNode(origin, i, bushes) == FALSE) {
+bush.c:1454:            hi = bushes->pred[origin][i];
+bush.c:1456:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1457:            segmentMerge = bushes->merges[origin][m];
+bush.c:1485:        if (outOfOrigins(network, r) == TRUE) break;
+bush.c:1497:                fatalError("Flow validation failed: origin %d, link (%ld,%ld)"
+bush.c:1503:            if (i == origin2node(network, r)) continue;
+bush.c:1521:                fatalError("Flow validation failed: origin %d, node %ld"
+bush.c:1586:void printBush(int minVerbosity, int origin, network_type *network,
+bush.c:1594:                    origin + 1, origin + 1);
+bush.c:1596:                   origin + 1,
+bush.c:1597:                   origin + 1,
+bush.c:1598:                   bushes->nodeFlow_par[origin][origin],
+bush.c:1599:                   bushes->SPcost_par[origin][origin],
+bush.c:1600:                   bushes->LPcost_par[origin][origin]);
+bush.c:1602:        i = bushes->bushOrder[origin][curnode];
+bush.c:1604:                       origin + 1,
+bush.c:1606:                       bushes->nodeFlow_par[origin][i],
+bush.c:1607:                       bushes->SPcost_par[origin][i],
+bush.c:1608:                       bushes->LPcost_par[origin][i],
+bush.c:1610:        if (isMergeNode(origin, i, bushes) == TRUE) {
+bush.c:1611:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1612:            merge = bushes->merges[origin][m];
+bush.c:1616:                               origin + 1,
+bush.c:1619:                               bushes->flow_par[origin][ij],
+bush.c:1625:            ij = bushes->pred[origin][i];
+bush.c:1627:                           origin + 1,
+bush.c:1630:                           bushes->flow_par[origin][ij],
+bush.c:1637:    calculateBushFlows(origin, network, bushes);
+bush.c:1639:                    origin + 1, origin + 1);
+bush.c:1641:                   origin + 1,
+bush.c:1642:                   origin + 1,
+bush.c:1643:                   bushes->nodeFlow[origin],
+bush.c:1644:                   bushes->SPcost[origin],
+bush.c:1645:                   bushes->LPcost[origin]);
+bush.c:1647:        i = bushes->bushOrder[origin][curnode];
+bush.c:1649:                       origin + 1,
+bush.c:1655:        if (isMergeNode(origin, i, bushes) == TRUE) {
+bush.c:1656:            m = pred2merge(bushes->pred[origin][i]);
+bush.c:1657:            merge = bushes->merges[origin][m];
+bush.c:1661:                               origin + 1,
+bush.c:1670:            ij = bushes->pred[origin][i];
+bush.c:1672:                           origin + 1,
+bush.c:1825:    int m, origin, check;
+bush.c:1833:    /* Now write each origin in turn */
+bush.c:1834:    for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:1835:        if (outOfOrigins(network, origin) == TRUE) break;
+bush.c:1837:        /* First write the origin ID as a check */
+bush.c:1838:        check = origin + network->batchSize * network->curBatch;
+bush.c:1842:        fwrite(&bushes->lastMerge[origin], sizeof(bushes->lastMerge[0]),
+bush.c:1844:        fwrite(&bushes->numMerges[origin], sizeof(bushes->numMerges[0]),
+bush.c:1848:        fwrite(bushes->bushOrder[origin], sizeof(bushes->bushOrder[origin][0]),
+bush.c:1852:        fwrite(bushes->pred[origin], sizeof(bushes->pred[origin][0]),
+bush.c:1856:        for (m = 0; m < bushes->numMerges[origin]; m++) {
+bush.c:1857:            merge = bushes->merges[origin][m];        
+bush.c:1875:    int m, origin, check, numApproaches;
+bush.c:1890:    /* Now read each origin in turn */
+bush.c:1891:    for (origin = 0; origin < network->batchSize; origin++) {
+bush.c:1892:        if (outOfOrigins(network, origin) == TRUE) break;
+bush.c:1893:        /* First read the origin ID and check */
+bush.c:1895:        if (check != origin + network->batchSize * network->curBatch) {
+bush.c:1896:            fatalError("Reading wrong origin from file %s.", filename);
+bush.c:1900:        my_fread(&(*bushes)->lastMerge[origin],sizeof((*bushes)->lastMerge[0]),
+bush.c:1902:        my_fread(&(*bushes)->numMerges[origin],sizeof((*bushes)->numMerges[0]),
+bush.c:1906:        my_fread((*bushes)->bushOrder[origin],
+bush.c:1907:               sizeof((*bushes)->bushOrder[origin][0]),
+bush.c:1911:        my_fread((*bushes)->pred[origin], sizeof((*bushes)->pred[origin][0]),
+bush.c:1915:        deleteVector((*bushes)->merges[origin]);
+bush.c:1916:        (*bushes)->merges[origin] = newVector((*bushes)->numMerges[origin],
+bush.c:1918:        for (m = 0; m < (*bushes)->numMerges[origin]; m++) {
+bush.c:1929:            (*bushes)->merges[origin][m] = merge;        
