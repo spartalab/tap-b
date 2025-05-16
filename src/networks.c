@@ -499,6 +499,48 @@ void heapDijkstra(int origin, double *label, int *backnode, network_type
     deleteHeap(dijkstraHeap);
 }
 
+void heapDijkstraNoBacknode(int origin, double *label, network_type *network) {
+
+    int j;
+    arcListElt *i;
+    int curnode;
+
+   /* Initialize heap */
+    double tempLabel;
+    heap_type *dijkstraHeap = createHeap(network->numNodes, network->numNodes);
+
+   /* Initialize Dijkstra's */
+    for (j = 0; j < network->numNodes; j++) {
+        dijkstraHeap->valueFn[j] = INFINITY; 
+        /* valueFn in the heap stores the cost labels */
+    }
+
+   /* Now iterate until the heap is empty */
+    insertHeap(dijkstraHeap, origin, 0);
+    while (dijkstraHeap->last > 0) {
+        curnode = findMinHeap(dijkstraHeap);
+        deleteMinHeap(dijkstraHeap);
+        for (i = network->nodes[curnode].forwardStar.head; i != NULL; 
+                i = i->next) {
+            j = i->arc->head;
+            tempLabel = dijkstraHeap->valueFn[curnode] + i->arc->cost;
+            if (tempLabel < dijkstraHeap->valueFn[j]) {
+                if (j < network->firstThroughNode) {
+                    dijkstraHeap->valueFn[j] = tempLabel;
+                    continue;
+                }
+                if (dijkstraHeap->valueFn[j] == INFINITY)
+                    insertHeap(dijkstraHeap, j, tempLabel);
+                else
+                    decreaseKey(dijkstraHeap, j, tempLabel);
+            }
+        }
+    }
+
+   /* Now copy labels to return, and clean up memory */
+    memcpy(label, dijkstraHeap->valueFn, sizeof(double) * network->numNodes);
+    deleteHeap(dijkstraHeap);
+}
 
 /*
 changeFixedCosts: Updates the network costs for the new specified toll and 

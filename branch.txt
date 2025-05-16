@@ -1,1 +1,1 @@
-This branch has code to write *path flows* corresponding to a bush-based solution.  No attempt is made to maximize entropy, just divide flow proportionally along bush paths.
+This branch is for debugging and performance testing on specific networks.

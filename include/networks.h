@@ -180,6 +180,7 @@ void BellmanFord_NoLabel(int origin, double *label, network_type *network,
                          queueDiscipline q, double *labelGuess, int *order);
 void heapDijkstra(int origin, double *label, int *backnode,
                   network_type *network);
+void heapDijkstraNoBacknode(int origin, double *label, network_type *network);
 
 void changeFixedCosts(network_type *network, int class);
 

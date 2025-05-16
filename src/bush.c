@@ -65,13 +65,15 @@ void AlgorithmB(network_type *network, algorithmBParameters_type *parameters) {
             updateBatchFlows(network, bushes, &lastClass, parameters);
             storeBatch(batch, network, bushes, parameters);
             /* Check gap and report progress. */
-            clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
-            elapsedTime += (double)((1e9 * (tock.tv_sec - tick.tv_sec)
-                                    + tock.tv_nsec - tick.tv_nsec)) * 1.0/1e9;
-            stopTime = clock(); /* Exclude gap calculations from run time */
+
             displayMessage(DEBUG, "Calculating batch gap...\n");
             batchGap = bushRelativeGap(network, bushes, parameters);
             displayMessage(DEBUG, "Calculated batch gap...\n");
+            stopTime = clock(); /* Exclude gap calculations from run time */
+            clock_gettime(CLOCK_MONOTONIC_RAW, &tock);
+            elapsedTime += (double)((1e9 * (tock.tv_sec - tick.tv_sec)
+                                    + tock.tv_nsec - tick.tv_nsec)) * 1.0/1e9;
+
             gap += batchGap;
             if (parameters->calculateEntropy == TRUE) {
                 batchEntropy = bushEntropy(network, bushes, parameters);
@@ -172,7 +174,7 @@ algorithmBParameters_type initializeAlgorithmBParameters() {
     parameters.includeGapTime = TRUE;
 
     parameters.updateBushScanType = LONGEST_USED_OR_SP;
-    parameters.calculateBins = TRUE;
+    parameters.calculateBins = FALSE;
     parameters.numBins = 70;
     parameters.smallestBin = -60;
     parameters.includedBin = NULL;
@@ -599,6 +601,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
     int b, r, ij, i, j, c, lastClass = IS_MISSING, originNode;
     double frac, rc, acceptanceGap = 0, rejectionGap = INFINITY, consistency;
     double sptt = 0;
+    printf("\nStarting bushSPTT\n");
     if (parameters->calculateBins == TRUE) {
         for (b = 0; b < parameters->numBins; b++) {
             parameters->includedBin[b] = 0;
@@ -612,13 +615,23 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         if (c != lastClass) {
             changeFixedCosts(network, c);
         }
+        //printf("Scanning bush %d\n", r);
+        printf("o"); fflush(stdout);
         scanBushes(r, network, bushes, parameters, NO_LONGEST_PATH);
-        BellmanFord_NoLabel(originNode, bushes->SPcost, network, DEQUE,
-                            bushes->SPcost, bushes->bushOrder[r]);
+        //printf("Finding shortest path\n");
+        BellmanFord_NoLabel(originNode, bushes->SPcost, network,
+                             DEQUE,
+                             //FIFO, 
+                             //NULL, NULL);
+                             bushes->SPcost, bushes->bushOrder[r]);
+        //heapDijkstraNoBacknode(originNode, bushes->SPcost, network);
+        printf("."); fflush(stdout);        
+
         for (j = 0; j < network->numZones; j++) {
             sptt += network->demand[r][j] * bushes->SPcost[j];
         }
         if (parameters->calculateBins == TRUE) {
+            //printf("Calcing bins\n");
 #ifdef PARALLELISM
             /* Ensures bushes->flows has the right values */
             memcpy(bushes->flow, bushes->flow_par[r],
@@ -673,6 +686,7 @@ double bushSPTT(network_type *network, bushes_type *bushes,
         lastClass = c;
     }
     if (parameters->calculateBins == TRUE) {
+        //printf("Printing bins\n");
         displayMessage(DEBUG, "In,");
         for (b = 0; b < parameters->numBins; b++) {
             displayMessage(DEBUG, "%d,", parameters->includedBin[b]);

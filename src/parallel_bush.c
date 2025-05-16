@@ -232,7 +232,8 @@ void reconstructMerges_par(int origin, network_type *network, bushes_type *bushe
 bool updateFlowsB_par(int origin, network_type *network, bushes_type *bushes,
                   algorithmBParameters_type *parameters) {
     int i;
-
+    
+    printf(".");
     /* Recompute bush flows for this origin */
     calculateBushFlows_par(origin, network, bushes);
 
